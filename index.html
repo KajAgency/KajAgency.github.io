@@ -1,1 +1,532 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ممل دوست داره ❤️</title>
+    <style>
+        /* استایل کلی صفحه */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .emoji-big {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: right;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus {
+            border-color: #764ba2;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        input[type="text"]:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* دکمه اصلی */
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1976D2;
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* دکمه‌های ناوبری */
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-nav {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: white;
+        }
+
+        .btn-prev {
+            background: #ff9800;
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            background: #f57c00;
+            transform: scale(1.02);
+        }
+
+        .btn-next {
+            background: #4CAF50;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background: #388E3C;
+            transform: scale(1.02);
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* بخش نمایش نتیجه */
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .result-container.show {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 2px solid #f5576c;
+            animation: popIn 0.5s ease;
+        }
+
+        .result-container.show-green {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            border: 2px solid #56ab2f;
+            animation: popIn 0.5s ease;
+        }
+
+        .result-container.show-red {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 2px solid #f5576c;
+            animation: popIn 0.5s ease;
+        }
+
+        .result-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .result-text.show {
+            opacity: 1;
+            color: white;
+        }
+
+        .result-text .name-highlight {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 2px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* انیمیشن */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #2196F3;
+            transform: scale(1.3);
+        }
+
+        .step-dot.completed {
+            background: #4CAF50;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* پاسخگو برای موبایل */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            input[type="text"] {
+                font-size: 16px;
+                padding: 12px 14px;
+            }
+            
+            .btn-primary {
+                font-size: 17px;
+                padding: 12px 20px;
+            }
+            
+            .result-text {
+                font-size: 20px;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <!-- نشانگر مرحله -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot1"></div>
+            <div class="step-dot" id="dot2"></div>
+        </div>
+
+        <!-- آیکون بزرگ -->
+        <span class="emoji-big" id="emojiDisplay">❤️</span>
+        
+        <h1 id="titleDisplay">به سایت دزفولی ها خوش آمدید!</h1>
+
+        <!-- فرم ورودی -->
+        <div class="input-group" id="inputGroup">
+            <label for="textInput" id="labelInput">📝 نام خود را وارد کنید:</label>
+            <input type="text" id="textInput" placeholder="مثلاً: علی" maxlength="30">
+        </div>
+
+        <!-- دکمه اصلی -->
+        <button class="btn-primary" id="submitBtn">✅ وارد کردن</button>
+
+        <!-- دکمه‌های ناوبری -->
+        <div class="nav-buttons">
+            <button class="btn-nav btn-prev" id="prevBtn" disabled>⬅️ قبلی</button>
+            <button class="btn-nav btn-next" id="nextBtn">بعدی ➡️</button>
+        </div>
+
+        <!-- محل نمایش نتیجه -->
+        <div class="result-container" id="resultContainer">
+            <div class="result-text" id="resultText">
+                منتظر پاسخ شما هستم... 🌸
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // گرفتن المان‌های مورد نیاز
+        const textInput = document.getElementById('textInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultText = document.getElementById('resultText');
+        const labelInput = document.getElementById('labelInput');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const emojiDisplay = document.getElementById('emojiDisplay');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dot1 = document.getElementById('dot1');
+        const dot2 = document.getElementById('dot2');
+
+        let currentStep = 1; // 1: نام, 2: شهر
+        let savedName = '';
+        let savedCity = '';
+        let isAnswered = false;
+
+        // داده‌های سوالات
+        const steps = {
+            1: {
+                title: 'به سایت دزفولی ها خوش آمدید!',
+                emoji: '❤️',
+                label: '📝 نام خود را وارد کنید:',
+                placeholder: 'مثلاً: علی',
+                buttonText: '✅ وارد کردن',
+                resultWaiting: 'منتظر نام تو هستم... 🌸',
+                showResult: (value) => `مَمَل دوست داره <span class="name-highlight">"${value}"</span> رو ❤️`
+            },
+            2: {
+                title: 'به سایت دزفولی ها خوش آمدید!',
+                emoji: '🏙️',
+                label: '🏙️ شهر خود را وارد کنید:',
+                placeholder: 'مثلاً: دزفول',
+                buttonText: '✅ بررسی شهر',
+                resultWaiting: 'منتظر شهر شما هستم... 🌸',
+                showResult: (value) => {
+                    if (value === 'دزفول') {
+                        return { text: 'آفرین به تو! 🎉', class: 'show-green' };
+                    } else {
+                        return { text: 'دزفول بهترین شهره! ❤️', class: 'show-red' };
+                    }
+                }
+            }
+        };
+
+        // بروزرسانی UI بر اساس مرحله
+        function updateStep(step) {
+            const data = steps[step];
+            
+            // بروزرسانی عنوان و ایموجی
+            titleDisplay.textContent = data.title;
+            emojiDisplay.textContent = data.emoji;
+            
+            // بروزرسانی لیبل و placeholder
+            labelInput.textContent = data.label;
+            textInput.placeholder = data.placeholder;
+            textInput.value = '';
+            
+            // بروزرسانی دکمه
+            submitBtn.textContent = data.buttonText;
+            submitBtn.disabled = false;
+            textInput.disabled = false;
+            
+            // ریست نتیجه
+            resultContainer.className = 'result-container';
+            resultText.className = 'result-text';
+            resultText.textContent = data.resultWaiting;
+            
+            // بروزرسانی دکمه‌های ناوبری
+            prevBtn.disabled = (step === 1);
+            nextBtn.disabled = (step === 2);
+            
+            // بروزرسانی دات‌های مرحله
+            dot1.className = 'step-dot' + (step === 1 ? ' active' : '') + (step > 1 ? ' completed' : '');
+            dot2.className = 'step-dot' + (step === 2 ? ' active' : '') + (step > 2 ? ' completed' : '');
+            
+            // ریست وضعیت پاسخ
+            isAnswered = false;
+            
+            // اگر مرحله 1 هست و نام ذخیره شده داریم، نمایش بده
+            if (step === 1 && savedName) {
+                textInput.value = savedName;
+            }
+            // اگر مرحله 2 هست و شهر ذخیره شده داریم، نمایش بده
+            if (step === 2 && savedCity) {
+                textInput.value = savedCity;
+            }
+            
+            // فوکوس روی اینپوت
+            setTimeout(() => textInput.focus(), 100);
+        }
+
+        // تابع برای ارسال پاسخ
+        function submitAnswer() {
+            const value = textInput.value.trim();
+
+            if (value === '') {
+                const msg = currentStep === 1 ? 'نام خود را وارد کنید' : 'شهر خود را وارد کنید';
+                alert(`لطفاً ${msg}! 😊`);
+                textInput.focus();
+                return;
+            }
+
+            if (isAnswered) return;
+
+            // ذخیره پاسخ
+            if (currentStep === 1) {
+                savedName = value;
+            } else {
+                savedCity = value;
+            }
+
+            // نمایش نتیجه
+            const data = steps[currentStep];
+            const result = data.showResult(value);
+            
+            if (typeof result === 'string') {
+                resultText.innerHTML = result;
+                resultContainer.className = 'result-container show';
+            } else {
+                resultText.textContent = result.text;
+                resultContainer.className = `result-container ${result.class}`;
+            }
+            resultText.className = 'result-text show';
+            
+            isAnswered = true;
+            submitBtn.disabled = true;
+            textInput.disabled = true;
+        }
+
+        // رفتن به مرحله بعد
+        function goToNext() {
+            if (currentStep === 1) {
+                // ذخیره نام اگر وارد شده باشد
+                const name = textInput.value.trim();
+                if (name !== '') {
+                    savedName = name;
+                }
+                // رفتن به مرحله 2
+                currentStep = 2;
+                updateStep(currentStep);
+                // اگر شهر قبلاً ذخیره شده بود، نمایش بده
+                if (savedCity) {
+                    textInput.value = savedCity;
+                }
+            } else if (currentStep === 2) {
+                alert('شما در آخرین سوال هستید! 🎉');
+            }
+        }
+
+        // رفتن به مرحله قبل
+        function goToPrev() {
+            if (currentStep === 2) {
+                // ذخیره شهر اگر وارد شده باشد
+                const city = textInput.value.trim();
+                if (city !== '') {
+                    savedCity = city;
+                }
+                // رفتن به مرحله 1
+                currentStep = 1;
+                updateStep(currentStep);
+                // اگر نام قبلاً ذخیره شده بود، نمایش بده
+                if (savedName) {
+                    textInput.value = savedName;
+                }
+            } else {
+                alert('شما در اولین سوال هستید! 😊');
+            }
+        }
+
+        // رویداد کلیک روی دکمه اصلی
+        submitBtn.addEventListener('click', submitAnswer);
+
+        // رویداد فشردن کلید Enter
+        textInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        // رویداد دکمه‌های ناوبری
+        nextBtn.addEventListener('click', goToNext);
+        prevBtn.addEventListener('click', goToPrev);
+
+        // وقتی کاربر دوباره تایپ کرد، نتیجه را ریست کن
+        textInput.addEventListener('input', function() {
+            if (isAnswered) {
+                const data = steps[currentStep];
+                resultContainer.className = 'result-container';
+                resultText.className = 'result-text';
+                resultText.textContent = data.resultWaiting;
+                isAnswered = false;
+                submitBtn.disabled = false;
+                textInput.disabled = false;
+            }
+        });
+
+        // مقداردهی اولیه
+        updateStep(1);
+    </script>
+
+</body>
+</html>
