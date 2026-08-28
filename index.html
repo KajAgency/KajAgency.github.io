@@ -85,11 +85,6 @@
             font-size: 16px;
         }
 
-        input[type="text"]:disabled {
-            background: #e9ecef;
-            cursor: not-allowed;
-        }
-
         /* دکمه اصلی */
         .btn-primary {
             background: #2196F3;
@@ -106,19 +101,14 @@
             letter-spacing: 1px;
         }
 
-        .btn-primary:hover:not(:disabled) {
+        .btn-primary:hover {
             background: #1976D2;
             transform: scale(1.02);
             box-shadow: 0 10px 30px rgba(33, 150, 243, 0.4);
         }
 
-        .btn-primary:active:not(:disabled) {
+        .btn-primary:active {
             transform: scale(0.98);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         /* دکمه‌های ناوبری */
@@ -197,6 +187,12 @@
             animation: popIn 0.5s ease;
         }
 
+        .result-container.show-orange {
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+            border: 2px solid #f7971e;
+            animation: popIn 0.5s ease;
+        }
+
         .result-text {
             font-size: 24px;
             font-weight: bold;
@@ -254,10 +250,6 @@
             background: #4CAF50;
         }
 
-        .hidden {
-            display: none !important;
-        }
-
         /* پاسخگو برای موبایل */
         @media (max-width: 480px) {
             .container {
@@ -295,6 +287,7 @@
         <div class="step-indicator">
             <div class="step-dot active" id="dot1"></div>
             <div class="step-dot" id="dot2"></div>
+            <div class="step-dot" id="dot3"></div>
         </div>
 
         <!-- آیکون بزرگ -->
@@ -338,11 +331,12 @@
         const nextBtn = document.getElementById('nextBtn');
         const dot1 = document.getElementById('dot1');
         const dot2 = document.getElementById('dot2');
+        const dot3 = document.getElementById('dot3');
 
-        let currentStep = 1; // 1: نام, 2: شهر
+        let currentStep = 1; // 1: نام, 2: شهر, 3: معدل
         let savedName = '';
         let savedCity = '';
-        let isAnswered = false;
+        let savedGrade = '';
 
         // داده‌های سوالات
         const steps = {
@@ -369,6 +363,25 @@
                         return { text: 'دزفول بهترین شهره! ❤️', class: 'show-red' };
                     }
                 }
+            },
+            3: {
+                title: 'به سایت دزفولی ها خوش آمدید!',
+                emoji: '📚',
+                label: '📊 معدل خود را وارد کنید (0 تا 20):',
+                placeholder: 'مثلاً: 17.5',
+                buttonText: '✅ بررسی معدل',
+                resultWaiting: 'منتظر معدل شما هستم... 📊',
+                showResult: (value) => {
+                    const grade = parseFloat(value);
+                    if (isNaN(grade) || grade < 0 || grade > 20) {
+                        return { text: 'لطفاً یک عدد معتبر بین 0 تا 20 وارد کنید! ⚠️', class: 'show-red' };
+                    }
+                    if (grade >= 17) {
+                        return { text: 'آفرین! پیش به سوی دارمشتات! 🚀🎉', class: 'show-green' };
+                    } else {
+                        return { text: 'بیشتر تلاش کن! ممل ازت راضی نیست! 😤💪', class: 'show-orange' };
+                    }
+                }
             }
         };
 
@@ -384,6 +397,7 @@
             labelInput.textContent = data.label;
             textInput.placeholder = data.placeholder;
             textInput.value = '';
+            textInput.type = 'text';
             
             // بروزرسانی دکمه
             submitBtn.textContent = data.buttonText;
@@ -397,49 +411,30 @@
             
             // بروزرسانی دکمه‌های ناوبری
             prevBtn.disabled = (step === 1);
-            nextBtn.disabled = (step === 2);
+            nextBtn.disabled = (step === 3);
             
             // بروزرسانی دات‌های مرحله
             dot1.className = 'step-dot' + (step === 1 ? ' active' : '') + (step > 1 ? ' completed' : '');
             dot2.className = 'step-dot' + (step === 2 ? ' active' : '') + (step > 2 ? ' completed' : '');
+            dot3.className = 'step-dot' + (step === 3 ? ' active' : '') + (step > 3 ? ' completed' : '');
             
-            // ریست وضعیت پاسخ
-            isAnswered = false;
-            
-            // اگر مرحله 1 هست و نام ذخیره شده داریم، نمایش بده
+            // بازیابی اطلاعات ذخیره شده
             if (step === 1 && savedName) {
                 textInput.value = savedName;
             }
-            // اگر مرحله 2 هست و شهر ذخیره شده داریم، نمایش بده
             if (step === 2 && savedCity) {
                 textInput.value = savedCity;
+            }
+            if (step === 3 && savedGrade) {
+                textInput.value = savedGrade;
             }
             
             // فوکوس روی اینپوت
             setTimeout(() => textInput.focus(), 100);
         }
 
-        // تابع برای ارسال پاسخ
-        function submitAnswer() {
-            const value = textInput.value.trim();
-
-            if (value === '') {
-                const msg = currentStep === 1 ? 'نام خود را وارد کنید' : 'شهر خود را وارد کنید';
-                alert(`لطفاً ${msg}! 😊`);
-                textInput.focus();
-                return;
-            }
-
-            if (isAnswered) return;
-
-            // ذخیره پاسخ
-            if (currentStep === 1) {
-                savedName = value;
-            } else {
-                savedCity = value;
-            }
-
-            // نمایش نتیجه
+        // تابع برای نمایش نتیجه (بدون قفل کردن)
+        function showResult(value) {
             const data = steps[currentStep];
             const result = data.showResult(value);
             
@@ -451,28 +446,56 @@
                 resultContainer.className = `result-container ${result.class}`;
             }
             resultText.className = 'result-text show';
-            
-            isAnswered = true;
-            submitBtn.disabled = true;
-            textInput.disabled = true;
+        }
+
+        // تابع برای ارسال پاسخ
+        function submitAnswer() {
+            const value = textInput.value.trim();
+
+            if (value === '') {
+                const msg = currentStep === 1 ? 'نام خود را وارد کنید' : 
+                           currentStep === 2 ? 'شهر خود را وارد کنید' : 'معدل خود را وارد کنید';
+                alert(`لطفاً ${msg}! 😊`);
+                textInput.focus();
+                return;
+            }
+
+            // ذخیره پاسخ
+            if (currentStep === 1) {
+                savedName = value;
+            } else if (currentStep === 2) {
+                savedCity = value;
+            } else {
+                savedGrade = value;
+            }
+
+            // نمایش نتیجه (بدون قفل کردن)
+            showResult(value);
         }
 
         // رفتن به مرحله بعد
         function goToNext() {
             if (currentStep === 1) {
-                // ذخیره نام اگر وارد شده باشد
                 const name = textInput.value.trim();
                 if (name !== '') {
                     savedName = name;
                 }
-                // رفتن به مرحله 2
                 currentStep = 2;
                 updateStep(currentStep);
-                // اگر شهر قبلاً ذخیره شده بود، نمایش بده
                 if (savedCity) {
                     textInput.value = savedCity;
                 }
             } else if (currentStep === 2) {
+                const city = textInput.value.trim();
+                if (city !== '') {
+                    savedCity = city;
+                }
+                currentStep = 3;
+                updateStep(currentStep);
+                if (savedGrade) {
+                    textInput.value = savedGrade;
+                }
+            } else if (currentStep === 3) {
                 alert('شما در آخرین سوال هستید! 🎉');
             }
         }
@@ -480,17 +503,24 @@
         // رفتن به مرحله قبل
         function goToPrev() {
             if (currentStep === 2) {
-                // ذخیره شهر اگر وارد شده باشد
                 const city = textInput.value.trim();
                 if (city !== '') {
                     savedCity = city;
                 }
-                // رفتن به مرحله 1
                 currentStep = 1;
                 updateStep(currentStep);
-                // اگر نام قبلاً ذخیره شده بود، نمایش بده
                 if (savedName) {
                     textInput.value = savedName;
+                }
+            } else if (currentStep === 3) {
+                const grade = textInput.value.trim();
+                if (grade !== '') {
+                    savedGrade = grade;
+                }
+                currentStep = 2;
+                updateStep(currentStep);
+                if (savedCity) {
+                    textInput.value = savedCity;
                 }
             } else {
                 alert('شما در اولین سوال هستید! 😊');
@@ -511,17 +541,12 @@
         nextBtn.addEventListener('click', goToNext);
         prevBtn.addEventListener('click', goToPrev);
 
-        // وقتی کاربر دوباره تایپ کرد، نتیجه را ریست کن
+        // وقتی کاربر تایپ می‌کند، نتیجه را ریست کن
         textInput.addEventListener('input', function() {
-            if (isAnswered) {
-                const data = steps[currentStep];
-                resultContainer.className = 'result-container';
-                resultText.className = 'result-text';
-                resultText.textContent = data.resultWaiting;
-                isAnswered = false;
-                submitBtn.disabled = false;
-                textInput.disabled = false;
-            }
+            const data = steps[currentStep];
+            resultContainer.className = 'result-container';
+            resultText.className = 'result-text';
+            resultText.textContent = data.resultWaiting;
         });
 
         // مقداردهی اولیه
