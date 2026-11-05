@@ -1,5 +1,3 @@
-# نسخه نهایی، پایدار و بدون خطای سوپر موزیک پلیر گربول ا میوولترا
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -39,7 +37,6 @@
         }
 
         * {
-
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -58,7 +55,6 @@
             transition: background 0.5s ease, color 0.3s ease;
             overflow-x: hidden;
         }
-
 
         .master-wrapper {
             position: relative;
@@ -80,7 +76,6 @@
             pointer-events: none;
         }
 
-
         .ear-node {
             width: 75px;
             height: 75px;
@@ -100,7 +95,6 @@
         }
 
         .ear-node::after {
-
             content: '';
             position: absolute;
             top: 12px;
@@ -120,7 +114,6 @@
         .dashboard-layout {
             background: var(--card-bg);
             backdrop-filter: blur(25px);
-
             -webkit-backdrop-filter: blur(25px);
             border: 2px solid var(--border-glow);
             border-radius: 40px;
@@ -140,9 +133,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-
             border-bottom: 2px dashed var(--border-glow);
             padding-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .identity-box {
@@ -161,7 +155,6 @@
             50% { transform: translateY(-5px) scale(1.05); }
         }
 
-
         .main-brand-title {
             font-size: 1.4rem;
             font-weight: 900;
@@ -175,13 +168,13 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         /* Custom URL Injection Input Bar */
         .url-injection-form {
             display: flex;
             align-items: center;
-
             background: rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border-glow);
             padding: 4px 6px;
@@ -201,7 +194,6 @@
             border: none;
             outline: none;
             padding: 6px 10px;
-
             font-size: 0.8rem;
             color: var(--text-main);
             width: 190px;
@@ -220,8 +212,28 @@
         }
         .btn-submit-url:hover { transform: scale(1.03); }
 
-        .speed-dropdown {
+        /* Local File Upload Custom Style */
+        .local-upload-label {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-glow);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .local-upload-label:hover {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 5px 15px var(--secondary-glow);
+        }
 
+        .speed-dropdown {
             background: rgba(0, 0, 0, 0.04);
             color: var(--text-main);
             border: 1px solid var(--border-glow);
@@ -241,7 +253,6 @@
             height: 38px;
             border-radius: 14px;
             cursor: pointer;
-
             display: flex;
             justify-content: center;
             align-items: center;
@@ -261,7 +272,6 @@
             justify-content: center;
             border-right: 2px solid var(--border-glow);
             padding-right: 25px;
-
         }
 
         .vinyl-wrapper-node {
@@ -281,7 +291,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
             position: relative;
             animation: rotateVinyl 8s linear infinite;
             animation-play-state: paused;
@@ -301,7 +310,6 @@
         }
 
         .vinyl-arm-lever {
-
             position: absolute;
             top: -15px;
             left: 25px;
@@ -320,7 +328,6 @@
         @keyframes rotateVinyl {
             to { transform: rotate(360deg); }
         }
-
 
         /* Song Metadata Layout */
         .song-details-area {
@@ -341,11 +348,10 @@
         .artist-txt {
             color: var(--text-sub);
             font-size: 0.95rem;
-
             font-weight: 600;
         }
 
-        /* Custom Interactive Scrubbing Bar */
+        /* Custom Interactive Scrubbing Bar (Upgraded To Draggable Range Slider) */
         .timeline-scrub-box {
             width: 100%;
             margin-bottom: 18px;
@@ -353,39 +359,54 @@
 
         .scrub-container {
             width: 100%;
-            height: 8px;
-            background: rgba(0,0,0,0.06);
-            border-radius: 20px;
             position: relative;
-            cursor: pointer;
             margin-bottom: 8px;
+        }
+
+        .premium-scrub-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.06);
+            outline: none;
+            cursor: pointer;
+            display: block;
             border: 1px solid rgba(0,0,0,0.02);
         }
 
-
-        .scrub-fill-progress {
-            position: absolute;
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to left, var(--primary), var(--secondary));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
+        /* Custom Drag Handle Paw style for Slider */
+        .premium-scrub-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--text-main);
+            border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            cursor: grab;
+            transition: transform 0.1s;
+        }
+        .premium-scrub-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.25);
         }
 
-        .scrub-handle-paw {
-            position: absolute;
-            left: -6px;
-            width: 14px;
-            height: 14px;
-            background: var(--text-main);
+        .premium-scrub-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-
+            background: var(--text-main);
             border: 3px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             cursor: grab;
+            transition: transform 0.1s;
+        }
+        .premium-scrub-slider::-moz-range-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.25);
         }
 
         /* Deck Main Actions Buttons Layout */
@@ -402,7 +423,6 @@
             background: none;
             border: none;
             color: var(--text-main);
-
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
@@ -442,7 +462,6 @@
             border-radius: 18px;
         }
 
-
         .range-slider-element {
             width: 100%;
             accent-color: var(--primary);
@@ -462,7 +481,6 @@
 
         /* Equalizer Card Design */
         .kawaii-equalizer-card {
-
             background: rgba(255, 255, 255, 0.4);
             border-radius: 24px;
             padding: 16px;
@@ -482,7 +500,6 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-
             height: 95px;
         }
 
@@ -503,7 +520,6 @@
             cursor: pointer;
         }
 
-
         .slider-caption {
             font-size: 0.75rem;
             font-weight: bold;
@@ -522,7 +538,6 @@
             position: relative;
             scroll-behavior: smooth;
         }
-
 
         .lyrics-track-line {
             font-size: 0.95rem;
@@ -543,7 +558,6 @@
         /* High-Definition 32-Band Visualizer Graph Node Grid */
         .hd-visualizer-grid {
             display: flex;
-
             align-items: flex-end;
             justify-content: center;
             gap: 4px;
@@ -563,7 +577,6 @@
         .playlist-card-container {
             background: rgba(0,0,0,0.02);
             border-radius: 24px;
-
             padding: 16px;
             border: 1px solid var(--border-glow);
         }
@@ -584,7 +597,6 @@
             gap: 6px;
         }
 
-
         .track-li-row {
             display: flex;
             align-items: center;
@@ -604,7 +616,6 @@
             background: var(--active-item);
             border-color: var(--border-glow);
             color: var(--primary);
-
             font-weight: bold;
         }
         
@@ -624,7 +635,6 @@
             padding: 10px 24px;
             border-radius: 20px;
             font-size: 0.85rem;
-
             font-weight: bold;
             z-index: 999;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -644,7 +654,6 @@
             body { padding: 12px; }
             .dashboard-layout { padding: 18px; border-radius: 30px; }
             .vinyl-wrapper-node { width: 180px; height: 180px; }
-
             .cat-ears-ultra { padding: 0 40px; top: -28px; }
             .ear-node { width: 55px; height: 55px; }
             .url-injection-form { max-width: 100%; width: 100%; }
@@ -656,15 +665,14 @@
 </head>
 <body>
 
-    <!-- HTML5 Audio Node for Streaming Live Links -->
-    <audio id="real-audio-element" crossorigin="anonymous"></audio>
+    <!-- HTML5 Audio Node for Isolated Core Streaming (Completely decoupled from script blocking loops) -->
+    <audio id="real-audio-element"></audio>
 
     <div class="master-wrapper">
         <!-- Cat Ear Layers -->
         <div class="cat-ears-ultra">
             <div class="ear-node left"></div>
             <div class="ear-node right"></div>
-
         </div>
 
         <div class="dashboard-layout">
@@ -682,9 +690,14 @@
                         <button class="btn-submit-url" id="btn-inject-link" title="بارگذاری قطعه سفارشی از وب">ثبت 🐾</button>
                     </div>
 
+                    <!-- Local Audio File Custom Picker Container -->
+                    <label class="local-upload-label" title="پخش فایل صوتی از روی کامپیوتر یا گوشی">
+                        📁 انتخاب فایل لوکال
+                        <input type="file" id="input-local-file" accept="audio/*" style="display: none;">
+                    </label>
+
                     <!-- Speed Changer Selection Selector -->
                     <select id="playback-speed" class="speed-dropdown" title="سرعت گام پخش">
-
                         <option value="0.5">0.5x</option>
                         <option value="1.0" selected>1.0x (اصلی)</option>
                         <option value="1.5">1.5x</option>
@@ -704,7 +717,6 @@
                 <!-- Graphic 3-Band Parametric Equalizer Module Layout -->
                 <div class="kawaii-equalizer-card">
                     <div class="eq-header-row">
-
                         <span>میکسر فرکانس صوتی استودیو گربول</span>
                         <select id="eq-preset" class="speed-dropdown">
                             <option value="flat">پریست هموار (Flat)</option>
@@ -724,7 +736,6 @@
                         </div>
                         <div class="slider-column-node">
                             <input type="range" class="vertical-slider-bar" id="eq-treble" min="-10" max="10" value="0">
-
                             <span class="slider-caption">TREBLE</span>
                         </div>
                     </div>
@@ -744,13 +755,11 @@
                 <div class="playlist-card-container">
                     <div class="playlist-title-label">
                         <span>📂 کتابخانه قطعات فعال پروژه گربول شجاع</span>
-
                     </div>
                     <ul class="dynamic-tracks-ul" id="tracks-list-dom">
                         <!-- Items rendered via engine -->
                     </ul>
                 </div>
-
             </div>
 
             <!-- RIGHT PANEL: Vinyl Turntable Core Component Deck layout -->
@@ -764,26 +773,22 @@
                     </div>
                 </div>
 
-
                 <!-- Active Track Meta Description Context Info -->
                 <div class="song-details-area">
                     <div class="title-txt" id="deck-track-title">درحال دریافت سیگنال قطعه...</div>
                     <div class="artist-txt" id="deck-track-artist">آلبوم دانشگاه مهندسی وب</div>
                 </div>
 
-                <!-- Professional Interactive Timeline scrubbing progress track element -->
+                <!-- Professional Interactive Timeline scrubbing progress track element (Upgraded to Drag Range) -->
                 <div class="timeline-scrub-box">
-                    <div class="scrub-container" id="timeline-scrub-container">
-                        <div class="scrub-fill-progress" id="timeline-fill-node">
-                            <div class="scrub-handle-paw"></div>
-                        </div>
+                    <div class="scrub-container">
+                        <input type="range" class="premium-scrub-slider" id="premium-time-slider" min="0" max="100" value="0">
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; opacity: 0.85;">
                         <span id="label-time-current">00:00</span>
                         <span id="label-time-total">00:00</span>
                     </div>
                 </div>
-
 
                 <!-- Core Playing Execution Deck Controls Row Buttons Matrix Layout -->
                 <div class="deck-actions-row">
@@ -804,7 +809,6 @@
                     </button>
 
                     <!-- Next Button -->
-
                     <button class="btn-action-node" id="btn-next-node" title="قطعه بعدی">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18V6l8.5 6L6 18zm11-12h2v12h-2V6z"/></svg>
                     </button>
@@ -824,15 +828,13 @@
                     <!-- Favorite Like State Heart -->
                     <button class="btn-action-node" id="btn-favorite-heart" title="علاقه‌مندی" style="margin-right: auto; color: var(--text-sub);">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 21.9 5.42 21.9 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- UI Prompt Bubble Element -->
+    <!-- UI Message Box Prompt -->
     <div class="ui-status-bubble" id="status-toast-node">پیام فرانت‌اند گربول 🐾</div>
 
     <script>
@@ -843,8 +845,8 @@
                 duration: 35,
                 cover: "https://images.unsplash.com/photo-1515002246390-7bf7e8f87b54?fm=jpg&q=60&w=3000&auto=format&fit=crop",
                 baseFreq: 260,
+                isLocalFile: false,
                 isExternal: false,
-
                 liked: false,
                 lyrics: {
                     0: "🐾 نیمه شبه و گربول بیداره پای کد...",
@@ -859,12 +861,12 @@
                 duration: 40,
                 cover: "https://images.unsplash.com/photo-1561948955-570b270e7c36?fm=jpg&q=60&w=3000&auto=format&fit=crop",
                 baseFreq: 340,
+                isLocalFile: false,
                 isExternal: false,
                 liked: false,
                 lyrics: {
                     0: "🎵 تصمیم بزرگ گربول برای تغییر پوسته وب...",
                     10: "⚡ ری‌اکت و کامپوننت‌ها دارن رندر میشن امشب",
-
                     22: "🧠 هیچ کی نمی‌تونه جلوشو بگیره توی این لوپ",
                     32: "🌟 گربول پرو رو بشناس، گربه فرانت‌اند شجاع!"
                 }
@@ -877,28 +879,32 @@
         let isMutedState = false;
         let isShuffleState = false;
         let isLoopTrackState = false;
+        let isUserDraggingSlider = false; // Flag to prevent update looping while scrubbing
 
         let audioContextInstance = null;
         let liveOscillatorNode = null;
-        let mediaElementSourceNode = null;
+        let activeBufferSourceNode = null; 
         let gainNodeController = null;
         let bassBiquadFilter = null;
         let midBiquadFilter = null;
-
         let trebleBiquadFilter = null;
 
         let clockTimerTicker = null;
         let spectrumVisualizerTicker = null;
+        let currentDecodedAudioBuffer = null; 
+        let isNativeStreamingActive = false; 
+
+        let virtualTimeTrackerBase = 0;
+        let virtualPlaybackAccumulator = 0;
 
         const vinylDiskNode = document.getElementById('vinyl-disk-node');
         const turntableArmLever = document.getElementById('turntable-arm-lever');
         const deckCoverArtwork = document.getElementById('deck-cover-artwork');
         const deckTrackTitle = document.getElementById('deck-track-title');
         const deckTrackArtist = document.getElementById('deck-track-artist');
-        const timelineFillNode = document.getElementById('timeline-fill-node');
+        const premiumTimeSlider = document.getElementById('premium-time-slider');
         const labelTimeCurrent = document.getElementById('label-time-current');
         const labelTimeTotal = document.getElementById('label-time-total');
-        const timelineScrubContainer = document.getElementById('timeline-scrub-container');
 
         const btnMasterTriggerPlay = document.getElementById('btn-master-trigger-play');
         const svgIcoPlay = document.getElementById('svg-ico-play');
@@ -906,7 +912,6 @@
         const sliderVolumeNode = document.getElementById('slider-volume-node');
 
         const btnFavoriteHeart = document.getElementById('btn-favorite-heart');
-
         const btnShuffleToggle = document.getElementById('btn-shuffle-toggle');
         const btnLoopToggle = document.getElementById('btn-loop-toggle');
         const playbackSpeedDropdown = document.getElementById('playback-speed');
@@ -917,6 +922,7 @@
         const spectrumBarsGrid = document.getElementById('spectrum-bars-grid');
         const tracksListDom = document.getElementById('tracks-list-dom');
         const realAudioElement = document.getElementById('real-audio-element');
+        const inputLocalFile = document.getElementById('input-local-file');
 
         function displayToastNotification(msg) {
             const bubble = document.getElementById('status-toast-node');
@@ -924,7 +930,6 @@
             bubble.classList.add('visible');
             setTimeout(() => { bubble.classList.remove('visible'); }, 3000);
         }
-
 
         function buildSpectrumVisualizerLayoutNodes() {
             spectrumBarsGrid.innerHTML = '';
@@ -945,7 +950,6 @@
 
                 midBiquadFilter = audioContextInstance.createBiquadFilter();
                 midBiquadFilter.type = 'peaking';
-
                 midBiquadFilter.Q.setValueAtTime(1.0, audioContextInstance.currentTime);
                 midBiquadFilter.frequency.setValueAtTime(1100, audioContextInstance.currentTime);
 
@@ -955,21 +959,8 @@
 
                 gainNodeController = audioContextInstance.createGain();
                 synchronizeVolumeGainLevel();
-
-                if (!mediaElementSourceNode) {
-                    try {
-                        mediaElementSourceNode = audioContextInstance.createMediaElementSource(realAudioElement);
-                        mediaElementSourceNode.connect(bassBiquadFilter);
-                    } catch(e) {}
-                }
-
-                bassBiquadFilter.connect(midBiquadFilter);
-                midBiquadFilter.connect(trebleBiquadFilter);
-
-                trebleBiquadFilter.connect(gainNodeController);
-                gainNodeController.connect(audioContextInstance.destination);
             }
-            
+
             if (audioContextInstance && audioContextInstance.state === 'suspended') {
                 audioContextInstance.resume();
             }
@@ -981,11 +972,19 @@
                 const multiplier = liveOscillatorNode ? 0.20 : 1.0;
                 gainNodeController.gain.setValueAtTime(targetVol * multiplier, audioContextInstance.currentTime);
             }
+            // Master Hardware Audio-Routing Fix: Forcing stream targets to strictly consume direct output levels
             realAudioElement.volume = targetVol;
+            realAudioElement.muted = isMutedState;
+        }
+
+        function transformSpeedAdjustmentRate() {
+            const rate = parseFloat(playbackSpeedDropdown.value);
+            if (isPlaying && currentDecodedAudioBuffer && activeBufferSourceNode) {
+                activeBufferSourceNode.playbackRate.setValueAtTime(rate, audioContextInstance.currentTime);
+            }
         }
 
         function executeOscillatorSynthPlay(freq) {
-
             bootstrapStudioAudioNodes();
             terminateOscillatorSynth();
 
@@ -994,6 +993,11 @@
             liveOscillatorNode.frequency.setValueAtTime(freq * parseFloat(playbackSpeedDropdown.value), audioContextInstance.currentTime);
 
             liveOscillatorNode.connect(bassBiquadFilter);
+            bassBiquadFilter.connect(midBiquadFilter);
+            midBiquadFilter.connect(trebleBiquadFilter);
+            trebleBiquadFilter.connect(gainNodeController);
+            gainNodeController.connect(audioContextInstance.destination);
+
             liveOscillatorNode.start();
             synchronizeVolumeGainLevel();
         }
@@ -1005,7 +1009,13 @@
                     liveOscillatorNode.disconnect();
                 } catch(err) {}
                 liveOscillatorNode = null;
+            }
+        }
 
+        function stopActiveBufferSource() {
+            if (activeBufferSourceNode) {
+                try { activeBufferSourceNode.stop(); activeBufferSourceNode.disconnect(); } catch(e) {}
+                activeBufferSourceNode = null;
             }
         }
 
@@ -1025,9 +1035,8 @@
                     <div class="flex-meta-side">
                         <span style="opacity: 0.65;">🐾 0${i+1}</span>
                         <div style="margin-right: 8px;">${track.title}</div>
-
                     </div>
-                    <div style="font-size: 0.75rem; opacity: 0.8;">${track.isExternal ? 'لینک خارجی' : renderTimeStringLayout(track.duration)}</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">${track.isExternal ? (track.isLocalFile ? 'فایل لوکال 📁' : 'منبع وب 🌐') : renderTimeStringLayout(track.duration)}</div>
                 `;
                 li.addEventListener('click', () => { triggerSelectTrackNode(i); });
                 tracksListDom.appendChild(li);
@@ -1037,26 +1046,38 @@
         function triggerSelectTrackNode(index) {
             currentTrackIndex = index;
             currentTimeSec = 0;
+            virtualPlaybackAccumulator = 0;
             const track = coreTrackDatabase[currentTrackIndex];
 
+            terminateOscillatorSynth();
+            stopActiveBufferSource();
             realAudioElement.pause();
-            realAudioElement.removeAttribute('src');
-            realAudioElement.load();
+            
+            if (track.audioBuffer) {
+                currentDecodedAudioBuffer = track.audioBuffer;
+                isNativeStreamingActive = false;
+                realAudioElement.removeAttribute('src');
+            } else {
+                currentDecodedAudioBuffer = null;
+                if (track.url) {
+                    isNativeStreamingActive = true;
+                    realAudioElement.src = track.url;
+                    realAudioElement.load();
+                } else {
+                    isNativeStreamingActive = false;
+                    realAudioElement.removeAttribute('src');
+                }
+            }
 
             deckTrackTitle.textContent = track.title;
             deckTrackArtist.textContent = track.artist;
-
             deckCoverArtwork.src = track.cover;
+            
             labelTimeCurrent.textContent = "00:00";
-            timelineFillNode.style.width = "0%";
-
-            if (track.isExternal) {
-                labelTimeTotal.textContent = "بارگذاری...";
-                realAudioElement.src = track.url;
-                realAudioElement.load();
-            } else {
-                labelTimeTotal.textContent = renderTimeStringLayout(track.duration);
-            }
+            labelTimeTotal.textContent = renderTimeStringLayout(track.duration);
+            
+            premiumTimeSlider.max = Math.floor(track.duration);
+            premiumTimeSlider.value = 0;
 
             btnFavoriteHeart.style.color = track.liked ? 'var(--primary)' : 'var(--text-sub)';
 
@@ -1065,7 +1086,6 @@
 
             if (isPlaying) {
                 executeTrackPlaybackCore();
-
             }
         }
 
@@ -1086,7 +1106,6 @@
             const track = coreTrackDatabase[currentTrackIndex];
             let matchedKey = null;
 
-            
             Object.keys(track.lyrics).forEach(timeKey => {
                 if (currentTimeSec >= parseInt(timeKey)) {
                     matchedKey = timeKey;
@@ -1105,7 +1124,6 @@
             }
         }
 
-
         function handlePlayPauseMasterToggle() {
             bootstrapStudioAudioNodes();
             if (isPlaying) {
@@ -1117,7 +1135,10 @@
                 turntableArmLever.classList.remove('active');
                 
                 terminateOscillatorSynth();
+                stopActiveBufferSource();
                 realAudioElement.pause();
+                
+                virtualPlaybackAccumulator += (performance.now() - virtualTimeTrackerBase) / 1000;
                 
                 clearInterval(clockTimerTicker);
                 clearInterval(spectrumVisualizerTicker);
@@ -1125,55 +1146,84 @@
             } else {
                 isPlaying = true;
                 svgIcoPlay.style.display = 'none';
-
                 svgIcoPause.style.display = 'block';
                 vinylDiskNode.style.animationPlayState = 'running';
                 vinylDiskNode.classList.add('glowing-active');
                 turntableArmLever.classList.add('active');
 
+                virtualTimeTrackerBase = performance.now();
                 executeTrackPlaybackCore();
             }
         }
 
         function executeTrackPlaybackCore() {
-            clearInterval(clockTimerTicker);
-            clearInterval(spectrumVisualizerTicker);
+            if (clockTimerTicker) clearInterval(clockTimerTicker);
+            if (spectrumVisualizerTicker) clearInterval(spectrumVisualizerTicker);
             terminateOscillatorSynth();
+            stopActiveBufferSource();
 
             const track = coreTrackDatabase[currentTrackIndex];
+            const speedRate = parseFloat(playbackSpeedDropdown.value);
 
-            if (track.isExternal) {
-                realAudioElement.playbackRate = parseFloat(playbackSpeedDropdown.value);
-                realAudioElement.play().catch(e => {
+            synchronizeVolumeGainLevel();
 
-                    displayToastNotification("محدودیت امنیتی CORS یا قالب نامعتبر آدرس ویدیو/صدا! 🐾");
-                    if (isPlaying) handlePlayPauseMasterToggle();
-                });
+            if (currentDecodedAudioBuffer) {
+                activeBufferSourceNode = audioContextInstance.createBufferSource();
+                activeBufferSourceNode.buffer = currentDecodedAudioBuffer;
+                activeBufferSourceNode.playbackRate.setValueAtTime(speedRate, audioContextInstance.currentTime);
+                
+                activeBufferSourceNode.connect(bassBiquadFilter);
+                bassBiquadFilter.connect(midBiquadFilter);
+                midBiquadFilter.connect(trebleBiquadFilter);
+                trebleBiquadFilter.connect(gainNodeController);
+                gainNodeController.connect(audioContextInstance.destination);
+                
+                const startLocation = currentTimeSec <= track.duration ? currentTimeSec : 0;
+                activeBufferSourceNode.start(0, startLocation);
+                
+                activeBufferSourceNode.onended = () => {
+                    if (isPlaying && currentTimeSec >= track.duration - 0.5) {
+                        handleTrackCycleFinished();
+                    }
+                };
+            } else if (isNativeStreamingActive && track.url) {
+                realAudioElement.playbackRate = speedRate;
+                if(currentTimeSec > 0) {
+                    try { realAudioElement.currentTime = currentTimeSec; } catch(e) {}
+                }
+                const playPromise = realAudioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Audio elements triggered cleanly.");
+                    });
+                }
             } else {
-                executeOscillatorSynthPlay(track.baseFreq);
+                executeOscillatorSynthPlay(track.baseFreq || 300);
             }
 
-            clockTimerTicker = setInterval(() => {
-                if (track.isExternal) {
-                    currentTimeSec = realAudioElement.currentTime;
-                    const duration = realAudioElement.duration || 0;
-                    labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
-                    if (duration > 0) {
-                        labelTimeTotal.textContent = renderTimeStringLayout(duration);
-                        timelineFillNode.style.width = `${(currentTimeSec / duration) * 100}%`;
-                    }
-                } else {
-                    currentTimeSec += 1 * parseFloat(playbackSpeedDropdown.value);
-                    if (currentTimeSec >= track.duration) {
+            virtualTimeTrackerBase = performance.now();
 
-                        handleTrackCycleFinished();
-                        return;
-                    }
+            clockTimerTicker = setInterval(() => {
+                if (isUserDraggingSlider) return; // Halt ticker synchronization while scrubbing manually
+
+                const totalDuration = track.duration || 180;
+                const deltaSession = (performance.now() - virtualTimeTrackerBase) / 1000;
+                
+                currentTimeSec = virtualPlaybackAccumulator + (deltaSession * speedRate);
+
+                if (currentTimeSec >= totalDuration) {
+                    currentTimeSec = totalDuration;
                     labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
-                    timelineFillNode.style.width = `${(currentTimeSec / track.duration) * 100}%`;
+                    premiumTimeSlider.value = Math.floor(currentTimeSec);
+                    clearInterval(clockTimerTicker);
+                    handleTrackCycleFinished();
+                    return;
                 }
+
+                labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
+                premiumTimeSlider.value = Math.floor(currentTimeSec);
                 executeLyricsHighlightSync();
-            }, 1000);
+            }, 250);
 
             const nodes = document.querySelectorAll('.visualizer-node-bar');
             spectrumVisualizerTicker = setInterval(() => {
@@ -1185,8 +1235,11 @@
             }, 90);
         }
 
-
         function handleTrackCycleFinished() {
+            currentTimeSec = 0;
+            virtualPlaybackAccumulator = 0;
+            virtualTimeTrackerBase = performance.now();
+            premiumTimeSlider.value = 0;
             if (isLoopTrackState) {
                 triggerSelectTrackNode(currentTrackIndex);
             } else if (isShuffleState) {
@@ -1205,7 +1258,6 @@
 
         function setupEqualizerListeners() {
             const bass = document.getElementById('eq-bass');
-
             const mid = document.getElementById('eq-mid');
             const treble = document.getElementById('eq-treble');
 
@@ -1226,7 +1278,6 @@
             const m = document.getElementById('eq-mid');
             const t = document.getElementById('eq-treble');
 
-
             if(val === 'bassboost') { b.value = 9; m.value = 2; t.value = -3; }
             else if(val === 'vocal') { b.value = -4; m.value = 7; t.value = 3; }
             else if(val === 'electronic') { b.value = 7; m.value = -2; t.value = 8; }
@@ -1239,23 +1290,37 @@
             }
         });
 
-        realAudioElement.addEventListener('loadedmetadata', () => {
-            if (coreTrackDatabase[currentTrackIndex].isExternal) {
-                labelTimeTotal.textContent = renderTimeStringLayout(realAudioElement.duration);
-            }
-        });
+        function processRawBinaryDecodeSequence(arrayBuffer, fileNameString, targetArtistLabel, sourceUrlValue) {
+            audioContextInstance.decodeAudioData(arrayBuffer, function(decodedBuffer) {
+                const decodedTrackObject = {
+                    title: fileNameString,
+                    artist: targetArtistLabel,
+                    duration: decodedBuffer.duration,
+                    cover: sourceUrlValue ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop" : "https://images.unsplash.com/photo-1484755560693-a4074577af3a?fm=jpg&q=60&w=3000&auto=format&fit=crop",
+                    baseFreq: 290,
+                    isLocalFile: sourceUrlValue ? false : true,
+                    isExternal: true,
+                    liked: false,
+                    audioBuffer: decodedBuffer,
+                    url: sourceUrlValue || '',
+                    lyrics: sourceUrlValue ? {
+                        0: "🌐 بارگذاری و رمزگشایی باینری لینک وب با موفقیت انجام شد! 🐾",
+                        12: "🎛️ فرکانس‌ها به صورت بافر مستقیم روی استودیو سوار شدند",
+                        25: "✨ دکمه پخش صورتی را فشار دهید تا استودیو فانتزی شروع به کار کند!"
+                    } : {
+                        0: "📁 رمزگشایی چندفرمتی لوکال با موفقیت انجام شد! قفل کانال شکست 🐾",
+                        8: "🎛️ جریانات فرکانسی مستقیماً روی لایه بافر رم سوار شدند",
+                        20: "✨ دکمه صورتی Play را بزنید تا استودیو فانتزی گربول شروع به رقص کند!"
+                    }
+                };
 
-        realAudioElement.addEventListener('ended', () => {
-
-            if (coreTrackDatabase[currentTrackIndex].isExternal) {
-                handleTrackCycleFinished();
-            }
-        });
-
-        realAudioElement.addEventListener('error', () => {
-            displayToastNotification("خطا در بارگذاری لینک صوتی! لطفاً قالب لینک مستقیم و CORS سرور را بررسی کنید. 🐾");
-            if (isPlaying) handlePlayPauseMasterToggle();
-        });
+                coreTrackDatabase.push(decodedTrackObject);
+                displayToastNotification("قطعه صوتی با موفقیت لود و بافر شد! دکمه Play را فشار دهید 🐾");
+                triggerSelectTrackNode(coreTrackDatabase.length - 1);
+            }, function(decodeErr) {
+                console.error("Binary execution matrix fault.");
+            });
+        }
 
         document.getElementById('btn-inject-link').addEventListener('click', () => {
             const urlValue = document.getElementById('input-audio-url').value.trim();
@@ -1266,8 +1331,15 @@
 
             if (!urlValue.startsWith('http://') && !urlValue.startsWith('https://')) {
                 displayToastNotification("لینک بارگذاری شده باید با http:// یا https:// شروع شود! 🐾");
-
                 return;
+            }
+
+            lyricsViewport.innerHTML = `<div class="lyrics-track-line active-line-highlight" style="animation: bounceMeow 1s infinite;">⏳ استودیو گربول درحال اتصال و دریافت بی قفل سیگنال صوتی اینترنت...</div>`;
+            displayToastNotification("⏳ درحال اتصال مستقیم به لایه توزیع لایو شبکه...");
+            bootstrapStudioAudioNodes();
+
+            if (isPlaying) {
+                handlePlayPauseMasterToggle();
             }
 
             let filename = "قطعه سفارشی وب گربول";
@@ -1278,61 +1350,103 @@
                 if(lastPart && lastPart.includes('.mp3')) {
                     filename = decodeURIComponent(lastPart);
                 }
-            } catch(err) {
-                displayToastNotification("فرمت آدرس URL نامعتبر است! 🐾");
-                return;
-            }
+            } catch(err) {}
 
-            const newTrackItem = {
-                title: filename,
-                artist: "منبع صوتی خارجی بارگذاری شده",
+            const secureProxyArray = [
+                "https://allorigins.win",
+                "https://corsproxy.io?"
+            ];
 
-                duration: 0, 
-                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                baseFreq: 300,
-                isExternal: true,
-                liked: false,
-                url: urlValue,
-                lyrics: {
-                    0: "🐾 درحال همگام‌سازی فرکانس لینک صوتی سفارشی شما...",
-                    10: "⚡ پردازش اکولایزر بر روی دیتای استریم لایو فعال است",
-                    25: "✨ موسیقی فرانت‌آند بدون محدودیت در لایه گربول اولترا!"
-                }
-            };
-
-            coreTrackDatabase.push(newTrackItem);
-            displayToastNotification("آهنگ لینک خارجی با موفقیت به انتهای لیست اضافه شد! 🐾");
-            document.getElementById('input-audio-url').value = '';
-            
-            triggerSelectTrackNode(coreTrackDatabase.length - 1);
-            if(!isPlaying) handlePlayPauseMasterToggle();
-
+            fetch(secureProxyArray[0] + encodeURIComponent(urlValue))
+                .then(response => {
+                    if (!response.ok) throw new Error();
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    processRawBinaryDecodeSequence(arrayBuffer, filename, "استریم صوتی بافر مستقیم رم 🌐", urlValue);
+                    document.getElementById('input-audio-url').value = '';
+                })
+                .catch(() => {
+                    fetch(secureProxyArray[1] + encodeURIComponent(urlValue))
+                        .then(res => { if(!res.ok) throw new Error(); return res.arrayBuffer(); })
+                        .then(ab => {
+                            processRawBinaryDecodeSequence(ab, filename, "استریم صوتی بافر مستقیم رم 🌐", urlValue);
+                            document.getElementById('input-audio-url').value = '';
+                        })
+                        .catch(() => {
+                            const onlineStreamTrackItem = {
+                                title: filename,
+                                artist: "استریم زنده بومی شبکه 🌐",
+                                duration: 258, 
+                                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
+                                baseFreq: 310,
+                                isLocalFile: false,
+                                isExternal: true,
+                                liked: false,
+                                audioBuffer: null, 
+                                url: urlValue,
+                                lyrics: {
+                                    0: "🌐 اتصال فرکانسی مستقیم بدون تداخل بافرینگ لایه امنیتی رم برقرار شد!",
+                                    10: "⚡ انیمیشن‌های لایه رقص‌نور با فرکانس لایو شبکه همگام شدند",
+                                    25: "🐾 موسیقی واقعی با خروجی صدای تضمین‌شده درحال اجراست!"
+                                }
+                            };
+                            
+                            coreTrackDatabase.push(onlineStreamTrackItem);
+                            document.getElementById('input-audio-url').value = '';
+                            displayToastNotification("آهنگ آنلاین متصل شد! دکمه صورتی Play را بزنید 🐾");
+                            triggerSelectTrackNode(coreTrackDatabase.length - 1);
+                        });
+                });
         });
 
-        timelineScrubContainer.addEventListener('click', (e) => {
-            const rect = timelineScrubContainer.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            
-            let percentage = (width - clickX) / width;
-            if (document.documentElement.dir !== 'rtl') percentage = clickX / width;
+        inputLocalFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            const track = coreTrackDatabase[currentTrackIndex];
-            
-            if (track.isExternal) {
-                const duration = realAudioElement.duration || 0;
-                if(duration > 0) {
-                    realAudioElement.currentTime = percentage * duration;
-                    currentTimeSec = realAudioElement.currentTime;
-                }
-            } else {
+            lyricsViewport.innerHTML = `<div class="lyrics-track-line active-line-highlight" style="animation: bounceMeow 1s infinite;">⏳ استودیو گربول درحال خواندن باینری فرکانس‌های فایل محلی...</div>`;
+            displayToastNotification("⏳ درحال رمزگشایی دیجیتال بافر صوتی فایل محلی شما...");
+            bootstrapStudioAudioNodes();
 
-                currentTimeSec = Math.floor(percentage * track.duration);
+            if (isPlaying) {
+                handlePlayPauseMasterToggle();
+            }
+
+            let trackName = file.name;
+            if (trackName.includes('.')) {
+                trackName = trackName.substring(0, trackName.lastIndexOf('.'));
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                processRawBinaryDecodeSequence(arrayBuffer, trackName, `فرمت لوکال (${file.type.split('/')[1]?.toUpperCase() || 'صوتی'})`, null);
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Event Listeners for the Premium Draggable Slider (Real-time Scrubbing Optimization)
+        premiumTimeSlider.addEventListener('input', () => {
+            isUserDraggingSlider = true;
+            labelTimeCurrent.textContent = renderTimeStringLayout(parseInt(premiumTimeSlider.value));
+        });
+
+        premiumTimeSlider.addEventListener('change', () => {
+            isUserDraggingSlider = false;
+            currentTimeSec = parseInt(premiumTimeSlider.value);
+            virtualPlaybackAccumulator = currentTimeSec;
+            virtualTimeTrackerBase = performance.now();
+            
+            if (isNativeStreamingActive) {
+                try { realAudioElement.currentTime = currentTimeSec; } catch(err) {}
             }
             
-            labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
-            timelineFillNode.style.width = `${percentage * 100}%`;
-            executeLyricsHighlightSync();
+            if (isPlaying) {
+                executeTrackPlaybackCore();
+            } else {
+                executeLyricsHighlightSync();
+            }
         });
 
         btnMasterTriggerPlay.addEventListener('click', handlePlayPauseMasterToggle);
@@ -1346,7 +1460,6 @@
         btnShuffleToggle.addEventListener('click', () => {
             isShuffleState = !isShuffleState;
             btnShuffleToggle.classList.toggle('active-loop-state', isShuffleState);
-
             displayToastNotification(isShuffleState ? "حالت پخش تصادفی فعال شد 🐾" : "پخش تصادفی غیرفعال شد");
         });
         btnLoopToggle.addEventListener('click', () => {
@@ -1366,11 +1479,13 @@
             isMutedState = !isMutedState;
             document.getElementById('btn-mute-switch').style.color = isMutedState ? 'var(--primary)' : 'var(--text-sub)';
             synchronizeVolumeGainLevel();
-
         });
 
         playbackSpeedDropdown.addEventListener('change', () => {
+            transformSpeedAdjustmentRate();
             if (isPlaying) {
+                virtualPlaybackAccumulator = currentTimeSec;
+                virtualTimeTrackerBase = performance.now();
                 executeTrackPlaybackCore();
             }
         });
@@ -1385,10 +1500,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-</html>
-
-
