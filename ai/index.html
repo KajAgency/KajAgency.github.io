@@ -3,140 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تولید تصویر با  هوش مصنوعی</title>
+    <title>Mamal AI - از هوش جلوتر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #111827 100%);
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #1e1b4b; }
+        ::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 10px; }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-200 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white relative overflow-x-hidden">
 
-    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="absolute top-10 -left-16 w-44 h-44 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-20 -right-16 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <header class="border-b border-pink-900/40 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3 space-x-reverse">
-                <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <div class="bg-gradient-to-tr from-pink-500 to-purple-600 p-2.5 rounded-2xl shadow-lg shadow-pink-500/20 transform hover:scale-110 transition-transform cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 14c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm-4.5-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-0.67 1.5-1.5 1.5zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 0.67 1.5 1.5-0.67 1.5-1.5 1.5zm-11-4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z" />
                     </svg>
                 </div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">استودیو تصویرسازی هوش مصنوعی</h1>
+                <div>
+                    <h1 class="text-2xl font-black bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent leading-tight">Mamal AI</h1>
+                    <p class="text-[11px] font-black bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent -mt-0.5 flex items-center gap-1 tracking-widest">
+                        <span>✦</span>
+                        <span>از هوش جلوتر</span>
+                        <span>✦</span>
+                    </p>
+                    <p class="text-[9px] text-pink-300/60 font-medium flex items-center gap-1">
+                        استودیو گربولی خلق هنر تصویری 🐾
+                    </p>
+                </div>
             </div>
-            <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-medium">نسخه اصلاح‌شده</span>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] bg-pink-500/10 text-pink-400 border border-pink-500/20 px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                    <span>۴ سرور رایگان</span>
+                    <span class="w-1.5 h-1.5 bg-pink-500 rounded-full animate-ping"></span>
+                </span>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
         <section class="lg:col-span-5 flex flex-col space-y-6">
-            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-                <h2 class="text-lg font-bold mb-4 text-indigo-300 flex items-center gap-2">
-                    <span>۱. تنظیمات تصویر</span>
+            <div class="bg-slate-950/60 border border-pink-950/30 p-6 rounded-3xl backdrop-blur-md shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-6 -right-6 text-pink-500/5 transform rotate-12 text-7xl select-none pointer-events-none">🐱</div>
+                
+                <h2 class="text-lg font-bold mb-4 text-pink-300 flex items-center gap-2 border-b border-pink-950/40 pb-2">
+                    <span>🐾 تنظیمات جادویی تصویر</span>
                 </h2>
                 
                 <div class="mb-4">
-                    <label for="prompt" class="block text-sm font-medium text-slate-400 mb-2">توصیف متنی (به انگلیسی):</label>
-                    <textarea id="prompt" rows="4" 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors resize-none text-sm"
-                        placeholder="A cute white astronaut cat sitting on the moon, cinematic lighting, digital art, 8k resolution..."></textarea>
+                    <label for="prompt" class="block text-xs font-bold text-pink-200/80 mb-2 flex items-center justify-between">
+                        <span>توصیف رویایی شما (انگلیسی):</span>
+                        <span class="text-[10px] text-slate-500 font-normal">مثال: cute neon cyber cat</span>
+                    </label>
+                    <textarea id="prompt" rows="3" 
+                        class="w-full bg-slate-950/90 border border-pink-900/30 rounded-2xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all text-sm shadow-inner"
+                        placeholder="A cute white fluffy kitten playing with yarn on a pink cloud, cinematic 8k art..."></textarea>
                 </div>
 
                 <div class="mb-4">
-                    <label for="image-model" class="block text-sm font-medium text-slate-400 mb-2">موتور پردازش:</label>
-                    <select id="image-model" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
-                        <option value="flux" selected>Flux (کیفیت بالا)</option>
-                        <option value="turbo">Turbo (سرعت بالا)</option>
+                    <label for="api-provider" class="block text-xs font-bold text-pink-200/80 mb-2">سرور هوش مصنوعی:</label>
+                    <select id="api-provider" onchange="toggleApiModels()" class="w-full bg-slate-900 border border-pink-900/30 rounded-xl p-2.5 text-slate-200 text-xs focus:outline-none focus:border-pink-500 font-medium">
+                        <option value="pollinations" selected>🚀 Pollinations (بدون کلید - سریع)</option>
+                        <option value="huggingface">🤗 Hugging Face (FLUX - نیاز به Token)</option>
+                        <option value="together">⚡ Together AI (سریع - نیاز به کلید)</option>
+                        <option value="stablehorde">⚔️ Stable Horde (بدون کلید - کند)</option>
                     </select>
                 </div>
 
                 <div class="mb-4">
-                    <label for="aspect-ratio" class="block text-sm font-medium text-slate-400 mb-2">نسبت ابعاد:</label>
-                    <select id="aspect-ratio" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
-                        <option value="11">مربع (1:1)</option>
-                        <option value="169">افقی (16:9)</option>
-                        <option value="916">عمودی (9:16)</option>
+                    <label for="image-model" class="block text-xs font-bold text-pink-200/80 mb-2">مدل موتور پردازش:</label>
+                    <select id="image-model" class="w-full bg-slate-900 border border-pink-900/30 rounded-xl p-2.5 text-slate-200 text-xs focus:outline-none focus:border-pink-500 font-medium">
                     </select>
                 </div>
 
-                <div class="mb-6">
-                    <label for="image-style" class="block text-sm font-medium text-slate-400 mb-2">سبک هنری (اختیاری):</label>
-                    <select id="image-style" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
-                        <option value="">بدون سبک خاص</option>
-                        <option value="cinematic photographic, 8k resolution, dramatic lighting">سینمایی / واقع‌گرایانه</option>
-                        <option value="digital art, highly detailed, vibrant colors, fantasy concept art">هنر دیجیتال / فانتزی</option>
-                        <option value="cyberpunk style, neon lighting, futuristic atmosphere">سایبرپانک</option>
-                        <option value="anime style, gorgeous visual, studio ghibli aesthetic">انیمه</option>
-                        <option value="3D render, blender artwork, cute claymation look">رندر سه بعدی</option>
+                <div id="api-key-container" class="mb-4 hidden">
+                    <label for="api-key" class="block text-xs font-bold text-pink-200/80 mb-2 flex items-center justify-between">
+                        <span>API Key:</span>
+                        <a id="api-key-link" href="#" target="_blank" class="text-[10px] text-indigo-400 hover:text-indigo-300 underline">دریافت کلید رایگان ↗</a>
+                    </label>
+                    <input type="password" id="api-key" placeholder="کلید API خود را وارد کنید..."
+                        class="w-full bg-slate-950/90 border border-pink-900/30 rounded-xl p-2.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 text-xs">
+                    <p class="text-[10px] text-slate-500 mt-1" id="api-key-hint"></p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-pink-200/80 mb-2">قالب و نسبت ابعاد:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ratio" value="11" checked class="sr-only peer">
+                            <div class="p-2.5 text-center bg-slate-900/80 border border-slate-800 rounded-xl text-xs peer-checked:border-pink-500 peer-checked:bg-pink-500/10 peer-checked:text-pink-300 transition-all">🔳 مربع</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ratio" value="169" class="sr-only peer">
+                            <div class="p-2.5 text-center bg-slate-900/80 border border-slate-800 rounded-xl text-xs peer-checked:border-pink-500 peer-checked:bg-pink-500/10 peer-checked:text-pink-300 transition-all">📺 افقی</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="ratio" value="916" class="sr-only peer">
+                            <div class="p-2.5 text-center bg-slate-900/80 border border-slate-800 rounded-xl text-xs peer-checked:border-pink-500 peer-checked:bg-pink-500/10 peer-checked:text-pink-300 transition-all">📱 عمودی</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="image-style" class="block text-xs font-bold text-pink-200/80 mb-2">چاشنی استایل (اختیاری):</label>
+                    <select id="image-style" class="w-full bg-slate-900 border border-pink-900/30 rounded-xl p-2.5 text-slate-200 text-xs focus:outline-none focus:border-pink-500">
+                        <option value="">خام بدون سبک</option>
+                        <option value="cute cat cartoon style, fluffy adorable kitten illustration, pastel colors">نقاشی فانتزی گربه‌ای 🐱</option>
+                        <option value="photorealistic portrait, 8k resolution, dramatic cinematic studio lighting, fluffy textures">واقع‌گرایانه 📸</option>
+                        <option value="cyberpunk kitten style, neon vaporwave theme, high-tech glowing background">سایبرپانک ⚡</option>
+                        <option value="anime cat aesthetic, beautiful digital art, Studio Ghibli inspired scenery">انیمه 🌸</option>
+                        <option value="cute 3D clay style model, vibrant render, playful claymation look">سه بعدی خمیری 🧸</option>
                     </select>
                 </div>
 
-                <button id="generate-btn" onclick="generateImage()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button id="generate-btn" onclick="generateImage()" class="w-full bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-pink-600/20 hover:shadow-pink-500/40 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
                     <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span id="btn-text">خلق تصویر با هوش مصنوعی</span>
+                    <span id="btn-text">پنجه رو فشار بده و بساز! 🐾</span>
                 </button>
             </div>
 
-            <div id="status-box" class="hidden border p-4 rounded-xl text-sm transition-all duration-300 flex flex-col gap-2">
+            <div id="status-box" class="hidden border p-4 rounded-2xl text-xs transition-all duration-300 flex flex-col gap-2">
                 <div class="flex items-center gap-3">
                     <div id="status-icon"></div>
-                    <div id="status-message" class="font-medium"></div>
+                    <div id="status-message" class="font-bold"></div>
                 </div>
-                <div id="status-submessage" class="text-xs opacity-80 pl-8"></div>
+                <div id="status-submessage" class="text-[11px] opacity-80 pl-8 leading-relaxed"></div>
             </div>
         </section>
 
         <section class="lg:col-span-7 flex flex-col">
-            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl backdrop-blur-sm shadow-xl flex-grow flex flex-col justify-between min-h-[400px]">
-                <h2 class="text-lg font-bold mb-4 text-purple-300">۲. بوم نمایش تصویر</h2>
+            <div class="bg-slate-950/40 border border-pink-950/20 p-6 rounded-3xl backdrop-blur-md shadow-2xl flex-grow flex flex-col justify-between min-h-[420px]">
+                <h2 class="text-lg font-bold mb-4 text-purple-300 flex items-center gap-2">
+                    <span>🐱 بوم مخملی نمایش تصویر</span>
+                </h2>
                 
-                <div id="placeholder-view" class="flex-grow flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-800 rounded-xl my-2">
-                    <div class="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4 text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                <div id="placeholder-view" class="flex-grow flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-pink-900/20 rounded-2xl my-2 bg-slate-950/30">
+                    <div class="w-20 h-20 bg-pink-950/20 rounded-full flex items-center justify-center mb-4 text-pink-400 animate-bounce text-4xl">
+                        🐾
                     </div>
-                    <p class="text-slate-400 font-medium text-sm">هنوز هیچ تصویری ساخته نشده است.</p>
-                    <p class="text-slate-600 text-xs mt-1">توصیف خود را به انگلیسی بنویسید و دکمه خلق تصویر را بزنید.</p>
+                    <p class="text-slate-400 font-bold text-sm">سرزمین تصویرسازی Mamal AI منتظر شماست!</p>
+                    <p class="text-slate-600 text-xs mt-1.5 max-w-xs leading-relaxed">کلمات رویایی‌ات را به انگلیسی در باکس بنویس تا موتور گربولی ما نقاشی‌اش را شروع کند.</p>
+                    <p class="text-sm font-black bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mt-4 tracking-widest">
+                        ✦ از هوش جلوتر ✦
+                    </p>
                 </div>
 
                 <div id="result-view" class="hidden flex-grow flex flex-col justify-center items-center my-2 relative">
-                    <div class="w-full overflow-hidden rounded-xl bg-slate-950 border border-slate-800 flex justify-center items-center p-2 relative min-h-[350px]">
-                        <img id="output-img" src="" alt="AI Generated" class="max-h-[500px] object-contain w-auto rounded-lg transition-all duration-300 hidden">
+                    <div class="w-full overflow-hidden rounded-2xl bg-slate-950 border border-pink-950/40 flex justify-center items-center p-2 relative min-h-[350px] shadow-inner">
+                        <img id="output-img" src="" alt="AI Generated Art" crossorigin="anonymous" class="max-h-[500px] object-contain w-auto rounded-xl transition-all duration-300 hidden">
                         
                         <div id="inner-loading-box" class="hidden flex flex-col items-center justify-center text-center p-4">
-                            <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <p class="text-sm text-indigo-400 font-medium" id="inner-loading-text">در حال اتصال به سرور هوش مصنوعی...</p>
-                            <p class="text-xs text-slate-500 mt-2" id="inner-loading-timer">زمان سپری‌شده: 0 ثانیه</p>
+                            <div class="relative w-16 h-16 mb-4">
+                                <div class="absolute inset-0 border-4 border-pink-500/20 rounded-full"></div>
+                                <div class="absolute inset-0 border-4 border-t-pink-500 border-r-purple-500 rounded-full animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-xl">🐱</div>
+                            </div>
+                            <p class="text-sm text-pink-400 font-bold animate-pulse" id="inner-loading-text">در حال کوبیدن پنجه‌ها روی کیبورد سرور ابری...</p>
+                            <p class="text-xs text-slate-500 mt-2 bg-slate-900 px-3 py-1 rounded-full border border-slate-800" id="inner-loading-timer">زمان: 0 ثانیه</p>
                         </div>
                     </div>
                     
                     <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                        <button onclick="downloadImage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-lg border border-slate-700 flex items-center justify-center gap-2 transition-colors">
+                        <button onclick="triggerActualDownload()" class="bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-500 hover:to-pink-600 text-white text-xs font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            دانلود تصویر
+                            دانلود تصویر 💾
                         </button>
-                        <button onclick="copyImageUrl()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-lg border border-slate-700 flex items-center justify-center gap-2 transition-colors">
+                        <button onclick="copyImageUrl()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl border border-pink-950/30 flex items-center justify-center gap-2 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1" />
                             </svg>
-                            کپی لینک
+                            کپی پیوند
                         </button>
-                        <button onclick="openDirectLink()" class="bg-indigo-950/40 hover:bg-indigo-900/40 text-indigo-300 text-xs font-bold py-2.5 px-3 rounded-lg border border-indigo-800/60 flex items-center justify-center gap-2 transition-colors">
+                        <button onclick="openDirectLink()" class="bg-purple-950/30 hover:bg-purple-900/40 text-purple-300 text-xs font-bold py-2.5 px-3 rounded-xl border border-purple-900/30 flex items-center justify-center gap-2 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
-                            بازکردن در صفحه جدا
+                            بازکردن مستقل
                         </button>
                     </div>
                 </div>
@@ -144,28 +201,120 @@
         </section>
     </main>
 
-    <section class="max-w-6xl w-full mx-auto px-4 mb-8">
-        <div class="bg-slate-900/30 border border-slate-800/60 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-            <h3 class="text-md font-bold mb-4 text-slate-400 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                تصاویر اخیر این نشست:
+    <section class="max-w-6xl w-full mx-auto px-4 mb-8 relative z-10">
+        <div class="bg-slate-950/40 border border-pink-950/20 p-6 rounded-3xl backdrop-blur-md shadow-2xl">
+            <h3 class="text-sm font-bold mb-4 text-pink-300 flex items-center gap-2">
+                <span>🐈 آلبوم گربول‌های خلق‌شده این نشست:</span>
             </h3>
             <div id="history-gallery" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                <p id="history-empty-text" class="text-xs text-slate-600 col-span-full">هنوز سابقه‌ای ثبت نشده است.</p>
+                <p id="history-empty-text" class="text-xs text-slate-600 col-span-full py-2">هنوز تصویری خلق نکرده‌اید پشمالو جان!🐾</p>
             </div>
         </div>
     </section>
 
-    <footer class="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs text-slate-600">
-        <p>توسعه یافته با استفاده از زیرساخت متن‌باز Pollinations.ai</p>
+    <footer class="border-t border-pink-950/30 bg-slate-950/80 py-4 text-center text-xs">
+        <p class="font-black bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent text-sm mb-1 tracking-widest">✦ از هوش جلوتر ✦</p>
+        <p class="text-pink-400/50">🐾 Mamal AI - استودیو هوش مصنوعی امن و پایدار با ۴ سرور رایگان • ۱۴۰۵</p>
     </footer>
 
     <script>
         let currentGeneratedUrl = "";
         let loadingTimerInterval = null;
         let loadingStartTime = 0;
+
+        // ═══════════════════════════════════════════════════════════
+        //   تنظیمات ۴ API
+        // ═══════════════════════════════════════════════════════════
+        const apiProviders = {
+            pollinations: {
+                name: 'Pollinations',
+                needsKey: false,
+                models: [
+                    { id: 'flux', name: 'Flux Art (کیفیت بالا)' },
+                    { id: 'turbo', name: 'Turbo Speed (سریع)' },
+                    { id: 'kontext', name: 'Kontext (محتوایی)' }
+                ]
+            },
+            huggingface: {
+                name: 'Hugging Face',
+                needsKey: true,
+                keyUrl: 'https://huggingface.co/settings/tokens',
+                keyHint: 'یک Token رایگان از huggingface.co بسازید (Read access کافی است)',
+                models: [
+                    { id: 'black-forest-labs/FLUX.1-schnell', name: 'FLUX.1-schnell (بهترین)' },
+                    { id: 'stabilityai/stable-diffusion-xl-base-1.0', name: 'SDXL Base' },
+                    { id: 'stabilityai/stable-diffusion-3.5-large', name: 'SD 3.5 Large' },
+                    { id: 'Kwai-Kolors/Kolors', name: 'Kolors (چینی)' }
+                ]
+            },
+            together: {
+                name: 'Together AI',
+                needsKey: true,
+                keyUrl: 'https://api.together.xyz/settings/api-keys',
+                keyHint: 'ثبت‌نام رایگان کنید و ۵ دلار اعتبار اولیه بگیرید',
+                models: [
+                    { id: 'black-forest-labs/FLUX.1-schnell-Free', name: 'FLUX.1-schnell Free' },
+                    { id: 'black-forest-labs/FLUX.1-dev', name: 'FLUX.1-dev' },
+                    { id: 'stabilityai/stable-diffusion-xl-base-1.0', name: 'SDXL' }
+                ]
+            },
+            stablehorde: {
+                name: 'Stable Horde',
+                needsKey: false,
+                models: [
+                    { id: 'stable_diffusion', name: 'Stable Diffusion 1.5 (رایگان)' },
+                    { id: 'Deliberate', name: 'Deliberate (هنری)' },
+                    { id: 'Dreamshaper', name: 'Dreamshaper (فانتزی)' },
+                    { id: 'Anything-v4.5', name: 'Anything v4.5 (انیمه)' }
+                ]
+            }
+        };
+
+        function toggleApiModels() {
+            const provider = document.getElementById('api-provider').value;
+            const config = apiProviders[provider];
+            const modelSelect = document.getElementById('image-model');
+            const keyContainer = document.getElementById('api-key-container');
+            const keyInput = document.getElementById('api-key');
+            const keyLink = document.getElementById('api-key-link');
+            const keyHint = document.getElementById('api-key-hint');
+
+            modelSelect.innerHTML = "";
+            config.models.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model.id;
+                opt.textContent = model.name;
+                modelSelect.appendChild(opt);
+            });
+
+            if (config.needsKey) {
+                keyContainer.classList.remove('hidden');
+                keyLink.href = config.keyUrl;
+                keyHint.textContent = config.keyHint;
+                const saved = localStorage.getItem(`api_key_${provider}`);
+                if (saved) keyInput.value = saved;
+            } else {
+                keyContainer.classList.add('hidden');
+                keyInput.value = '';
+            }
+
+            if (provider === 'stablehorde') {
+                showNotification(
+                    '⚔️ Stable Horde انتخاب شد', 
+                    'warning', 
+                    'این سرور بدون کلید کار می‌کنه ولی: ۱) ابعاد حداکثر 576×576 ۲) صف ممکنه ۵-۱۵ دقیقه باشه ۳) برای ابعاد بزرگتر و صف کمتر، در stablehorde.net ثبت‌نام کنید.'
+                );
+            }
+        }
+
+        document.getElementById('api-key').addEventListener('input', (e) => {
+            const provider = document.getElementById('api-provider').value;
+            if (apiProviders[provider].needsKey) {
+                localStorage.setItem(`api_key_${provider}`, e.target.value);
+            }
+        });
+
+        toggleApiModels();
 
         function showNotification(message, type = 'success', subMessage = '') {
             const statusBox = document.getElementById('status-box');
@@ -176,17 +325,17 @@
             statusMessage.textContent = message;
             statusSub.textContent = subMessage;
             
-            statusBox.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20', 'bg-rose-500/10', 'text-rose-400', 'border-rose-500/20', 'bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+            statusBox.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20', 'bg-rose-500/10', 'text-rose-400', 'border-rose-500/20', 'bg-pink-500/10', 'text-pink-400', 'border-pink-500/20', 'bg-pink-500/5', 'text-purple-300', 'border-purple-500/20');
 
             if (type === 'success') {
-                statusBox.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
-                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.748-5.25z" clip-rule="evenodd" /></svg>`;
+                statusBox.classList.add('bg-pink-500/10', 'text-pink-400', 'border-pink-500/20');
+                statusIcon.innerHTML = `🐾`;
             } else if (type === 'warning') {
-                statusBox.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
-                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.401 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" /></svg>`;
+                statusBox.classList.add('bg-pink-500/5', 'text-purple-300', 'border-purple-500/20');
+                statusIcon.innerHTML = `⚡`;
             } else {
                 statusBox.classList.add('bg-rose-500/10', 'text-rose-400', 'border-rose-500/20');
-                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg>`;
+                statusIcon.innerHTML = `❌`;
             }
             statusBox.classList.remove('hidden');
         }
@@ -197,7 +346,13 @@
             if (loadingTimerInterval) clearInterval(loadingTimerInterval);
             loadingTimerInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - loadingStartTime) / 1000);
-                if (timerEl) timerEl.textContent = `زمان سپری‌شده: ${elapsed} ثانیه`;
+                if (timerEl) {
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    timerEl.textContent = mins > 0 
+                        ? `زمان: ${mins} دقیقه و ${secs} ثانیه` 
+                        : `زمان: ${elapsed} ثانیه`;
+                }
             }, 1000);
         }
 
@@ -208,36 +363,304 @@
             }
         }
 
-        function generateImage() {
+        async function generateImage() {
             const promptInput = document.getElementById('prompt').value.trim();
             if (!promptInput) {
-                showNotification('لطفاً متنی برای توصیف تصویر وارد کنید.', 'error');
+                showNotification('لطفاً متنی برای نقاشی وارد کنید.', 'error');
                 return;
             }
 
-            const ratio = document.getElementById('aspect-ratio').value;
+            const checkedRatioEl = document.querySelector('input[name="ratio"]:checked');
+            const ratio = checkedRatioEl ? checkedRatioEl.value : '11';
             let width = 1024, height = 1024;
             if (ratio === '169') { width = 1280; height = 720; }
             else if (ratio === '916') { width = 720; height = 1280; }
 
             const selectedStyle = document.getElementById('image-style').value;
-            const modelSelected = document.getElementById('image-model').value;
+            const provider = document.getElementById('api-provider').value;
+            const model = document.getElementById('image-model').value;
+            const apiKey = document.getElementById('api-key').value.trim();
             const fullPrompt = selectedStyle ? `${promptInput}, ${selectedStyle}` : promptInput;
 
-            const randomSeed = Math.floor(Math.random() * 9999999);
-            
-            // ✅ آدرس درست API: https://image.pollinations.ai/prompt/{encoded}
-            const encodedPrompt = encodeURIComponent(fullPrompt);
-            const targetApiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${randomSeed}&model=${modelSelected}&nologo=true`;
+            if (apiProviders[provider].needsKey && !apiKey) {
+                showNotification('این سرور نیاز به API Key دارد.', 'error', 'لطفاً کلید را از لینک بالا دریافت کنید.');
+                return;
+            }
 
-            console.log('📡 API URL:', targetApiUrl);
+            setUILoading(true);
+            startLoadingTimer();
+            showNotification('درخواست ارسال شد...', 'warning', 'در حال دریافت تصویر از سرور. لطفاً صبر کنید.');
 
-            currentGeneratedUrl = targetApiUrl;
-            loadImageWithRetry(targetApiUrl, promptInput);
+            try {
+                let imageUrl;
+                if (provider === 'pollinations') {
+                    imageUrl = await generateViaPollinations(fullPrompt, width, height, model);
+                } else if (provider === 'huggingface') {
+                    imageUrl = await generateViaHuggingFace(fullPrompt, width, height, model, apiKey);
+                } else if (provider === 'together') {
+                    imageUrl = await generateViaTogether(fullPrompt, width, height, model, apiKey);
+                } else if (provider === 'stablehorde') {
+                    imageUrl = await generateViaStableHorde(fullPrompt, width, height, model);
+                }
+
+                currentGeneratedUrl = imageUrl;
+                displayImage(imageUrl);
+                showNotification('✅ تصویر ساخته شد!', 'success', 'با موفقیت نمایش داده شد.');
+                addToHistory(imageUrl, promptInput);
+            } catch (err) {
+                console.error('❌ Error:', err);
+                showNotification('خطا در تولید تصویر', 'error', err.message);
+                setUILoading(false, err.message);
+            }
         }
 
-        function loadImageWithRetry(url, promptText, attempt = 1) {
-            const MAX_ATTEMPTS = 3;
+        // ═══════════════════════════════════════════════════════════
+        //   1. Pollinations
+        // ═══════════════════════════════════════════════════════════
+        function generateViaPollinations(prompt, width, height, model) {
+            return new Promise((resolve, reject) => {
+                const encoded = encodeURIComponent(prompt);
+                const seed = Math.floor(Math.random() * 9999999);
+                const url = `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`;
+                console.log('📡 Pollinations URL:', url);
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                const timeout = setTimeout(() => {
+                    img.src = '';
+                    reject(new Error('Pollinations timeout (60s)'));
+                }, 60000);
+
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    if (img.naturalWidth < 50) return reject(new Error('تصویر نامعتبر'));
+                    resolve(url);
+                };
+                img.onerror = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Pollinations error - احتمالاً VPN لازم است'));
+                };
+                img.src = url;
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //   2. Hugging Face
+        // ═══════════════════════════════════════════════════════════
+        async function generateViaHuggingFace(prompt, width, height, model, apiKey) {
+            console.log('📡 HuggingFace Model:', model);
+            const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inputs: prompt,
+                    parameters: {
+                        width: width,
+                        height: height,
+                        num_inference_steps: 4
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`HuggingFace ${response.status}: ${errText.substring(0, 100)}`);
+            }
+
+            const blob = await response.blob();
+            if (blob.size < 1000) throw new Error('پاسخ نامعتبر از HuggingFace');
+            return URL.createObjectURL(blob);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //   3. Together AI
+        // ═══════════════════════════════════════════════════════════
+        async function generateViaTogether(prompt, width, height, model, apiKey) {
+            console.log('📡 Together Model:', model);
+            const response = await fetch('https://api.together.xyz/v1/images/generations', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: model,
+                    prompt: prompt,
+                    width: width,
+                    height: height,
+                    steps: 4,
+                    n: 1,
+                    response_format: 'b64_json'
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Together ${response.status}: ${errText.substring(0, 100)}`);
+            }
+
+            const data = await response.json();
+            if (!data.data || !data.data[0]) throw new Error('پاسخ نامعتبر از Together');
+
+            const b64 = data.data[0].b64_json;
+            if (b64) return `data:image/png;base64,${b64}`;
+            if (data.data[0].url) return data.data[0].url;
+            throw new Error('Together تصویر برنگرداند');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //   4. Stable Horde - محدودیت 576×576
+        // ═══════════════════════════════════════════════════════════
+        async function generateViaStableHorde(prompt, width, height, model) {
+            console.log('📡 Stable Horde (Anonymous) - Model:', model);
+            
+            const innerLoadingText = document.getElementById('inner-loading-text');
+            
+            const MAX_SIZE = 576;
+            const aspectRatio = width / height;
+            let safeWidth, safeHeight;
+            
+            if (aspectRatio >= 1) {
+                safeWidth = Math.min(MAX_SIZE, Math.floor(Math.min(width, MAX_SIZE) / 64) * 64);
+                safeHeight = Math.floor((safeWidth / aspectRatio) / 64) * 64;
+            } else {
+                safeHeight = Math.min(MAX_SIZE, Math.floor(Math.min(height, MAX_SIZE) / 64) * 64);
+                safeWidth = Math.floor((safeHeight * aspectRatio) / 64) * 64;
+            }
+            
+            safeWidth = Math.max(safeWidth, 256);
+            safeHeight = Math.max(safeHeight, 256);
+            
+            console.log(`📡 ابعاد نهایی: ${safeWidth}×${safeHeight}`);
+            
+            if (innerLoadingText) innerLoadingText.textContent = 'در حال ارسال درخواست به Stable Horde...';
+            
+            const submitResponse = await fetch('https://stablehorde.net/api/v2/generate/async', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': '0000000000',
+                    'Client-Agent': 'MamalAI:1.0:anonymous'
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    params: {
+                        width: safeWidth,
+                        height: safeHeight,
+                        steps: 20,
+                        sampler_name: 'k_euler_a',
+                        cfg_scale: 7,
+                        n: 1,
+                        karras: true
+                    },
+                    nsfw: false,
+                    censor_nsfw: true,
+                    trusted_workers: false,
+                    models: [model],
+                    r2: true,
+                    shared: false
+                })
+            });
+
+            if (!submitResponse.ok) {
+                const errText = await submitResponse.text();
+                console.error('❌ Stable Horde submit error:', errText);
+                
+                if (submitResponse.status === 403) {
+                    throw new Error('محدودیت Stable Horde: ابعاد بیش از حد مجاز یا سرور شلوغ. لطفاً دوباره تلاش کنید یا سرور دیگری انتخاب کنید.');
+                }
+                
+                throw new Error(`Stable Horde ${submitResponse.status}: ${errText.substring(0, 200)}`);
+            }
+
+            const submitData = await submitResponse.json();
+            const jobId = submitData.id;
+            console.log('📡 Job ID:', jobId);
+
+            if (!jobId) {
+                throw new Error('Job ID دریافت نشد - احتمالاً محدودیت IP یا سرور شلوغ');
+            }
+
+            const maxAttempts = 180;
+            for (let i = 0; i < maxAttempts; i++) {
+                await new Promise(r => setTimeout(r, 5000));
+                
+                try {
+                    const checkResponse = await fetch(`https://stablehorde.net/api/v2/generate/check/${jobId}`, {
+                        headers: {
+                            'Client-Agent': 'MamalAI:1.0:anonymous'
+                        }
+                    });
+                    
+                    if (!checkResponse.ok) continue;
+                    
+                    const checkData = await checkResponse.json();
+                    const waitTime = checkData.wait_time || 0;
+                    const queuePos = checkData.queue_position || 0;
+                    const isDone = checkData.done;
+                    
+                    console.log(`📡 صف ${queuePos} | زمان ${waitTime}s | پردازش: ${checkData.processing} | done: ${isDone}`);
+                    
+                    if (innerLoadingText) {
+                        if (checkData.processing) {
+                            innerLoadingText.textContent = `⚙️ در حال رندر توسط GPU... (${i * 5}s)`;
+                        } else if (waitTime > 0) {
+                            const mins = Math.floor(waitTime / 60);
+                            const secs = waitTime % 60;
+                            innerLoadingText.textContent = mins > 0 
+                                ? `⏳ در صف (موقعیت ${queuePos})... تخمین: ${mins} دقیقه و ${secs} ثانیه`
+                                : `⏳ در صف (موقعیت ${queuePos})... تخمین: ${secs} ثانیه`;
+                        }
+                    }
+                    
+                    if (isDone) {
+                        if (innerLoadingText) innerLoadingText.textContent = '📥 در حال دریافت تصویر...';
+                        
+                        const resultResponse = await fetch(`https://stablehorde.net/api/v2/generate/status/${jobId}`, {
+                            headers: {
+                                'Client-Agent': 'MamalAI:1.0:anonymous'
+                            }
+                        });
+                        
+                        if (!resultResponse.ok) {
+                            throw new Error(`دریافت نتیجه ${resultResponse.status}`);
+                        }
+                        
+                        const resultData = await resultResponse.json();
+                        console.log('📡 نتیجه دریافت شد');
+                        
+                        if (resultData.generations && resultData.generations[0] && resultData.generations[0].img) {
+                            const imgData = resultData.generations[0].img;
+                            
+                            if (imgData.startsWith('http')) {
+                                return imgData;
+                            }
+                            
+                            const mimeType = imgData.startsWith('UklGR') ? 'image/webp' : 'image/png';
+                            return `data:${mimeType};base64,${imgData}`;
+                        }
+                        
+                        throw new Error('تصویر در پاسخ نیست');
+                    }
+                    
+                    if (checkData.faulted) {
+                        throw new Error('Stable Horde: درخواست با خطا مواجه شد');
+                    }
+                    
+                } catch (err) {
+                    console.warn(`⚠️ خطا در چک ${i + 1}:`, err.message);
+                    if (err.message.includes('faulted')) throw err;
+                }
+            }
+            
+            throw new Error('Stable Horde timeout (15 دقیقه) - صف خیلی شلوغ است');
+        }
+
+        function setUILoading(isLoading, errorMsg = '') {
             const button = document.getElementById('generate-btn');
             const spinner = document.getElementById('spinner');
             const btnText = document.getElementById('btn-text');
@@ -245,128 +668,68 @@
             const resultView = document.getElementById('result-view');
             const outputImg = document.getElementById('output-img');
             const innerLoadingBox = document.getElementById('inner-loading-box');
-            const innerLoadingText = document.getElementById('inner-loading-text');
 
-            button.disabled = true;
-            spinner.classList.remove('hidden');
-            btnText.textContent = attempt > 1 ? `تلاش ${attempt}/${MAX_ATTEMPTS}...` : 'در حال پردازش...';
-
-            placeholderView.classList.add('hidden');
-            resultView.classList.remove('hidden');
-            outputImg.classList.add('hidden');
-            innerLoadingBox.classList.remove('hidden');
-            innerLoadingText.textContent = attempt > 1 
-                ? `تلاش مجدد برای دریافت تصویر (${attempt}/${MAX_ATTEMPTS})...`
-                : 'هوش مصنوعی در حال خلق تصویر شماست. تولید معمولاً ۱۰ الی ۳۰ ثانیه زمان می‌برد...';
-
-            if (attempt === 1) {
-                startLoadingTimer();
-                showNotification('درخواست ارسال شد.', 'warning', 'در حال دریافت تصویر از سرور. لطفاً صبر کنید.');
-            }
-
-            // اضافه کردن cache-buster برای هر تلاش
-            const finalUrl = attempt > 1 ? `${url}&retry=${attempt}&t=${Date.now()}` : url;
-
-            const tempImg = new Image();
-            let resolved = false;
-            let timeoutId = null;
-
-            // Timeout ۹۰ ثانیه (چون Flux ممکنه کند باشه)
-            timeoutId = setTimeout(() => {
-                if (!resolved) {
-                    resolved = true;
-                    tempImg.src = ''; // cancel loading
-                    handleFailure('timeout');
-                }
-            }, 90000);
-
-            function handleFailure(reason) {
-                stopLoadingTimer();
-                if (attempt < MAX_ATTEMPTS) {
-                    // تلاش مجدد بعد از ۲ ثانیه
-                    setTimeout(() => {
-                        loadImageWithRetry(url, promptText, attempt + 1);
-                    }, 2000);
-                } else {
-                    // شکست نهایی
-                    innerLoadingBox.innerHTML = `
-                        <div class="text-center p-6">
-                            <div class="text-5xl mb-3">⚠️</div>
-                            <span class="text-rose-400 font-bold block mb-2 text-sm">خطا در دریافت تصویر</span>
-                            <span class="text-slate-400 block mb-4 text-xs leading-relaxed">
-                                ${reason === 'timeout' 
-                                    ? 'سرور بیش از ۹۰ ثانیه پاسخ نداد. احتمالاً سرور شلوغ است.' 
-                                    : 'ارتباط با سرور برقرار نشد. احتمالاً فیلترشکن فعال نیست یا سرور مشکل دارد.'}
-                                <br><br>
-                                <strong class="text-amber-300">راه‌حل‌ها:</strong><br>
-                                ۱. VPN / فیلترشکن را فعال کنید<br>
-                                ۲. یک بار دیگر امتحان کنید<br>
-                                ۳. از مرورگر دیگر استفاده کنید
-                            </span>
-                            <div class="flex gap-2 justify-center">
-                                <button onclick="generateImage()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs py-2 px-4 rounded-lg">
-                                    🔄 تلاش مجدد
-                                </button>
-                                <button onclick="window.open('${url}', '_blank')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-2 px-4 rounded-lg">
-                                    🔗 باز کردن مستقیم
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    button.disabled = false;
-                    spinner.classList.add('hidden');
-                    btnText.textContent = 'خلق مجدد تصویر';
-                    showNotification('خطا در دریافت تصویر از سرور.', 'error', 'راه‌حل‌ها در کادر نمایش داده شده است.');
-                }
-            }
-
-            tempImg.onload = function() {
-                if (resolved) return;
-                resolved = true;
-                if (timeoutId) clearTimeout(timeoutId);
-                
-                stopLoadingTimer();
-                
-                // بررسی ابعاد تصویر برای اطمینان از اینکه خطا نیست
-                if (tempImg.naturalWidth < 50 || tempImg.naturalHeight < 50) {
-                    handleFailure('invalid');
-                    return;
-                }
-
-                // نمایش تصویر
-                outputImg.src = finalUrl;
-                outputImg.classList.remove('hidden');
-                innerLoadingBox.classList.add('hidden');
-                
+            if (isLoading) {
+                button.disabled = true;
+                spinner.classList.remove('hidden');
+                btnText.textContent = 'در حال پردازش...';
+                placeholderView.classList.add('hidden');
+                resultView.classList.remove('hidden');
+                outputImg.classList.add('hidden');
+                innerLoadingBox.classList.remove('hidden');
+                innerLoadingBox.innerHTML = `
+                    <div class="relative w-16 h-16 mb-4">
+                        <div class="absolute inset-0 border-4 border-pink-500/20 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-t-pink-500 border-r-purple-500 rounded-full animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-xl">🐱</div>
+                    </div>
+                    <p class="text-sm text-pink-400 font-bold animate-pulse" id="inner-loading-text">در حال کوبیدن پنجه‌ها روی کیبورد سرور ابری...</p>
+                    <p class="text-xs text-slate-500 mt-2 bg-slate-900 px-3 py-1 rounded-full border border-slate-800" id="inner-loading-timer">زمان: 0 ثانیه</p>
+                `;
+            } else {
                 button.disabled = false;
                 spinner.classList.add('hidden');
-                btnText.textContent = 'خلق تصویر با هوش مصنوعی';
-                
-                showNotification('✅ تصویر با موفقیت ساخته شد!', 'success', `اندازه: ${tempImg.naturalWidth}×${tempImg.naturalHeight}`);
-                addToHistory(finalUrl, promptText);
-            };
+                btnText.textContent = errorMsg ? 'تلاش مجدد 🐾' : 'خلق تصویر جدید 🐾';
+                innerLoadingBox.innerHTML = `
+                    <div class="text-center p-4">
+                        <div class="text-5xl mb-3">😿</div>
+                        <span class="text-rose-400 font-bold block mb-2 text-sm">خطا در دریافت تصویر</span>
+                        <span class="text-slate-400 block mb-3 text-[11px] leading-relaxed">${errorMsg}</span>
+                        <div class="flex gap-2 justify-center flex-wrap">
+                            <button onclick="generateImage()" class="bg-pink-600 hover:bg-pink-500 text-white text-[11px] py-1.5 px-3 rounded-lg">🔄 تلاش مجدد</button>
+                            <button onclick="document.getElementById('api-provider').focus();" class="bg-slate-700 hover:bg-slate-600 text-white text-[11px] py-1.5 px-3 rounded-lg">🔧 تغییر سرور</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
 
-            tempImg.onerror = function() {
-                if (resolved) return;
-                resolved = true;
-                if (timeoutId) clearTimeout(timeoutId);
-                handleFailure('error');
-            };
+        function displayImage(url) {
+            stopLoadingTimer();
+            const button = document.getElementById('generate-btn');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btn-text');
+            const outputImg = document.getElementById('output-img');
+            const innerLoadingBox = document.getElementById('inner-loading-box');
 
-            tempImg.src = finalUrl;
+            outputImg.src = url;
+            outputImg.classList.remove('hidden');
+            innerLoadingBox.classList.add('hidden');
+            button.disabled = false;
+            spinner.classList.add('hidden');
+            btnText.textContent = 'خلق تصویر جدید 🐾';
         }
 
         function addToHistory(url, prompt) {
             const gallery = document.getElementById('history-gallery');
             const emptyText = document.getElementById('history-empty-text');
-            
             if (emptyText) emptyText.remove();
 
-            const isDuplicate = Array.from(gallery.querySelectorAll('img')).some(img => img.getAttribute('data-origin-url') === url);
+            const isDuplicate = Array.from(gallery.querySelectorAll('img')).some(img => img.getAttribute('data-link') === url);
             if (isDuplicate) return;
 
             const wrapper = document.createElement('div');
-            wrapper.className = "bg-slate-950 p-1.5 rounded-lg border border-slate-800 cursor-pointer hover:border-indigo-500 transition-colors group relative overflow-hidden";
+            wrapper.className = "bg-slate-950/80 p-1.5 rounded-xl border border-pink-950/20 cursor-pointer hover:border-pink-500 transition-colors group relative overflow-hidden shadow-md";
             
             wrapper.onclick = function() {
                 document.getElementById('placeholder-view').classList.add('hidden');
@@ -377,43 +740,214 @@
                 innerLoadingBox.classList.add('hidden');
                 outputImg.classList.remove('hidden');
                 outputImg.src = url;
-                showNotification('تصویر از تاریخچه بارگذاری شد.', 'success');
+                showNotification('تصویر از آلبوم لود شد.', 'success');
             };
 
             wrapper.innerHTML = `
-                <img src="${url}" data-origin-url="${url}" alt="History" class="w-full aspect-square object-cover rounded-md opacity-70 group-hover:opacity-100 transition-opacity">
-                <div class="absolute bottom-0 left-0 right-0 bg-slate-950/80 p-1 text-[10px] text-slate-400 truncate text-center hidden group-hover:block px-1">
-                    ${prompt}
-                </div>
+                <img src="${url}" data-link="${url}" alt="History" class="w-full aspect-square object-cover rounded-lg opacity-60 group-hover:opacity-100 transition-opacity" loading="lazy">
+                <div class="absolute bottom-0 left-0 right-0 bg-slate-950/90 p-1 text-[9px] text-pink-300 truncate text-center hidden group-hover:block px-1">${prompt}</div>
             `;
             gallery.insertBefore(wrapper, gallery.firstChild);
         }
 
+        // ═══════════════════════════════════════════════════════════
+        //   دانلود با ۴ روش آبشاری
+        // ═══════════════════════════════════════════════════════════
+        async function triggerActualDownload() {
+            if (!currentGeneratedUrl) {
+                showNotification('هنوز تصویری برای دانلود نیست!', 'error');
+                return;
+            }
+
+            showNotification('در حال آماده‌سازی فایل...', 'warning');
+
+            const filename = `MamalAI-${Date.now()}.png`;
+            const url = currentGeneratedUrl;
+
+            if (url.startsWith('data:')) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showNotification('✅ فایل دانلود شد!', 'success');
+                return;
+            }
+
+            if (url.startsWith('blob:')) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showNotification('✅ فایل دانلود شد!', 'success');
+                return;
+            }
+
+            try {
+                console.log('🔄 روش ۱: fetch + blob');
+                const response = await fetch(url, { mode: 'cors', cache: 'no-cache' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const blob = await response.blob();
+                if (blob.size < 100) throw new Error('فایل خیلی کوچک');
+                
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                
+                showNotification('✅ فایل با fetch دانلود شد!', 'success');
+                return;
+            } catch (err) {
+                console.warn('❌ روش ۱ شکست خورد:', err.message);
+            }
+
+            try {
+                console.log('🔄 روش ۲: canvas.toBlob');
+                const outputImg = document.getElementById('output-img');
+                
+                if (!outputImg.complete || outputImg.naturalWidth === 0) {
+                    throw new Error('تصویر روی صفحه لود نشده');
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = outputImg.naturalWidth;
+                canvas.height = outputImg.naturalHeight;
+                canvas.getContext('2d').drawImage(outputImg, 0, 0);
+                
+                const blob = await new Promise((resolve, reject) => {
+                    canvas.toBlob(b => {
+                        if (b && b.size > 100) resolve(b);
+                        else reject(new Error('toBlob نامعتبر'));
+                    }, 'image/png', 1.0);
+                });
+                
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                
+                showNotification('✅ فایل با Canvas دانلود شد!', 'success');
+                return;
+            } catch (err) {
+                console.warn('❌ روش ۲ شکست خورد:', err.message);
+            }
+
+            try {
+                console.log('🔄 روش ۳: تصویر تازه');
+                
+                const freshImg = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(new Error('لود تصویر شکست'));
+                    img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+                    setTimeout(() => reject(new Error('Timeout')), 15000);
+                });
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = freshImg.naturalWidth;
+                canvas.height = freshImg.naturalHeight;
+                canvas.getContext('2d').drawImage(freshImg, 0, 0);
+                
+                const blob = await new Promise((resolve, reject) => {
+                    canvas.toBlob(b => {
+                        if (b && b.size > 100) resolve(b);
+                        else reject(new Error('toBlob نامعتبر'));
+                    }, 'image/png', 1.0);
+                });
+                
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                
+                showNotification('✅ فایل دانلود شد!', 'success');
+                return;
+            } catch (err) {
+                console.warn('❌ روش ۳ شکست خورد:', err.message);
+            }
+
+            console.log('🔄 روش ۴: صفحه دانلود جدید');
+            const newWindow = window.open('', '_blank');
+            if (newWindow) {
+                newWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html dir="rtl">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>دانلود تصویر - Mamal AI</title>
+                        <style>
+                            body { font-family: Tahoma, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; text-align: center; }
+                            img { max-width: 100%; max-height: 70vh; margin: 20px auto; display: block; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+                            a { display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #ec4899, #8b5cf6); color: white; text-decoration: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
+                            a:hover { opacity: 0.9; }
+                            .note { color: #94a3b8; font-size: 13px; margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>🐾 تصویر Mamal AI</h1>
+                        <p style="color:#ec4899; font-weight:bold; letter-spacing:4px;">✦ از هوش جلوتر ✦</p>
+                        <img src="${url}" alt="AI Image" crossorigin="anonymous">
+                        <div>
+                            <a href="${url}" download="${filename}" target="_blank">📥 دانلود مستقیم</a>
+                        </div>
+                        <p class="note">اگر دکمه کار نکرد: روی تصویر راست‌کلیک کنید و «Save Image As» را انتخاب کنید.</p>
+                    </body>
+                    </html>
+                `);
+                newWindow.document.close();
+                showNotification('📥 صفحه دانلود باز شد', 'warning', 'اگر دکمه کار نکرد، روی تصویر راست‌کلیک کنید.');
+            } else {
+                showNotification('❌ پاپ‌آپ مسدود است', 'error', 'لطفاً اجازه پاپ‌آپ بدهید و دوباره تلاش کنید.');
+            }
+        }
+
         function copyImageUrl() {
-            if (!currentGeneratedUrl) return;
-            const dummyInput = document.createElement('input');
-            document.body.appendChild(dummyInput);
-            dummyInput.value = currentGeneratedUrl;
-            dummyInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummyInput);
-            showNotification('لینک تصویر کپی شد!', 'success');
+            if (!currentGeneratedUrl) {
+                showNotification('هنوز تصویری نیست!', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(currentGeneratedUrl).then(() => {
+                showNotification('✅ پیوند کپی شد!', 'success');
+            }).catch(() => {
+                const input = document.createElement('input');
+                document.body.appendChild(input);
+                input.value = currentGeneratedUrl;
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showNotification('✅ پیوند کپی شد!', 'success');
+            });
         }
 
         function openDirectLink() {
-            if (!currentGeneratedUrl) return;
+            if (!currentGeneratedUrl) {
+                showNotification('هنوز تصویری نیست!', 'error');
+                return;
+            }
             window.open(currentGeneratedUrl, '_blank');
         }
 
-        function downloadImage() {
-            if (!currentGeneratedUrl) return;
-            showNotification('تصویر در تب جدید باز می‌شود. راست کلیک کنید و Save Image As را بزنید.', 'warning');
-            window.open(currentGeneratedUrl, '_blank');
-        }
-
-        // نمایش نمونه اولیه در کنسول
-        console.log('%c🎨 استودیو تصویرسازی AI آماده است', 'color: #6366f1; font-size: 14px; font-weight: bold');
-        console.log('API: https://image.pollinations.ai/prompt/{prompt}');
+        console.log('%c🐾 Mamal AI - از هوش جلوتر', 'color: #f43f5e; font-size: 16px; font-weight: bold');
+        console.log('1. Pollinations (بدون کلید - سریع)');
+        console.log('2. Hugging Face (کلید رایگان)');
+        console.log('3. Together AI (کلید رایگان + $5)');
+        console.log('4. Stable Horde (بدون کلید - ابعاد محدود 576×576)');
     </script>
 </body>
 </html>
