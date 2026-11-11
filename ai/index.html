@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mamal AI - از هوش جلوترم</title>
+    <title>Mamal AI - از هوش جلوتر</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -14,6 +14,11 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1e1b4b; }
         ::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 10px; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white relative overflow-x-hidden">
@@ -211,13 +216,13 @@
                     <span class="text-3xl animate-pulse">💬</span>
                     <div>
                         <h2 class="text-xl font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">استودیوی چت هوش مصنوعی متنی</h2>
-                        <p class="text-xs text-slate-400 mt-1">مدل‌ها خودکار از API OpenRouter بارگیری می‌شن ✅</p>
+                        <p class="text-xs text-slate-400 mt-1">کلید OpenRouter به‌صورت امن از JSONBin دریافت می‌شود ✅</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <select id="chat-provider" onchange="toggleChatModels()" class="bg-slate-900 border border-cyan-900/30 rounded-xl p-2 text-slate-200 text-xs outline-none font-medium">
                         <option value="pollinations">🚀 Pollinations (بدون کلید)</option>
-                        <option value="openrouter" selected>🌐 OpenRouter (اکانت شما)</option>
+                        <option value="openrouter" selected>🌐 OpenRouter (کلید امن)</option>
                         <option value="groq">⚡ Groq (کلید خودتان)</option>
                         <option value="gemini">🌟 Gemini (کلید خودتان)</option>
                     </select>
@@ -238,7 +243,7 @@
                 <div id="chat-empty" class="flex flex-col items-center justify-center h-full text-center">
                     <div class="text-6xl mb-3 animate-bounce">🤖</div>
                     <p class="text-slate-300 font-bold">سلام! من دستیار هوشمند Mamal AI هستم</p>
-                    <p class="text-slate-500 text-xs mt-1">کلید OpenRouter از پیش تنظیم شده — فقط بنویس و بفرست!</p>
+                    <p class="text-slate-500 text-xs mt-1">کلید OpenRouter از JSONBin دریافت می‌شود — فقط بنویس و بفرست!</p>
                     <p class="text-sm font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent mt-3 tracking-widest">✦ از هوش جلوتر ✦</p>
                 </div>
             </div>
@@ -274,9 +279,115 @@
 
     <script>
         // ═══════════════════════════════════════════════════════════
-        //   🔑 کلید OpenRouter پیش‌فرض
+        //   🔑 دریافت کلید OpenRouter از JSONBin
+        //   Bin ID: 6af4ec3bac6210605a80ce6c
         // ═══════════════════════════════════════════════════════════
-        const DEFAULT_OPENROUTER_KEY = "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";
+        const JSONBIN_BIN_ID = "6af4ec3bac6210605a80ce6c";
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
+        
+        let cachedOpenRouterKey = null;
+        let keyFetchPromise = null;
+
+        /**
+         * کلید OpenRouter را از JSONBin دریافت می‌کند.
+         * ساختار پاسخ JSONBin: { record: { ... }, metadata: { ... } }
+         * فرض بر این است که کلید در فیلدهایی مثل apiKey، openrouterKey، key،
+         * یا در رکورد به صورت رشته ذخیره شده باشد.
+         */
+        async function fetchOpenRouterKey() {
+            // اگر قبلاً کش شده، همان را برگردان
+            if (cachedOpenRouterKey) return cachedOpenRouterKey;
+            
+            // اگر در حال دریافت است، همان promise را برگردان (جلوگیری از درخواست تکراری)
+            if (keyFetchPromise) return keyFetchPromise;
+            
+            keyFetchPromise = (async () => {
+                try {
+                    console.log('📡 دریافت کلید OpenRouter از JSONBin...');
+                    
+                    const response = await fetch(JSONBIN_URL, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Bin-Meta': 'false' // فقط رکورد را برگردان
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`JSONBin HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('📦 پاسخ JSONBin:', data);
+                    
+                    // ساختار ممکن: خود داده رشته است، یا آبجکت با فیلد کلید
+                    let key = null;
+                    
+                    if (typeof data === 'string') {
+                        key = data.trim();
+                    } else if (data && typeof data === 'object') {
+                        // اگر با X-Bin-Meta:false رکورد مستقیم برگشته
+                        // یا اگر رکورد داخل record باشد
+                        const record = data.record || data;
+                        
+                        if (typeof record === 'string') {
+                            key = record.trim();
+                        } else if (record && typeof record === 'object') {
+                            // تلاش برای پیدا کردن کلید در فیلدهای رایج
+                            const possibleFields = [
+                                'apiKey', 'api_key', 'key', 'openrouterKey',
+                                'openrouter_key', 'OPENROUTER_API_KEY', 'token',
+                                'value', 'secret', 'OPENROUTER_KEY'
+                            ];
+                            
+                            for (const field of possibleFields) {
+                                if (record[field] && typeof record[field] === 'string') {
+                                    key = record[field].trim();
+                                    console.log(`✅ کلید از فیلد "${field}" پیدا شد`);
+                                    break;
+                                }
+                            }
+                            
+                            // اگر هیچ فیلد مشخصی نبود، اولین مقدار رشته‌ای را بگیر
+                            if (!key) {
+                                for (const val of Object.values(record)) {
+                                    if (typeof val === 'string' && val.startsWith('sk-')) {
+                                        key = val.trim();
+                                        console.log('✅ کلید از اولین مقدار sk- پیدا شد');
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // اگر هنوز نه، اولین رشته غیرخالی
+                            if (!key) {
+                                for (const val of Object.values(record)) {
+                                    if (typeof val === 'string' && val.length > 10) {
+                                        key = val.trim();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!key || !key.startsWith('sk-')) {
+                        throw new Error('کلید معتبر OpenRouter در JSONBin یافت نشد (باید با sk- شروع شود)');
+                    }
+                    
+                    console.log('🔑 کلید OpenRouter با موفقیت دریافت شد');
+                    cachedOpenRouterKey = key;
+                    return key;
+                    
+                } catch (err) {
+                    console.error('❌ خطا در دریافت کلید از JSONBin:', err);
+                    keyFetchPromise = null; // اجازه تلاش مجدد
+                    throw err;
+                }
+            })();
+            
+            return keyFetchPromise;
+        }
 
         let currentGeneratedUrl = "";
         let loadingTimerInterval = null;
@@ -601,10 +712,9 @@
                 ]
             },
             openrouter: {
-                name: 'OpenRouter', needsKey: false,
+                name: 'OpenRouter', needsKey: false, // کلید از JSONBin می‌آید، نه از ورودی
                 keyUrl: 'https://openrouter.ai/keys',
-                keyHint: 'کلید پیش‌فرض فعال — مدل‌ها خودکار از API بارگیری می‌شن',
-                defaultKey: DEFAULT_OPENROUTER_KEY,
+                keyHint: 'کلید امن از JSONBin دریافت می‌شود — نیازی به وارد کردن دستی نیست',
                 models: [] // خالی — بعد از بارگیری از API پر می‌شه
             },
             groq: {
@@ -759,16 +869,20 @@
                 keyHint.textContent = config.keyHint;
                 const saved = localStorage.getItem(`chat_key_${provider}`);
                 if (saved) keyInput.value = saved;
-            } else if (config.defaultKey) {
+            } else if (provider === 'openrouter') {
+                // برای OpenRouter، کلید از JSONBin می‌آید و نیازی به ورود دستی نیست
+                // اما یک فیلد نمایشی برای شفافیت نشان می‌دهیم
                 keyContainer.classList.remove('hidden');
                 keyLink.href = config.keyUrl;
                 keyHint.textContent = config.keyHint;
-                const saved = localStorage.getItem(`chat_key_${provider}`);
-                keyInput.value = saved || config.defaultKey;
-                if (!saved) localStorage.setItem(`chat_key_${provider}`, config.defaultKey);
+                keyInput.value = '🔐 کلید امن از JSONBin دریافت می‌شود';
+                keyInput.disabled = true;
+                keyInput.classList.add('opacity-60', 'cursor-not-allowed');
             } else {
                 keyContainer.classList.add('hidden');
                 keyInput.value = '';
+                keyInput.disabled = false;
+                keyInput.classList.remove('opacity-60', 'cursor-not-allowed');
             }
 
             // اگه OpenRouter خالی بود، خودکار بارگیری کن
@@ -779,7 +893,9 @@
 
         document.getElementById('chat-api-key').addEventListener('input', (e) => {
             const provider = document.getElementById('chat-provider').value;
-            localStorage.setItem(`chat_key_${provider}`, e.target.value);
+            if (provider !== 'openrouter') {
+                localStorage.setItem(`chat_key_${provider}`, e.target.value);
+            }
         });
 
         function reloadModels() {
@@ -805,15 +921,26 @@
 
             const provider = document.getElementById('chat-provider').value;
             const model = document.getElementById('chat-model').value;
-            let apiKey = document.getElementById('chat-api-key').value.trim();
 
             if (!model || model.includes('در حال بارگذاری')) {
                 alert('لطفاً صبر کنید مدل‌ها بارگیری بشن');
                 return;
             }
 
-            if (provider === 'openrouter' && !apiKey) apiKey = DEFAULT_OPENROUTER_KEY;
-            if (chatProviders[provider].needsKey && !apiKey) { alert('نیاز به API Key'); return; }
+            // برای OpenRouter، کلید را از JSONBin بگیر
+            let apiKey = document.getElementById('chat-api-key').value.trim();
+            if (provider === 'openrouter') {
+                try {
+                    apiKey = await fetchOpenRouterKey();
+                } catch (err) {
+                    alert('خطا در دریافت کلید OpenRouter از JSONBin: ' + err.message);
+                    document.getElementById('chat-status').textContent = '❌ خطای کلید';
+                    return;
+                }
+            } else if (chatProviders[provider].needsKey && !apiKey) {
+                alert('نیاز به API Key');
+                return;
+            }
 
             input.value = '';
             const emptyEl = document.getElementById('chat-empty');
@@ -901,7 +1028,7 @@
                 <div id="chat-empty" class="flex flex-col items-center justify-center h-full text-center">
                     <div class="text-6xl mb-3 animate-bounce">🤖</div>
                     <p class="text-slate-300 font-bold">سلام! من دستیار هوشمند Mamal AI هستم</p>
-                    <p class="text-slate-500 text-xs mt-1">مدل‌ها خودکار از API بارگیری می‌شن</p>
+                    <p class="text-slate-500 text-xs mt-1">کلید امن از JSONBin دریافت می‌شود</p>
                     <p class="text-sm font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent mt-3 tracking-widest">✦ از هوش جلوتر ✦</p>
                 </div>
             `;
@@ -963,7 +1090,8 @@
         }
 
         console.log('%c🐾 Mamal AI - از هوش جلوتر', 'color: #f43f5e; font-size: 16px; font-weight: bold');
-        console.log('%c🔄 مدل‌ها خودکار از OpenRouter API بارگیری می‌شن', 'color: #10b981; font-size: 12px;');
+        console.log('%c🔐 کلید OpenRouter از JSONBin دریافت می‌شود', 'color: #10b981; font-size: 12px;');
+        console.log('%c📡 JSONBin URL: ' + JSONBIN_URL, 'color: #38bdf8; font-size: 11px;');
     </script>
 </body>
 </html>
