@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تولید تصویر با هوش مصنوعی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 3px; }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">استودیو تصویرسازی هوش مصنوعی</h1>
+            </div>
+            <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-medium">نسخه اصلاح‌شده</span>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <section class="lg:col-span-5 flex flex-col space-y-6">
+            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+                <h2 class="text-lg font-bold mb-4 text-indigo-300 flex items-center gap-2">
+                    <span>۱. تنظیمات تصویر</span>
+                </h2>
+                
+                <div class="mb-4">
+                    <label for="prompt" class="block text-sm font-medium text-slate-400 mb-2">توصیف متنی (به انگلیسی):</label>
+                    <textarea id="prompt" rows="4" 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors resize-none text-sm"
+                        placeholder="A cute white astronaut cat sitting on the moon, cinematic lighting, digital art, 8k resolution..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="image-model" class="block text-sm font-medium text-slate-400 mb-2">موتور پردازش:</label>
+                    <select id="image-model" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+                        <option value="flux" selected>Flux (کیفیت بالا)</option>
+                        <option value="turbo">Turbo (سرعت بالا)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="aspect-ratio" class="block text-sm font-medium text-slate-400 mb-2">نسبت ابعاد:</label>
+                    <select id="aspect-ratio" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+                        <option value="11">مربع (1:1)</option>
+                        <option value="169">افقی (16:9)</option>
+                        <option value="916">عمودی (9:16)</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="image-style" class="block text-sm font-medium text-slate-400 mb-2">سبک هنری (اختیاری):</label>
+                    <select id="image-style" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+                        <option value="">بدون سبک خاص</option>
+                        <option value="cinematic photographic, 8k resolution, dramatic lighting">سینمایی / واقع‌گرایانه</option>
+                        <option value="digital art, highly detailed, vibrant colors, fantasy concept art">هنر دیجیتال / فانتزی</option>
+                        <option value="cyberpunk style, neon lighting, futuristic atmosphere">سایبرپانک</option>
+                        <option value="anime style, gorgeous visual, studio ghibli aesthetic">انیمه</option>
+                        <option value="3D render, blender artwork, cute claymation look">رندر سه بعدی</option>
+                    </select>
+                </div>
+
+                <button id="generate-btn" onclick="generateImage()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="btn-text">خلق تصویر با هوش مصنوعی</span>
+                </button>
+            </div>
+
+            <div id="status-box" class="hidden border p-4 rounded-xl text-sm transition-all duration-300 flex flex-col gap-2">
+                <div class="flex items-center gap-3">
+                    <div id="status-icon"></div>
+                    <div id="status-message" class="font-medium"></div>
+                </div>
+                <div id="status-submessage" class="text-xs opacity-80 pl-8"></div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-7 flex flex-col">
+            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl backdrop-blur-sm shadow-xl flex-grow flex flex-col justify-between min-h-[400px]">
+                <h2 class="text-lg font-bold mb-4 text-purple-300">۲. بوم نمایش تصویر</h2>
+                
+                <div id="placeholder-view" class="flex-grow flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-800 rounded-xl my-2">
+                    <div class="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-slate-400 font-medium text-sm">هنوز هیچ تصویری ساخته نشده است.</p>
+                    <p class="text-slate-600 text-xs mt-1">توصیف خود را به انگلیسی بنویسید و دکمه خلق تصویر را بزنید.</p>
+                </div>
+
+                <div id="result-view" class="hidden flex-grow flex flex-col justify-center items-center my-2 relative">
+                    <div class="w-full overflow-hidden rounded-xl bg-slate-950 border border-slate-800 flex justify-center items-center p-2 relative min-h-[350px]">
+                        <img id="output-img" src="" alt="AI Generated" class="max-h-[500px] object-contain w-auto rounded-lg transition-all duration-300 hidden">
+                        
+                        <div id="inner-loading-box" class="hidden flex flex-col items-center justify-center text-center p-4">
+                            <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p class="text-sm text-indigo-400 font-medium" id="inner-loading-text">در حال اتصال به سرور هوش مصنوعی...</p>
+                            <p class="text-xs text-slate-500 mt-2" id="inner-loading-timer">زمان سپری‌شده: 0 ثانیه</p>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                        <button onclick="downloadImage()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-lg border border-slate-700 flex items-center justify-center gap-2 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            دانلود تصویر
+                        </button>
+                        <button onclick="copyImageUrl()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-3 rounded-lg border border-slate-700 flex items-center justify-center gap-2 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            کپی لینک
+                        </button>
+                        <button onclick="openDirectLink()" class="bg-indigo-950/40 hover:bg-indigo-900/40 text-indigo-300 text-xs font-bold py-2.5 px-3 rounded-lg border border-indigo-800/60 flex items-center justify-center gap-2 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            بازکردن در صفحه جدا
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="max-w-6xl w-full mx-auto px-4 mb-8">
+        <div class="bg-slate-900/30 border border-slate-800/60 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
+            <h3 class="text-md font-bold mb-4 text-slate-400 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                تصاویر اخیر این نشست:
+            </h3>
+            <div id="history-gallery" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                <p id="history-empty-text" class="text-xs text-slate-600 col-span-full">هنوز سابقه‌ای ثبت نشده است.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs text-slate-600">
+        <p>توسعه یافته با استفاده از زیرساخت متن‌باز Pollinations.ai</p>
+    </footer>
+
+    <script>
+        let currentGeneratedUrl = "";
+        let loadingTimerInterval = null;
+        let loadingStartTime = 0;
+
+        function showNotification(message, type = 'success', subMessage = '') {
+            const statusBox = document.getElementById('status-box');
+            const statusIcon = document.getElementById('status-icon');
+            const statusMessage = document.getElementById('status-message');
+            const statusSub = document.getElementById('status-submessage');
+
+            statusMessage.textContent = message;
+            statusSub.textContent = subMessage;
+            
+            statusBox.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20', 'bg-rose-500/10', 'text-rose-400', 'border-rose-500/20', 'bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+
+            if (type === 'success') {
+                statusBox.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.748-5.25z" clip-rule="evenodd" /></svg>`;
+            } else if (type === 'warning') {
+                statusBox.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.401 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" /></svg>`;
+            } else {
+                statusBox.classList.add('bg-rose-500/10', 'text-rose-400', 'border-rose-500/20');
+                statusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" /></svg>`;
+            }
+            statusBox.classList.remove('hidden');
+        }
+
+        function startLoadingTimer() {
+            loadingStartTime = Date.now();
+            const timerEl = document.getElementById('inner-loading-timer');
+            if (loadingTimerInterval) clearInterval(loadingTimerInterval);
+            loadingTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - loadingStartTime) / 1000);
+                if (timerEl) timerEl.textContent = `زمان سپری‌شده: ${elapsed} ثانیه`;
+            }, 1000);
+        }
+
+        function stopLoadingTimer() {
+            if (loadingTimerInterval) {
+                clearInterval(loadingTimerInterval);
+                loadingTimerInterval = null;
+            }
+        }
+
+        function generateImage() {
+            const promptInput = document.getElementById('prompt').value.trim();
+            if (!promptInput) {
+                showNotification('لطفاً متنی برای توصیف تصویر وارد کنید.', 'error');
+                return;
+            }
+
+            const ratio = document.getElementById('aspect-ratio').value;
+            let width = 1024, height = 1024;
+            if (ratio === '169') { width = 1280; height = 720; }
+            else if (ratio === '916') { width = 720; height = 1280; }
+
+            const selectedStyle = document.getElementById('image-style').value;
+            const modelSelected = document.getElementById('image-model').value;
+            const fullPrompt = selectedStyle ? `${promptInput}, ${selectedStyle}` : promptInput;
+
+            const randomSeed = Math.floor(Math.random() * 9999999);
+            
+            // ✅ آدرس درست API: https://image.pollinations.ai/prompt/{encoded}
+            const encodedPrompt = encodeURIComponent(fullPrompt);
+            const targetApiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${randomSeed}&model=${modelSelected}&nologo=true`;
+
+            console.log('📡 API URL:', targetApiUrl);
+
+            currentGeneratedUrl = targetApiUrl;
+            loadImageWithRetry(targetApiUrl, promptInput);
+        }
+
+        function loadImageWithRetry(url, promptText, attempt = 1) {
+            const MAX_ATTEMPTS = 3;
+            const button = document.getElementById('generate-btn');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btn-text');
+            const placeholderView = document.getElementById('placeholder-view');
+            const resultView = document.getElementById('result-view');
+            const outputImg = document.getElementById('output-img');
+            const innerLoadingBox = document.getElementById('inner-loading-box');
+            const innerLoadingText = document.getElementById('inner-loading-text');
+
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            btnText.textContent = attempt > 1 ? `تلاش ${attempt}/${MAX_ATTEMPTS}...` : 'در حال پردازش...';
+
+            placeholderView.classList.add('hidden');
+            resultView.classList.remove('hidden');
+            outputImg.classList.add('hidden');
+            innerLoadingBox.classList.remove('hidden');
+            innerLoadingText.textContent = attempt > 1 
+                ? `تلاش مجدد برای دریافت تصویر (${attempt}/${MAX_ATTEMPTS})...`
+                : 'هوش مصنوعی در حال خلق تصویر شماست. تولید معمولاً ۱۰ الی ۳۰ ثانیه زمان می‌برد...';
+
+            if (attempt === 1) {
+                startLoadingTimer();
+                showNotification('درخواست ارسال شد.', 'warning', 'در حال دریافت تصویر از سرور. لطفاً صبر کنید.');
+            }
+
+            // اضافه کردن cache-buster برای هر تلاش
+            const finalUrl = attempt > 1 ? `${url}&retry=${attempt}&t=${Date.now()}` : url;
+
+            const tempImg = new Image();
+            let resolved = false;
+            let timeoutId = null;
+
+            // Timeout ۹۰ ثانیه (چون Flux ممکنه کند باشه)
+            timeoutId = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    tempImg.src = ''; // cancel loading
+                    handleFailure('timeout');
+                }
+            }, 90000);
+
+            function handleFailure(reason) {
+                stopLoadingTimer();
+                if (attempt < MAX_ATTEMPTS) {
+                    // تلاش مجدد بعد از ۲ ثانیه
+                    setTimeout(() => {
+                        loadImageWithRetry(url, promptText, attempt + 1);
+                    }, 2000);
+                } else {
+                    // شکست نهایی
+                    innerLoadingBox.innerHTML = `
+                        <div class="text-center p-6">
+                            <div class="text-5xl mb-3">⚠️</div>
+                            <span class="text-rose-400 font-bold block mb-2 text-sm">خطا در دریافت تصویر</span>
+                            <span class="text-slate-400 block mb-4 text-xs leading-relaxed">
+                                ${reason === 'timeout' 
+                                    ? 'سرور بیش از ۹۰ ثانیه پاسخ نداد. احتمالاً سرور شلوغ است.' 
+                                    : 'ارتباط با سرور برقرار نشد. احتمالاً فیلترشکن فعال نیست یا سرور مشکل دارد.'}
+                                <br><br>
+                                <strong class="text-amber-300">راه‌حل‌ها:</strong><br>
+                                ۱. VPN / فیلترشکن را فعال کنید<br>
+                                ۲. یک بار دیگر امتحان کنید<br>
+                                ۳. از مرورگر دیگر استفاده کنید
+                            </span>
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="generateImage()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs py-2 px-4 rounded-lg">
+                                    🔄 تلاش مجدد
+                                </button>
+                                <button onclick="window.open('${url}', '_blank')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs py-2 px-4 rounded-lg">
+                                    🔗 باز کردن مستقیم
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    button.disabled = false;
+                    spinner.classList.add('hidden');
+                    btnText.textContent = 'خلق مجدد تصویر';
+                    showNotification('خطا در دریافت تصویر از سرور.', 'error', 'راه‌حل‌ها در کادر نمایش داده شده است.');
+                }
+            }
+
+            tempImg.onload = function() {
+                if (resolved) return;
+                resolved = true;
+                if (timeoutId) clearTimeout(timeoutId);
+                
+                stopLoadingTimer();
+                
+                // بررسی ابعاد تصویر برای اطمینان از اینکه خطا نیست
+                if (tempImg.naturalWidth < 50 || tempImg.naturalHeight < 50) {
+                    handleFailure('invalid');
+                    return;
+                }
+
+                // نمایش تصویر
+                outputImg.src = finalUrl;
+                outputImg.classList.remove('hidden');
+                innerLoadingBox.classList.add('hidden');
+                
+                button.disabled = false;
+                spinner.classList.add('hidden');
+                btnText.textContent = 'خلق تصویر با هوش مصنوعی';
+                
+                showNotification('✅ تصویر با موفقیت ساخته شد!', 'success', `اندازه: ${tempImg.naturalWidth}×${tempImg.naturalHeight}`);
+                addToHistory(finalUrl, promptText);
+            };
+
+            tempImg.onerror = function() {
+                if (resolved) return;
+                resolved = true;
+                if (timeoutId) clearTimeout(timeoutId);
+                handleFailure('error');
+            };
+
+            tempImg.src = finalUrl;
+        }
+
+        function addToHistory(url, prompt) {
+            const gallery = document.getElementById('history-gallery');
+            const emptyText = document.getElementById('history-empty-text');
+            
+            if (emptyText) emptyText.remove();
+
+            const isDuplicate = Array.from(gallery.querySelectorAll('img')).some(img => img.getAttribute('data-origin-url') === url);
+            if (isDuplicate) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = "bg-slate-950 p-1.5 rounded-lg border border-slate-800 cursor-pointer hover:border-indigo-500 transition-colors group relative overflow-hidden";
+            
+            wrapper.onclick = function() {
+                document.getElementById('placeholder-view').classList.add('hidden');
+                document.getElementById('result-view').classList.remove('hidden');
+                const outputImg = document.getElementById('output-img');
+                const innerLoadingBox = document.getElementById('inner-loading-box');
+                currentGeneratedUrl = url;
+                innerLoadingBox.classList.add('hidden');
+                outputImg.classList.remove('hidden');
+                outputImg.src = url;
+                showNotification('تصویر از تاریخچه بارگذاری شد.', 'success');
+            };
+
+            wrapper.innerHTML = `
+                <img src="${url}" data-origin-url="${url}" alt="History" class="w-full aspect-square object-cover rounded-md opacity-70 group-hover:opacity-100 transition-opacity">
+                <div class="absolute bottom-0 left-0 right-0 bg-slate-950/80 p-1 text-[10px] text-slate-400 truncate text-center hidden group-hover:block px-1">
+                    ${prompt}
+                </div>
+            `;
+            gallery.insertBefore(wrapper, gallery.firstChild);
+        }
+
+        function copyImageUrl() {
+            if (!currentGeneratedUrl) return;
+            const dummyInput = document.createElement('input');
+            document.body.appendChild(dummyInput);
+            dummyInput.value = currentGeneratedUrl;
+            dummyInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummyInput);
+            showNotification('لینک تصویر کپی شد!', 'success');
+        }
+
+        function openDirectLink() {
+            if (!currentGeneratedUrl) return;
+            window.open(currentGeneratedUrl, '_blank');
+        }
+
+        function downloadImage() {
+            if (!currentGeneratedUrl) return;
+            showNotification('تصویر در تب جدید باز می‌شود. راست کلیک کنید و Save Image As را بزنید.', 'warning');
+            window.open(currentGeneratedUrl, '_blank');
+        }
+
+        // نمایش نمونه اولیه در کنسول
+        console.log('%c🎨 استودیو تصویرسازی AI آماده است', 'color: #6366f1; font-size: 14px; font-weight: bold');
+        console.log('API: https://image.pollinations.ai/prompt/{prompt}');
+    </script>
+</body>
+</html>
