@@ -580,7 +580,7 @@
                 liked: false,
                 lyrics: {
                     0: "🐾 نیمه شبه و گربول بیداره پای کد...",
-                    8: "💻 باگ‌ها می‌ترسن وقتی اونا رو می‌کنه متد!",
+                    8: "💻 باگ‌ها می‌ترسن وقتی اونا رو می‌کنه متد...",
                     16: "🚀 رنک بالای دانشگاه با اراده‌ای شجاع",
                     25: "✨ آینده مال گربوله، توی دنیای فرانت‌اند..."
                 }
@@ -860,7 +860,8 @@
             terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
             
             if (track.audioBuffer) { currentDecodedAudioBuffer = track.audioBuffer; isNativeStreamingActive = false; }
-            else if (track.url) { isNativeStreamingActive = true; document.getElementById('real-audio-element').src = track.url; }
+            else if (track.url) { isNativeStreamingActive = true; currentDecodedAudioBuffer = null; document.getElementById('real-audio-element').src = track.url; }
+            else { currentDecodedAudioBuffer = null; isNativeStreamingActive = false; }
 
             document.getElementById('deck-track-title').textContent = track.title;
             document.getElementById('deck-track-artist').textContent = track.artist;
@@ -1296,6 +1297,90 @@
             }
         });
 
+        // شنودگر بهبودیافته فایل لوکال گربول پلیر اولترا برای دیکد و بافرینگ امن
+        document.getElementById('input-local-file').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            bootstrapStudioAudioNodes();
+            displayToastNotification("⏳ در حال پردازش فایل لوکال...");
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                audioContextInstance.decodeAudioData(event.target.result, (buf) => {
+                    // افزودن ترک جدید به دیتابیس بومی به صورت لوکال بافر
+                    coreTrackDatabase.push({
+                        title: file.name.replace(/\.[^/.]+$/, ""),
+                        artist: "فایل صوتی محلی کاربر",
+                        duration: buf.duration,
+                        cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
+                        audioBuffer: buf,
+                        lyrics: { 0: "🐾 قطعه لوکال با موفقیت رمزگشایی شد." }
+                    });
+                    
+                    displayToastNotification("🎉 فایل صوتی با موفقیت بارگذاری شد!");
+                    triggerSelectTrackNode(coreTrackDatabase.length - 1);
+                }, (err) => {
+                    displayToastNotification("❌ خطا در رمزگشایی فایل صوتی.");
+                    console.error(err);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // ثبت لینک مستقیم صوتی
+        document.getElementById('btn-inject-link').addEventListener('click', () => {
+            const urlInput = document.getElementById('input-audio-url').value.trim();
+            if (!urlInput) return;
+            coreTrackDatabase.push({
+                title: "قطعه تزریق شده وب",
+                artist: "سیگنال مستقیم URL",
+                duration: 180, 
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
+                url: urlInput,
+                lyrics: { 0: "🐾 در حال استریم آنلاین سیگنال وب..." }
+            });
+            displayToastNotification("🔗 لینک مستقیم ثبت شد.");
+            triggerSelectTrackNode(coreTrackDatabase.length - 1);
+        });
+
+        // رویداد کنترل سرعت پخش
+        document.getElementById('playback-speed').addEventListener('change', () => {
+            if (isPlaying) {
+                virtualPlaybackAccumulator = currentTimeSec;
+                executeTrackPlaybackCore();
+            }
+        });
+
+        // دکمه لایک
+        document.getElementById('btn-favorite-heart').addEventListener('click', function() {
+            const track = coreTrackDatabase[currentTrackIndex];
+            track.liked = !track.liked;
+            this.textContent = track.liked ? "❤️" : "🤍";
+            this.style.color = track.liked ? "#ff6b6b" : "#64748b";
+        });
+
+        // مدیریت میوت و صدا
+        document.getElementById('btn-mute-switch').addEventListener('click', () => {
+            isMutedState = !isMutedState;
+            document.getElementById('btn-mute-switch').textContent = isMutedState ? "🔇" : "🔊";
+            synchronizeVolumeGainLevel();
+        });
+        document.getElementById('slider-volume-node').addEventListener('input', synchronizeVolumeGainLevel);
+
+        // ناوبری ترک‌ها
+        document.getElementById('btn-master-trigger-play').addEventListener('click', handlePlayPauseMasterToggle);
+        document.getElementById('btn-prev-node').addEventListener('click', () => {
+            let prev = currentTrackIndex - 1;
+            if (prev < 0) prev = coreTrackDatabase.length - 1;
+            triggerSelectTrackNode(prev);
+        });
+        document.getElementById('btn-next-node').addEventListener('click', () => {
+            let next = currentTrackIndex + 1;
+            if (next >= coreTrackDatabase.length) next = 0;
+            triggerSelectTrackNode(next);
+        });
+
         // شنودگر درگ و کلیک لایه‌های روی بوم استیکر
         canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -1365,9 +1450,6 @@
             updateStickerUI();
             drawCanvas();
         };
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>
