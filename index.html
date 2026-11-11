@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پلتفرم چندرسانه‌ا ی گربول اولترا و استودیوی پویانمایی استیکر</title>
+    <title>پلتفرم چندرسانه‌ای گربول اولترا و استودیوی پویانمایی استیکر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- کتابخانه gifshot با Fallback چندگانه -->
     <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js" 
             onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/gifshot@0.4.5/dist/gifshot.min.js';s.onerror=function(){var s2=document.createElement('script');s2.src='https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js';document.head.appendChild(s2);};document.head.appendChild(s);"></script>
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
@@ -129,6 +128,12 @@
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9px; }
         ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+
+        @keyframes pulseBorder {
+            0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
+        }
+        .rendering-active { animation: pulseBorder 1.5s infinite; }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen p-4 md:p-8 flex flex-col gap-8 overflow-x-hidden selection:bg-indigo-500/30">
@@ -429,6 +434,10 @@
                         <button id="btn-duplicate-frame" class="bg-slate-800/90 hover:bg-slate-700 text-indigo-300 text-xs px-3 py-1.5 rounded-lg font-medium">👥 تکثیر</button>
                         <button id="btn-download-png" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition-all">📥 PNG</button>
                         <button id="btn-export-gif" class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">📥 GIF</button>
+                        <select id="gif-mode-select" class="bg-slate-900 border border-slate-700 text-white text-[10px] px-2 py-1.5 rounded-lg outline-none cursor-pointer" title="حالت انیمیشن GIF">
+                            <option value="independent">🎬 مستقل (هر فریم جدا)</option>
+                            <option value="accumulative">📚 تجمعی (انباشت لایه‌ها)</option>
+                        </select>
                     </div>
                     <div class="text-[11px] font-medium text-slate-400">
                         فریم: <span id="lbl-active-frame" class="text-indigo-400 font-black">1</span> از <span id="lbl-total-frames" class="text-slate-300">1</span>
@@ -588,6 +597,9 @@
         const canvas = document.getElementById('sticker-canvas');
         const ctx = canvas.getContext('2d');
 
+        // ═══════════════════════════════════════════════════════════
+        //   ساختار داده‌های فریم‌ها (به‌صورت مستقل و ایمن)
+        // ═══════════════════════════════════════════════════════════
         let frames = [ { layers: [] } ];
         let activeFrameIndex = 0;
         let selectedLayerId = null;
@@ -663,18 +675,13 @@
         let recordTimerInterval = null;
 
         // ═══════════════════════════════════════════════════════════
-        //   بارگذاری مطمئن gifshot با چند CDN جایگزین
+        //   gifshot Loader
         // ═══════════════════════════════════════════════════════════
         let gifshotLoadingPromise = null;
         
         function ensureGifshotLoaded() {
-            if (typeof gifshot !== 'undefined') {
-                return Promise.resolve();
-            }
-            
-            if (gifshotLoadingPromise) {
-                return gifshotLoadingPromise;
-            }
+            if (typeof gifshot !== 'undefined') return Promise.resolve();
+            if (gifshotLoadingPromise) return gifshotLoadingPromise;
             
             gifshotLoadingPromise = new Promise((resolve, reject) => {
                 const cdns = [
@@ -689,9 +696,7 @@
                 
                 function tryLoad() {
                     if (idx >= cdns.length) {
-                        if (!resolved) {
-                            reject(new Error('همه CDNها شکست خوردند'));
-                        }
+                        if (!resolved) reject(new Error('همه CDNها شکست خوردند'));
                         return;
                     }
                     
@@ -710,19 +715,15 @@
                         }, 100);
                     };
                     
-                    script.onerror = () => {
-                        tryLoad();
-                    };
-                    
+                    script.onerror = () => tryLoad();
                     document.head.appendChild(script);
                 }
                 
                 tryLoad();
                 
-                // Timeout کلی
                 setTimeout(() => {
                     if (!resolved && typeof gifshot === 'undefined') {
-                        reject(new Error('Timeout: کتابخانه در زمان مقرر لود نشد'));
+                        reject(new Error('Timeout'));
                     }
                 }, 15000);
             });
@@ -765,20 +766,36 @@
             document.getElementById(tabId).classList.remove('hidden');
         }
 
-        // ================= استیکرساز =================
+        // ═══════════════════════════════════════════════════════════
+        //   ⚡ هسته اصلی: drawCanvas — فقط فریم فعال را می‌کشد
+        // ═══════════════════════════════════════════════════════════
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // ۱. پیازکاری: فقط فریم قبلی با شفافیت پایین
             const isOnionSkinEnabled = document.getElementById('toggle-onion-skin').checked;
             if (isOnionSkinEnabled && activeFrameIndex > 0 && !isPlayingGif) {
-                ctx.save(); ctx.globalAlpha = 0.25;
-                frames[activeFrameIndex - 1].layers.forEach(l => renderSingleLayer(ctx, l, true));
+                ctx.save();
+                ctx.globalAlpha = 0.25;
+                const prevFrame = frames[activeFrameIndex - 1];
+                if (prevFrame && Array.isArray(prevFrame.layers)) {
+                    prevFrame.layers.forEach(l => {
+                        ctx.save();
+                        renderSingleLayer(ctx, l, true);
+                        ctx.restore();
+                    });
+                }
                 ctx.restore();
             }
-
-            const activeFrame = frames[activeFrameIndex];
-            if (activeFrame) {
-                activeFrame.layers.forEach(l => { ctx.save(); renderSingleLayer(ctx, l, false); ctx.restore(); });
+            
+            // ۲. لایه‌های فریم فعال (فقط همین فریم!)
+            const currentFrame = frames[activeFrameIndex];
+            if (currentFrame && Array.isArray(currentFrame.layers)) {
+                currentFrame.layers.forEach(l => {
+                    ctx.save();
+                    renderSingleLayer(ctx, l, false);
+                    ctx.restore();
+                });
             }
         }
 
@@ -904,7 +921,7 @@
             frames.forEach((frame, idx) => {
                 const thumb = document.createElement('div');
                 thumb.className = `relative flex-shrink-0 w-14 h-14 rounded-xl cursor-pointer border-2 transition-all flex flex-col items-center justify-center font-bold text-[10px] ${idx === activeFrameIndex ? 'border-indigo-500 bg-indigo-950 text-indigo-300 shadow-md' : 'border-slate-800 bg-slate-900 text-slate-500'}`;
-                thumb.innerHTML = `<span>فریم-${idx + 1}</span>`;
+                thumb.innerHTML = `<span>فریم-${idx + 1}</span><span class="text-[8px] opacity-60">${frame.layers.length} لایه</span>`;
                 thumb.addEventListener('click', () => {
                     if (isPlayingGif) stopGifPlayback();
                     activeFrameIndex = idx; selectedLayerId = null; updateStickerUI(); drawCanvas();
@@ -1141,21 +1158,69 @@
             e.target.value = '';
         });
 
+        // ═══════════════════════════════════════════════════════════
+        //   ➕ فریم جدید: کاملاً خالی و مستقل
+        // ═══════════════════════════════════════════════════════════
         document.getElementById('btn-add-frame').addEventListener('click', () => {
-            frames.push({ layers: [] }); activeFrameIndex = frames.length - 1; updateStickerUI(); drawCanvas();
+            // فریم جدید کاملاً خالی — بدون هیچ reference به فریم قبلی
+            frames.push({ layers: [] });
+            activeFrameIndex = frames.length - 1;
+            selectedLayerId = null;
+            updateStickerUI();
+            drawCanvas();
+            showToast('✅ فریم خالی جدید اضافه شد');
+            console.log('📸 فریم جدید خالی:', activeFrameIndex + 1, '| تعداد کل فریم‌ها:', frames.length);
         });
 
+        // ═══════════════════════════════════════════════════════════
+        //   👥 تکثیر: با کپی عمیق واقعی
+        // ═══════════════════════════════════════════════════════════
         document.getElementById('btn-duplicate-frame').addEventListener('click', () => {
             const sourceFrame = frames[activeFrameIndex];
-            const duplicated = sourceFrame.layers.map(l => {
-                if (l.type === 'brush') {
-                    const bCanvas = document.createElement('canvas'); bCanvas.width = 400; bCanvas.height = 400;
-                    const bCtx = bCanvas.getContext('2d'); bCtx.drawImage(l.canvasElement, 0, 0);
-                    return { ...l, id: generateId(), canvasElement: bCanvas, ctxElement: bCtx };
-                }
-                return { ...l, id: generateId() };
-            });
-            frames.splice(activeFrameIndex + 1, 0, { layers: duplicated }); activeFrameIndex++; updateStickerUI(); drawCanvas();
+            
+            if (!sourceFrame || sourceFrame.layers.length === 0) {
+                showToast('⚠️ فریم فعلی خالی است. از ➕ استفاده کنید.');
+                return;
+            }
+            
+            const shouldCopy = confirm(
+                'آیا لایه‌های فریم فعلی به فریم جدید کپی شوند؟\n\n' +
+                '✅ OK = کپی لایه‌ها\n' +
+                '❌ Cancel = فریم خالی'
+            );
+            
+            let newFrame;
+            
+            if (!shouldCopy) {
+                newFrame = { layers: [] };
+            } else {
+                // کپی عمیق واقعی
+                const deepLayers = sourceFrame.layers.map(l => {
+                    const copy = { ...l, id: generateId() };
+                    
+                    // brush: کپی canvas
+                    if (l.type === 'brush' && l.canvasElement) {
+                        const newCanvas = document.createElement('canvas');
+                        newCanvas.width = 400;
+                        newCanvas.height = 400;
+                        const newCtx = newCanvas.getContext('2d');
+                        newCtx.drawImage(l.canvasElement, 0, 0);
+                        copy.canvasElement = newCanvas;
+                        copy.ctxElement = newCtx;
+                    }
+                    
+                    return copy;
+                });
+                
+                newFrame = { layers: deepLayers };
+            }
+            
+            frames.splice(activeFrameIndex + 1, 0, newFrame);
+            activeFrameIndex++;
+            selectedLayerId = null;
+            updateStickerUI();
+            drawCanvas();
+            showToast(shouldCopy ? '✅ فریم کپی شد' : '✅ فریم خالی اضافه شد');
         });
 
         document.getElementById('btn-play-gif').addEventListener('click', () => {
@@ -1217,7 +1282,90 @@
             showToast('✅ تصویر PNG ذخیره شد!');
         });
 
-        // ================= خروجی GIF (اصلاح‌شده با await) =================
+        // ═══════════════════════════════════════════════════════════
+        //   رندر لایه برای GIF (بدون reference مشترک)
+        // ═══════════════════════════════════════════════════════════
+        function renderLayerForGif(targetCtx, l, isDieCut) {
+            targetCtx.save();
+            targetCtx.translate(l.x, l.y);
+            targetCtx.rotate((l.rotate * Math.PI) / 180);
+            
+            const rX = ((l.rotateX || 0) * Math.PI) / 180;
+            const rY = ((l.rotateY || 0) * Math.PI) / 180;
+            const scaleX = Math.max(0.01, Math.cos(rY)) * (l.scale / 100);
+            const scaleY = Math.max(0.01, Math.cos(rX)) * (l.scale / 100);
+            targetCtx.scale(scaleX, scaleY);
+            
+            if (l.filter && l.filter !== 'none') targetCtx.filter = l.filter;
+            if (l.opacity !== undefined && l.opacity !== null) targetCtx.globalAlpha = l.opacity / 100;
+            
+            try {
+                if (l.type === 'text' || l.type === 'emoji') {
+                    const fW = l.fontWeight || 'bold';
+                    const fF = l.fontFamily || 'Vazirmatn';
+                    const fSize = l.fontSize || (l.type === 'emoji' ? 50 : 32);
+                    targetCtx.font = `${fW} ${fSize}px ${fF}, Arial, sans-serif`;
+                    targetCtx.textAlign = 'center';
+                    targetCtx.textBaseline = 'middle';
+                    
+                    if (isDieCut) {
+                        targetCtx.strokeStyle = '#ffffff';
+                        targetCtx.lineWidth = (l.strokeWidth || 2) + 12;
+                        targetCtx.lineJoin = 'round';
+                        targetCtx.strokeText(l.content, 0, 0);
+                    }
+                    if (l.strokeWidth > 0) {
+                        targetCtx.strokeStyle = l.strokeColor || '#000000';
+                        targetCtx.lineWidth = l.strokeWidth;
+                        targetCtx.lineJoin = 'round';
+                        targetCtx.strokeText(l.content, 0, 0);
+                    }
+                    targetCtx.fillStyle = l.color || '#ffffff';
+                    targetCtx.fillText(l.content, 0, 0);
+                } else if (l.type === 'shape') {
+                    const size = l.shapeSize || 70;
+                    targetCtx.beginPath();
+                    buildShapePath(targetCtx, l.shapeType, size);
+                    
+                    if (isDieCut) {
+                        targetCtx.save();
+                        targetCtx.lineWidth = (l.strokeWidth || 3) + 12;
+                        targetCtx.strokeStyle = '#ffffff';
+                        targetCtx.lineJoin = 'round';
+                        targetCtx.stroke();
+                        targetCtx.restore();
+                    }
+                    
+                    targetCtx.fillStyle = l.fillColor || '#3b82f6';
+                    targetCtx.fill();
+                    
+                    if (l.strokeWidth > 0) {
+                        targetCtx.strokeStyle = l.strokeColor || '#ffffff';
+                        targetCtx.lineWidth = l.strokeWidth;
+                        targetCtx.lineJoin = 'round';
+                        targetCtx.stroke();
+                    }
+                } else if (l.type === 'brush' && l.canvasElement) {
+                    targetCtx.drawImage(l.canvasElement, -200, -200, 400, 400);
+                } else if (l.type === 'image' && l.imgElement && l.imgReady) {
+                    const w = l.width || 100;
+                    const h = l.height || 100;
+                    if (isDieCut) {
+                        targetCtx.fillStyle = '#ffffff';
+                        targetCtx.fillRect(-w/2 - 6, -h/2 - 6, w + 12, h + 12);
+                    }
+                    targetCtx.drawImage(l.imgElement, -w/2, -h/2, w, h);
+                }
+            } catch (err) {
+                console.warn('[GIF] خطا در رندر لایه:', err);
+            }
+            
+            targetCtx.restore();
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //   📥 خروجی GIF با حالت مستقل/تجمعی
+        // ═══════════════════════════════════════════════════════════
         document.getElementById('btn-export-gif').addEventListener('click', async () => {
             const exportBtn = document.getElementById('btn-export-gif');
             const originalText = exportBtn.innerText;
@@ -1227,155 +1375,136 @@
                 return;
             }
             
-            // ─── اطمینان از بارگذاری gifshot ───
+            const gifMode = document.getElementById('gif-mode-select')?.value || 'independent';
+            const modeLabel = gifMode === 'accumulative' ? '📚 تجمعی' : '🎬 مستقل';
+            
+            // دیباگ کامل
+            console.log('%c══════ GIF EXPORT START ══════', 'color: #10b981; font-weight: bold');
+            console.log('حالت:', gifMode, '| تعداد فریم‌ها:', frames.length);
+            frames.forEach((f, i) => {
+                console.log(`  فریم ${i + 1}: ${f.layers.length} لایه →`, f.layers.map(l => l.content || l.shapeType || l.type));
+            });
+            console.log('%c════════════════════════════', 'color: #10b981; font-weight: bold');
+            
             exportBtn.disabled = true;
-            exportBtn.innerText = '⏳ لود کتابخانه...';
+            exportBtn.classList.add('rendering-active');
+            exportBtn.innerText = '⏳ لود...';
             showToast('⏳ در حال بارگذاری کتابخانه GIF...');
             
             try {
                 await ensureGifshotLoaded();
             } catch (err) {
-                console.error('gifshot load error:', err);
-                showToast('❌ خطا: کتابخانه gifshot از هیچ CDN لود نشد. اتصال اینترنت را بررسی کنید.');
+                showToast('❌ خطا: کتابخانه gifshot لود نشد.');
                 exportBtn.disabled = false;
+                exportBtn.classList.remove('rendering-active');
                 exportBtn.innerText = originalText;
                 return;
             }
             
             if (typeof gifshot === 'undefined') {
-                showToast('❌ خطا: کتابخانه gifshot در دسترس نیست.');
+                showToast('❌ خطا: gifshot در دسترس نیست.');
                 exportBtn.disabled = false;
+                exportBtn.classList.remove('rendering-active');
                 exportBtn.innerText = originalText;
                 return;
             }
             
-            exportBtn.innerText = '⏳ رندر...';
-            showToast('⏳ در حال آماده‌سازی فریم‌ها...');
+            exportBtn.innerText = `⏳ رندر (${modeLabel})...`;
             
-            setTimeout(() => {
-                try {
-                    const compiled = [];
-                    const SIZE = 400;
-                    const tempCnv = document.createElement('canvas');
-                    tempCnv.width = SIZE;
-                    tempCnv.height = SIZE;
-                    const tempCtx = tempCnv.getContext('2d');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            try {
+                const SIZE = 400;
+                const compiled = [];
+                const tempCnv = document.createElement('canvas');
+                tempCnv.width = SIZE;
+                tempCnv.height = SIZE;
+                const tempCtx = tempCnv.getContext('2d');
+                const isDieCut = document.getElementById('toggle-sticker-border').checked;
+                
+                for (let i = 0; i < frames.length; i++) {
+                    tempCtx.clearRect(0, 0, SIZE, SIZE);
                     
-                    const isDieCut = document.getElementById('toggle-sticker-border').checked;
+                    let layersForThisFrame;
                     
-                    for (let i = 0; i < frames.length; i++) {
-                        tempCtx.clearRect(0, 0, SIZE, SIZE);
-                        
-                        frames[i].layers.forEach(l => {
-                            tempCtx.save();
-                            tempCtx.translate(l.x, l.y);
-                            tempCtx.rotate((l.rotate * Math.PI) / 180);
-                            const rX = ((l.rotateX || 0) * Math.PI) / 180;
-                            const rY = ((l.rotateY || 0) * Math.PI) / 180;
-                            tempCtx.scale(
-                                Math.max(0.01, Math.cos(rY)) * (l.scale / 100),
-                                Math.max(0.01, Math.cos(rX)) * (l.scale / 100)
-                            );
-                            if (l.filter && l.filter !== 'none') tempCtx.filter = l.filter;
-                            if (l.opacity !== undefined) tempCtx.globalAlpha = l.opacity / 100;
-
-                            if (l.type === 'text' || l.type === 'emoji') {
-                                const fW = l.fontWeight || 'bold';
-                                const fF = l.fontFamily || 'Vazirmatn';
-                                const fSize = l.fontSize || (l.type === 'emoji' ? 50 : 32);
-                                tempCtx.font = `${fW} ${fSize}px ${fF}, Arial`;
-                                tempCtx.textAlign = 'center';
-                                tempCtx.textBaseline = 'middle';
-                                if (isDieCut) {
-                                    tempCtx.strokeStyle = '#ffffff';
-                                    tempCtx.lineWidth = (l.strokeWidth || 2) + 12;
-                                    tempCtx.lineJoin = 'round';
-                                    tempCtx.strokeText(l.content, 0, 0);
-                                }
-                                if (l.strokeWidth > 0) {
-                                    tempCtx.strokeStyle = l.strokeColor || '#000000';
-                                    tempCtx.lineWidth = l.strokeWidth;
-                                    tempCtx.lineJoin = 'round';
-                                    tempCtx.strokeText(l.content, 0, 0);
-                                }
-                                tempCtx.fillStyle = l.color || '#ffffff';
-                                tempCtx.fillText(l.content, 0, 0);
-                            } else if (l.type === 'shape') {
-                                tempCtx.fillStyle = l.fillColor || '#3b82f6';
-                                tempCtx.strokeStyle = l.strokeColor || '#ffffff';
-                                tempCtx.lineWidth = l.strokeWidth || 3;
-                                tempCtx.beginPath();
-                                const size = l.shapeSize || 70;
-                                if (isDieCut) {
-                                    tempCtx.save();
-                                    tempCtx.lineWidth = (l.strokeWidth || 3) + 12;
-                                    tempCtx.strokeStyle = '#ffffff';
-                                    buildShapePath(tempCtx, l.shapeType, size);
-                                    tempCtx.stroke();
-                                    tempCtx.restore();
-                                    tempCtx.beginPath();
-                                }
-                                buildShapePath(tempCtx, l.shapeType, size);
-                                tempCtx.fill();
-                                tempCtx.stroke();
-                            } else if (l.type === 'brush') {
-                                tempCtx.drawImage(l.canvasElement, -200, -200);
-                            } else if (l.type === 'image' && l.imgReady) {
-                                if (isDieCut) {
-                                    tempCtx.fillStyle = '#ffffff';
-                                    tempCtx.fillRect(-l.width/2 - 6, -l.height/2 - 6, l.width + 12, l.height + 12);
-                                }
-                                tempCtx.drawImage(l.imgElement, -l.width/2, -l.height/2, l.width, l.height);
+                    if (gifMode === 'accumulative') {
+                        // تجمعی: همه لایه‌های فریم 0 تا i
+                        layersForThisFrame = [];
+                        for (let j = 0; j <= i; j++) {
+                            if (frames[j] && Array.isArray(frames[j].layers)) {
+                                frames[j].layers.forEach(l => layersForThisFrame.push(l));
                             }
-                            tempCtx.restore();
-                        });
-                        
-                        compiled.push(tempCnv.toDataURL('image/png'));
-                    }
-                    
-                    if (compiled.length === 0) {
-                        showToast('❌ فریمی برای خروجی وجود ندارد.');
-                        exportBtn.disabled = false;
-                        exportBtn.innerText = originalText;
-                        return;
-                    }
-                    
-                    showToast(`⏳ در حال ساخت GIF از ${compiled.length} فریم...`);
-                    
-                    const gifFrames = compiled.length === 1 ? [compiled[0], compiled[0]] : compiled;
-                    
-                    gifshot.createGIF({
-                        images: gifFrames,
-                        gifWidth: SIZE,
-                        gifHeight: SIZE,
-                        interval: Math.max(0.05, 1 / animationFps),
-                        numWorkers: 1,
-                        sampleInterval: 10,
-                        numFrames: gifFrames.length
-                    }, function(obj) {
-                        exportBtn.disabled = false;
-                        exportBtn.innerText = originalText;
-                        
-                        if (!obj.error) {
-                            const a = document.createElement('a');
-                            a.download = `animated-sticker-${Date.now()}.gif`;
-                            a.href = obj.image;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            showToast('✅ فایل GIF با موفقیت ذخیره شد!');
-                        } else {
-                            console.error('GIFShot error:', obj.errorMsg || obj.error);
-                            showToast('❌ خطا در ساخت GIF: ' + (obj.errorMsg || 'ناشناخته'));
                         }
+                    } else {
+                        // مستقل: فقط لایه‌های فریم i
+                        layersForThisFrame = (frames[i] && Array.isArray(frames[i].layers)) ? frames[i].layers : [];
+                    }
+                    
+                    console.log(`[GIF] فریم ${i + 1}: رندر ${layersForThisFrame.length} لایه`);
+                    
+                    layersForThisFrame.forEach(l => {
+                        renderLayerForGif(tempCtx, l, isDieCut);
                     });
-                } catch (err) {
-                    console.error('GIF export error:', err);
-                    showToast('❌ خطای غیرمنتظره: ' + err.message);
-                    exportBtn.disabled = false;
-                    exportBtn.innerText = originalText;
+                    
+                    compiled.push(tempCnv.toDataURL('image/png'));
+                    
+                    const progress = Math.round(((i + 1) / frames.length) * 100);
+                    exportBtn.innerText = `⏳ ${progress}%`;
+                    
+                    if ((i + 1) % 3 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
                 }
-            }, 50);
+                
+                if (compiled.length === 0) {
+                    showToast('❌ فریمی برای خروجی وجود ندارد.');
+                    exportBtn.disabled = false;
+                    exportBtn.classList.remove('rendering-active');
+                    exportBtn.innerText = originalText;
+                    return;
+                }
+                
+                console.log(`[GIF] ${compiled.length} فریم آماده، شروع فشرده‌سازی...`);
+                exportBtn.innerText = '⏳ ساخت GIF...';
+                showToast(`⏳ فشرده‌سازی ${compiled.length} فریم...`);
+                
+                const gifFrames = compiled.length === 1 ? [compiled[0], compiled[0]] : compiled;
+                
+                gifshot.createGIF({
+                    images: gifFrames,
+                    gifWidth: SIZE,
+                    gifHeight: SIZE,
+                    interval: Math.max(0.05, 1 / animationFps),
+                    numWorkers: 1,
+                    sampleInterval: 10,
+                    numFrames: gifFrames.length
+                }, function(obj) {
+                    exportBtn.disabled = false;
+                    exportBtn.classList.remove('rendering-active');
+                    exportBtn.innerText = originalText;
+                    
+                    if (!obj.error) {
+                        const a = document.createElement('a');
+                        a.download = `animated-${gifMode}-${Date.now()}.gif`;
+                        a.href = obj.image;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showToast(`✅ GIF (${modeLabel}) ذخیره شد!`);
+                        console.log(`[GIF] ✅ خروجی موفق در حالت ${gifMode}`);
+                    } else {
+                        console.error('[GIF] ❌ خطا:', obj.errorMsg || obj.error);
+                        showToast('❌ خطا: ' + (obj.errorMsg || 'ناشناخته'));
+                    }
+                });
+                
+            } catch (err) {
+                console.error('[GIF] خطا:', err);
+                showToast('❌ خطا: ' + err.message);
+                exportBtn.disabled = false;
+                exportBtn.classList.remove('rendering-active');
+                exportBtn.innerText = originalText;
+            }
         });
 
         // ================= موزیک پلیر =================
@@ -1955,7 +2084,6 @@
             buildSpectrumVisualizerLayoutNodes(); triggerSelectTrackNode(0); updateStickerUI();
             setInterval(() => { if(!isPlayingGif) drawCanvas(); }, 30);
             
-            // بررسی اولیه gifshot در پس‌زمینه
             ensureGifshotLoaded().then(() => {
                 console.log('✅ gifshot آماده است');
             }).catch((err) => {
