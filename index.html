@@ -6,7 +6,7 @@
     <title>پلتفرم چندرسانه‌ای گربول اولترا و استودیوی پویانمایی استیکر</title>
     <!-- Tailwind CSS جهت طراحی خیره‌کننده و مدرن UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- کتابخانه استاندارد پردازش تصاویر متحرک کلاینت‌ ساید تحت دامنه مجاز cloudflare -->
+    <!-- کتابخانه استاندارد پردازش تصاویر متحرک کلاینت‌ساید تحت دامنه مجاز cloudflare -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;750;900&display=swap" rel="stylesheet">
     <style>
@@ -279,7 +279,7 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 🎨 بخش دوم: استودیوی متحرک‌سازی و طراحی گرافیکی استیکر (پایین صفحه) 🎨 -->
+    <!-- 🎨 بخش دوم: استودیوی متحرک‌سازی و طراحی گرافیکی استیکر (وسط صفحه) 🎨 -->
     <!-- ========================================================================= -->
     <section class="max-w-[1500px] w-full mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 items-start pt-4 border-t-2 border-slate-800/60">
         
@@ -478,6 +478,81 @@
         </aside>
     </section>
 
+    <!-- ========================================================================= -->
+    <!-- 🎚️ بخش سوم: استودیوی حرفه‌ای و کامل ادیت و افکت‌گذاری وویس (پایین صفحه) 🎚️ -->
+    <!-- ========================================================================= -->
+    <section class="max-w-[1200px] w-full mx-auto glass-panel rounded-[30px] p-6 border border-cyan-500/30 shadow-2xl mt-8 mb-12">
+        <div class="flex items-center gap-3 border-b border-cyan-500/20 pb-3 mb-4">
+            <span class="text-2xl animate-pulse">🎙️</span>
+            <h2 class="text-lg font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">آزمایشگاه و استودیوی ادیت صدا و وویس (Voice Audio Lab)</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            <!-- ستون ابزارها و اکشن‌های فایل وویس -->
+            <div class="md:col-span-4 flex flex-col gap-3">
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 block mb-2 font-bold">🎯 ورودی صدا و ضبط زنده</span>
+                    <div class="flex gap-2">
+                        <button id="btn-record-voice" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1">
+                            <span id="record-icon">🔴</span> <span id="record-text">ضبط با میکروفون</span>
+                        </button>
+                        <label class="bg-slate-900 border border-slate-700 hover:bg-cyan-600 text-white text-xs px-3 py-2 rounded-lg font-bold cursor-pointer transition-all text-center flex items-center justify-center">
+                            📁 بارگذاری وویس
+                            <input type="file" id="upload-voice-file" accept="audio/*" class="hidden">
+                        </label>
+                    </div>
+                    <div id="voice-record-timer" class="text-center text-xs font-mono text-red-400 mt-2 hidden">00:00</div>
+                </div>
+
+                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+                    <span class="text-xs text-slate-400 block font-bold">✨ اعمال افکت صوتی دیجیتال (DSP)</span>
+                    <select id="select-voice-effect" class="bg-slate-900 border border-slate-800 text-xs p-2 rounded-lg text-slate-200 outline-none w-full cursor-pointer">
+                        <option value="none">بدون افکت (صدای طبیعی)</option>
+                        <option value="robot">🤖 ربات سایبرپانک (Robot Synth)</option>
+                        <option value="echo">🌌 اکو فضایی و طنین (Space Echo)</option>
+                        <option value="radio">📻 رادیو قدیمی و بیسیم (Old Radio)</option>
+                        <option value="highpitch">🐿️ صدای نازک کارتونی (Chipmunk)</option>
+                        <option value="lowpitch">👹 صدای بم غول‌آسا (Monster Pitch)</option>
+                    </select>
+
+                    <button id="btn-reverse-voice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 text-xs py-2 rounded-lg font-bold transition-all">🔄 معکوس‌سازی کامل وویس (Reverse)</button>
+                </div>
+            </div>
+
+            <!-- ستون تایم‌لاین ادیت، پیش‌نمایش موج و ابزار برش -->
+            <div class="md:col-span-8 flex flex-col gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
+                <span class="text-xs text-slate-400 font-bold block">🎛️ ابزار زمان‌بندی و بازه ادیت وویس</span>
+                
+                <!-- پیش‌نمایش گرافیکی موج صوتی وویس بارگذاری‌شده -->
+                <div class="h-16 bg-slate-950 rounded-xl relative border border-cyan-500/20 flex items-center justify-center overflow-hidden">
+                    <div id="voice-wave-placeholder" class="text-xs text-slate-600 font-medium">موج صوتی وویس در این بخش رندر می‌شود</div>
+                    <div id="voice-waveform-canvas" class="absolute inset-0 flex items-center justify-center gap-0.5 px-2 pointer-events-none"></div>
+                </div>
+
+                <!-- کنترلرهای بازه برش وویس -->
+                <div class="grid grid-cols-2 gap-4 text-xs font-bold bg-slate-950/80 p-3 rounded-lg border border-slate-900">
+                    <div>
+                        <span class="text-slate-500 text-[10px] block mb-1">شروع برش (ثانیه):</span>
+                        <input type="number" id="voice-trim-start" min="0" step="0.1" value="0" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-center text-cyan-400">
+                    </div>
+                    <div>
+                        <span class="text-slate-500 text-[10px] block mb-1">پایان برش (ثانیه):</span>
+                        <input type="number" id="voice-trim-end" min="0" step="0.1" value="5" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-center text-cyan-400">
+                    </div>
+                </div>
+
+                <!-- کنترل پخش و خروجی نهایی وویس ادیت شده -->
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-3">
+                    <div class="flex gap-2">
+                        <button id="btn-play-voice" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-4 rounded-lg transition-all">▶️ پخش وویس ادیت‌شده</button>
+                        <button id="btn-stop-voice" class="bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs py-2 px-3 rounded-lg transition-all">⏹️ توقف</button>
+                    </div>
+                    <button id="btn-download-voice" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs py-2 px-4 rounded-lg transition-transform active:scale-95 shadow-md">📥 دانلود وویس نهایی (WAV)</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- جاوااسکریپت و کدهای عملکردی یکپارچه شده پلتفرم صوتی و تصویری -->
     <script>
         const canvas = document.getElementById('sticker-canvas');
@@ -556,6 +631,16 @@
         let auto3Ddeg = 0;
         let auto3DLoop = null;
 
+        // دیتابیس مستقل ابزار ادیت وویس بخش سوم
+        let voiceAudioContext = null;
+        let voiceAudioBuffer = null;
+        let voiceActiveSource = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+        let recordTimeSec = 0;
+        let recordTimerInterval = null;
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             if (toast) {
@@ -571,13 +656,15 @@
 
         function displayToastNotification(msg) {
             const bubble = document.getElementById('status-toast-node');
-            bubble.textContent = msg;
-            bubble.classList.remove('opacity-0');
-            bubble.classList.add('opacity-100');
-            setTimeout(() => {
-                bubble.classList.remove('opacity-100');
-                bubble.classList.add('opacity-0');
-            }, 3000);
+            if (bubble) {
+                bubble.textContent = msg;
+                bubble.classList.remove('opacity-0');
+                bubble.classList.add('opacity-100');
+                setTimeout(() => {
+                    bubble.classList.remove('opacity-100');
+                    bubble.classList.add('opacity-0');
+                }, 3000);
+            }
         }
 
         function generateId() { return 'layer_' + Math.random().toString(36).substr(2, 9); }
@@ -936,31 +1023,255 @@
             });
         }
 
-        // ================= رویدادها و شنودگرهای پلتفرم =================
-        document.getElementById('btn-master-trigger-play').addEventListener('click', handlePlayPauseMasterToggle);
-        document.getElementById('slider-volume-node').addEventListener('input', synchronizeVolumeGainLevel);
-        
-        document.getElementById('btn-inject-link').addEventListener('click', () => {
-            const url = document.getElementById('input-audio-url').value.trim(); if(!url) return;
-            bootstrapStudioAudioNodes();
-            displayToastNotification("⏳ در حال برقراری اتصال صوتی شبکه وب...");
-            fetch("https://corsproxy.io?" + encodeURIComponent(url))
-                .then(r => r.arrayBuffer())
-                .then(ab => processRawBinaryDecodeSequence(ab, "ترک آنلاین شبکه", "استریم مستقیم", url))
-                .catch(() => {
-                    coreTrackDatabase.push({ title: "ترک زنده وب گربول", artist: "شبکه استریم", duration: 240, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", url: url });
-                    triggerSelectTrackNode(coreTrackDatabase.length - 1);
-                });
+        // =========================================================================
+        // 🎙️ فرآیند، کدهای پردازشی نئون و منطقی ادیت وویس (Voice Audio Lab) 🎙️
+        // =========================================================================
+        function initVoiceAudioContext() {
+            if (!voiceAudioContext) {
+                voiceAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function renderVoiceWaveform(buffer) {
+            const container = document.getElementById('voice-waveform-canvas');
+            const placeholder = document.getElementById('voice-wave-placeholder');
+            container.innerHTML = '';
+            if (placeholder) placeholder.style.display = 'none';
+
+            const rawData = buffer.getChannelData(0); 
+            const samples = 60; 
+            const blockSize = Math.floor(rawData.length / samples);
+            
+            for (let i = 0; i < samples; i++) {
+                let blockStart = blockSize * i;
+                let sum = 0;
+                for (let j = 0; j < blockSize; j++) {
+                    sum += Math.abs(rawData[blockStart + j]);
+                }
+                let volume = sum / blockSize;
+                const bar = document.createElement('div');
+                bar.className = 'w-[4px] bg-cyan-400 rounded-full transition-all';
+                let height = Math.max(4, Math.floor(volume * 140));
+                bar.style.height = `${Math.min(height, 56)}px`;
+                container.appendChild(bar);
+            }
+
+            document.getElementById('voice-trim-start').value = 0;
+            document.getElementById('voice-trim-end').value = buffer.duration.toFixed(1);
+        }
+
+        function playModifiedVoiceEngine() {
+            if (!voiceAudioBuffer) return;
+            stopVoiceEngine();
+            initVoiceAudioContext();
+
+            const startTrim = parseFloat(document.getElementById('voice-trim-start').value) || 0;
+            const endTrim = parseFloat(document.getElementById('voice-trim-end').value) || voiceAudioBuffer.duration;
+            const effectType = document.getElementById('select-voice-effect').value;
+
+            if (startTrim >= endTrim || startTrim > voiceAudioBuffer.duration) return;
+
+            // محاسبه و جداسازی بخش ادیت‌شده وویس
+            const sampleRate = voiceAudioBuffer.sampleRate;
+            const startSample = Math.floor(startTrim * sampleRate);
+            const endSample = Math.floor(Math.min(endTrim, voiceAudioBuffer.duration) * sampleRate);
+            const frameCount = endSample - startSample;
+
+            if (frameCount <= 0) return;
+
+            const trimmedBuffer = voiceAudioContext.createBuffer(
+                voiceAudioBuffer.numberOfChannels,
+                frameCount,
+                sampleRate
+            );
+
+            for (let channel = 0; channel < voiceAudioBuffer.numberOfChannels; channel++) {
+                const nowBuffering = trimmedBuffer.getChannelData(channel);
+                const originalData = voiceAudioBuffer.getChannelData(channel);
+                for (let i = 0; i < frameCount; i++) {
+                    nowBuffering[i] = originalData[startSample + i];
+                }
+            }
+
+            voiceActiveSource = voiceAudioContext.createBufferSource();
+            voiceActiveSource.buffer = trimmedBuffer;
+
+            // پیاده‌سازی گره‌های اختصاصی افکت نئون صوتی
+            let lastNode = voiceActiveSource;
+
+            if (effectType === 'robot') {
+                const biquad = voiceAudioContext.createBiquadFilter();
+                biquad.type = 'peaking'; biquad.frequency.value = 120; biquad.gain.value = 25;
+                lastNode.connect(biquad); lastNode = biquad;
+            } else if (effectType === 'echo') {
+                const delay = voiceAudioContext.createDelay(); delay.delayTime.value = 0.35;
+                const feedback = voiceAudioContext.createGain(); feedback.gain.value = 0.45;
+                lastNode.connect(delay); delay.connect(feedback); feedback.connect(delay);
+                lastNode.connect(voiceAudioContext.destination); delay.connect(voiceAudioContext.destination);
+            } else if (effectType === 'radio') {
+                const bandpass = voiceAudioContext.createBiquadFilter();
+                bandpass.type = 'bandpass'; bandpass.frequency.value = 1500; bandpass.Q.value = 3.5;
+                lastNode.connect(bandpass); lastNode = bandpass;
+            } else if (effectType === 'highpitch') {
+                voiceActiveSource.playbackRate.value = 1.6;
+            } else if (effectType === 'lowpitch') {
+                voiceActiveSource.playbackRate.value = 0.65;
+            }
+
+            const voiceGain = voiceAudioContext.createGain();
+            voiceGain.gain.value = 1.0;
+            lastNode.connect(voiceGain);
+            voiceGain.connect(voiceAudioContext.destination);
+
+            voiceActiveSource.start(0);
+        }
+
+        function stopVoiceEngine() {
+            if (voiceActiveSource) {
+                try { voiceActiveSource.stop(); } catch(e){}
+                voiceActiveSource = null;
+            }
+        }
+
+        // معکوس‌سازی باینری سیگنال‌های وویس (Reverse Effect)
+        document.getElementById('btn-reverse-voice').addEventListener('click', () => {
+            if (!voiceAudioBuffer) {
+                displayToastNotification("⚠️ لطفا ابتدا یک وویس ضبط یا بارگذاری کنید!");
+                return;
+            }
+            displayToastNotification("⏳ در حال معکوس‌سازی دیجیتال کانال‌های وویس...");
+            for (let channel = 0; channel < voiceAudioBuffer.numberOfChannels; channel++) {
+                const data = voiceAudioBuffer.getChannelData(channel);
+                Array.prototype.reverse.call(data);
+            }
+            renderVoiceWaveform(voiceAudioBuffer);
+            displayToastNotification("🎉 افکت معکوس‌سازی بر روی وویس با موفقیت اعمال شد!");
         });
 
-        document.getElementById('input-local-file').addEventListener('change', (e) => {
+        // مدیریت فرآیند ضبط مستقیم وویس با میکروفون کلاینت
+        document.getElementById('btn-record-voice').addEventListener('click', async () => {
+            if (!isRecording) {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    displayToastNotification("❌ مرورگر شما از ضبط صدا پشتیبانی نمی‌کند.");
+                    return;
+                }
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    initVoiceAudioContext();
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) recordedChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+                        const arrayBuffer = await blob.arrayBuffer();
+                        voiceAudioContext.decodeAudioData(arrayBuffer, (buf) => {
+                            voiceAudioBuffer = buf;
+                            renderVoiceWaveform(buf);
+                            displayToastNotification("🎙️ وویس ضبط شده با موفقیت بافر و آماده ادیت شد!");
+                        });
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordTimeSec = 0;
+                    document.getElementById('voice-record-timer').classList.remove('hidden');
+                    document.getElementById('record-icon').innerText = '⏹️';
+                    document.getElementById('record-text').innerText = 'توقف ضبط';
+                    
+                    recordTimerInterval = setInterval(() => {
+                        recordTimeSec++;
+                        const m = Math.floor(recordTimeSec / 60).toString().padStart(2, '0');
+                        const s = (recordTimeSec % 60).toString().padStart(2, '0');
+                        document.getElementById('voice-record-timer').innerText = `${m}:${s}`;
+                    }, 1000);
+
+                } catch (err) {
+                    displayToastNotification("⚠️ دسترسی به میکروفون رد شد یا وجود ندارد.");
+                }
+            } else {
+                if (mediaRecorder && isRecording) {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    isRecording = false;
+                    clearInterval(recordTimerInterval);
+                    document.getElementById('voice-record-timer').classList.add('hidden');
+                    document.getElementById('record-icon').innerText = '🔴';
+                    document.getElementById('record-text').innerText = 'ضبط با میکروفون';
+                }
+            }
+        });
+
+        document.getElementById('upload-voice-file').addEventListener('change', (e) => {
             const file = e.target.files[0]; if (!file) return;
-            bootstrapStudioAudioNodes();
-            const r = new FileReader(); r.onload = (ev) => processRawBinaryDecodeSequence(ev.target.result, file.name, "فایل محلی لوکال", null);
-            r.readAsArrayBuffer(file);
+            initVoiceAudioContext();
+            displayToastNotification("⏳ در حال پردازش و بافر کردن فایل وویس...");
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                voiceAudioContext.decodeAudioData(event.target.result, (buf) => {
+                    voiceAudioBuffer = buf;
+                    renderVoiceWaveform(buf);
+                    displayToastNotification("🎉 فایل وویس با موفقیت لود و آماده افکت‌گذاری شد!");
+                }, () => {
+                    displayToastNotification("❌ خطای رمزگشایی؛ فرمت صوتی وویس معتبر نیست.");
+                });
+            };
+            reader.readAsArrayBuffer(file);
         });
 
-        // 🛠️ بهینه‌سازی و اصلاح جامع شنودگرهای اسکرول‌بار تایم‌لاین موسیقی (Scrub Optimization)
+        document.getElementById('btn-play-voice').addEventListener('click', playModifiedVoiceEngine);
+        document.getElementById('btn-stop-voice').addEventListener('click', stopVoiceEngine);
+
+        // تولید هدر باینری و دانلود وویس نهایی اصلاح‌شده به صورت استاندارد WAV
+        document.getElementById('btn-download-voice').addEventListener('click', () => {
+            if (!voiceAudioBuffer) {
+                displayToastNotification("⚠️ وویسی برای دانلود رندر نشده است!");
+                return;
+            }
+            // تبدیل بافر فعلی به قالب لینک باینری استاندارد صوتی
+            const bufferLen = voiceAudioBuffer.length;
+            const numOfChan = voiceAudioBuffer.numberOfChannels;
+            const sampleRate = voiceAudioBuffer.sampleRate;
+            const bitsPerSample = 16;
+            const byteRate = (sampleRate * numOfChan * bitsPerSample) / 8;
+            const blockAlign = (numOfChan * bitsPerSample) / 8;
+            const wavDataLen = bufferLen * blockAlign;
+            const headerLen = 44;
+            const totalLen = headerLen + wavDataLen;
+            const arrayBuffer = new ArrayBuffer(totalLen);
+            const view = new DataView(arrayBuffer);
+
+            // نوشتن هدرهای فایل صوتی کلاینت‌ساید WAV
+            function writeString(offset, string) { for (let i = 0; i < string.length; i++) { view.setUint8(offset + i, string.charCodeAt(i)); } }
+            writeString(0, 'RIFF'); view.setUint32(4, totalLen - 8, true); writeString(8, 'WAVE');
+            writeString(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+            view.setUint16(22, numOfChan, true); view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true); view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true); writeString(36, 'data'); view.setUint32(40, wavDataLen, true);
+
+            // انباشت داده‌های کانال دیجیتال صوتی روی هدر باینری
+            let offset = 44;
+            const dataChannels = [];
+            for (let i = 0; i < numOfChan; i++) dataChannels.push(voiceAudioBuffer.getChannelData(i));
+
+            for (let i = 0; i < bufferLen; i++) {
+                for (let channel = 0; channel < numOfChan; channel++) {
+                    let sample = dataChannels[channel][i];
+                    sample = Math.max(-1, Math.min(1, sample));
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+
+            const blob = new Blob([view], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.download = 'edited-voice.wav'; a.href = url; a.click();
+        });
+
+        // ================= رویدادها و شنودگرهای پلتفرم =================
         const premiumTimeSlider = document.getElementById('premium-time-slider');
         
         premiumTimeSlider.addEventListener('input', () => {
@@ -1054,6 +1365,9 @@
             updateStickerUI();
             drawCanvas();
         };
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>
