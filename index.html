@@ -3,84 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوپر موزیک پلیر فانتزی و پیشرفته گربول اولترا - نسخه کاملاً پایدا1ر</title>
+    <title>پلتفرم چندرسانه‌ای گربول اولترا و استودیوی پویانمایی استیکر</title>
+    <!-- Tailwind CSS جهت طراحی خیره‌کننده و مدرن UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- کتابخانه استاندارد پردازش تصاویر متحرک کلاینت‌ساید تحت دامنه مجاز cloudflare -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;750;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #fff5f5 0%, #fed7d7 50%, #feb2b2 100%);
-            --card-bg: rgba(255, 255, 255, 0.88);
-            --border-glow: rgba(255, 107, 107, 0.3);
-            --text-main: #2d3748;
-            --text-sub: #718096;
-            --primary: #ff6b6b;
-            --primary-glow: rgba(255, 107, 107, 0.4);
-            --secondary: #845ef7;
-            --secondary-glow: rgba(132, 94, 247, 0.3);
-            --accent: #ff8787;
-            --glass-shadow: 0 25px 60px rgba(255, 107, 107, 0.25), inset 0 0 20px rgba(255,255,255,0.6);
-
-            --active-item: linear-gradient(90deg, rgba(255, 107, 107, 0.15) 0%, rgba(132, 94, 247, 0.05) 100%);
-        }
-
-        .dark-cyber-cute {
-            --bg-gradient: linear-gradient(135deg, #1a1b26 0%, #24283b 50%, #414868 100%);
-            --card-bg: rgba(26, 27, 38, 0.85);
-            --border-glow: rgba(187, 154, 247, 0.4);
-            --text-main: #c0caf5;
-            --text-sub: #9ece6a;
-            --primary: #bb9af7;
-            --primary-glow: rgba(187, 154, 247, 0.5);
-            --secondary: #f7768e;
-            --secondary-glow: rgba(247, 118, 142, 0.4);
-            --accent: #7aa2f7;
-            --glass-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255,255,255,0.05);
-            --active-item: linear-gradient(90deg, rgba(187, 154, 247, 0.2) 0%, rgba(247, 118, 142, 0.05) 100%);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            background: var(--bg-gradient);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 25px;
-            color: var(--text-main);
-            transition: background 0.5s ease, color 0.3s ease;
-            overflow-x: hidden;
+            font-family: 'Vazirmatn', sans-serif;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        }
+        /* پس‌زمینه شطرنجی آلفا نئونی بوم استیکر */
+        .neon-checkerboard {
+            background-image: linear-gradient(45deg, #090d16 25%, transparent 25%), 
+                              linear-gradient(-45deg, #090d16 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #090d16 75%), 
+                              linear-gradient(-45deg, transparent 75%, #090d16 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+            background-color: #111827;
+        }
+        /* استایل‌های گلس‌مورفیسم پیشرفته کامپوننت‌ها */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        /* انیمیشن‌های اختصاصی بخش استیکر */
+        .anim-float { animation: stickerFloat 2.5s infinite ease-in-out; }
+        .anim-pulse { animation: stickerPulse 1.2s infinite ease-in-out; }
+        .anim-shake { animation: stickerShake 0.4s infinite linear; }
+        
+        @keyframes stickerFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
+        }
+        @keyframes stickerPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.4)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.7)); }
+        }
+        @keyframes stickerShake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            30% { transform: translate(-3px, 0px) rotate(1deg); }
+            50% { transform: translate(0px, 2px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            90% { transform: translate(-1px, -1px) rotate(1deg); }
         }
 
-        .master-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 950px;
-            margin-top: 30px;
-        }
-
-        /* 3X Ultra Cute Animated Cat Ears Overlay */
-        .cat-ears-ultra {
-            position: absolute;
-            top: -32px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 60px;
-            z-index: 1;
-            pointer-events: none;
-        }
-
+        /* استایل‌های اختصاصی گربول پلیر */
         .ear-node {
             width: 75px;
             height: 75px;
-            background-color: var(--card-bg);
-            border: 2px solid var(--border-glow);
+            background-color: rgba(30, 41, 59, 0.85);
+            border: 2px solid rgba(255, 107, 107, 0.3);
             border-bottom: none;
             border-top-left-radius: 60px;
             border-top-right-radius: 60px;
@@ -89,11 +67,7 @@
             box-shadow: 0 -8px 20px rgba(255, 107, 107, 0.08);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .ear-node.right {
-            transform: rotate(10deg);
-        }
-
+        .ear-node.right { transform: rotate(10deg); }
         .ear-node::after {
             content: '';
             position: absolute;
@@ -101,185 +75,12 @@
             left: 12px;
             width: 47px;
             height: 47px;
-            background-color: var(--primary-glow);
+            background-color: rgba(255, 107, 107, 0.4);
             border-top-left-radius: 45px;
             border-top-right-radius: 45px;
-            transition: background-color 0.3s;
         }
-
-        .master-wrapper:hover .ear-node.left { transform: rotate(-14deg) translateY(-2px); }
-        .master-wrapper:hover .ear-node.right { transform: rotate(14deg) translateY(-2px); }
-
-        /* Premium Dashboard Container Grid */
-        .dashboard-layout {
-            background: var(--card-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 2px solid var(--border-glow);
-            border-radius: 40px;
-            box-shadow: var(--glass-shadow);
-            padding: 35px;
-            display: grid;
-            grid-template-columns: 1.3fr 1fr;
-            gap: 30px;
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s ease;
-        }
-
-        /* Top Header Control Layout */
-        .header-panel {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px dashed var(--border-glow);
-            padding-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .identity-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .identity-logo {
-            font-size: 1.8rem;
-            animation: bounceMeow 3s infinite ease-in-out;
-        }
-
-        @keyframes bounceMeow {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-5px) scale(1.05); }
-        }
-
-        .main-brand-title {
-            font-size: 1.4rem;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-
-        .action-utilities {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        /* Custom URL Injection Input Bar */
-        .url-injection-form {
-            display: flex;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border-glow);
-            padding: 4px 6px;
-            border-radius: 16px;
-            gap: 8px;
-            max-width: 320px;
-            transition: all 0.3s ease;
-        }
-        .url-injection-form:focus-within {
-            box-shadow: 0 0 15px var(--primary-glow);
-            border-color: var(--primary);
-            background: rgba(255,255,255,0.9);
-        }
-
-        .url-input-field {
-            background: none;
-            border: none;
-            outline: none;
-            padding: 6px 10px;
-            font-size: 0.8rem;
-            color: var(--text-main);
-            width: 190px;
-        }
-
-        .btn-submit-url {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border: none;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn-submit-url:hover { transform: scale(1.03); }
-
-        /* Local File Upload Custom Style */
-        .local-upload-label {
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px solid var(--border-glow);
-            color: var(--text-main);
-            padding: 8px 14px;
-            border-radius: 14px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        .local-upload-label:hover {
-            background: var(--secondary);
-            color: white;
-            box-shadow: 0 5px 15px var(--secondary-glow);
-        }
-
-        .speed-dropdown {
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--text-main);
-            border: 1px solid var(--border-glow);
-            padding: 6px 12px;
-            border-radius: 14px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .btn-theme-switcher {
-            background: rgba(0, 0, 0, 0.04);
-            border: 1px solid var(--border-glow);
-            color: var(--text-main);
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        .btn-theme-switcher:hover {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 5px 15px var(--primary-glow);
-        }
-
-        /* RIGHT PANEL: Glowing Vinyl & Arm Turntable */
-        .turntable-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-right: 2px solid var(--border-glow);
-            padding-right: 25px;
-        }
-
-        .vinyl-wrapper-node {
-            position: relative;
-            width: 230px;
-            height: 230px;
-            margin: 20px 0;
-        }
+        .master-music-wrapper:hover .ear-node.left { transform: rotate(-14deg) translateY(-2px); }
+        .master-music-wrapper:hover .ear-node.right { transform: rotate(14deg) translateY(-2px); }
 
         .premium-vinyl {
             width: 100%;
@@ -296,19 +97,7 @@
             animation-play-state: paused;
             transition: box-shadow 0.4s;
         }
-
-        .premium-vinyl.glowing-active {
-            box-shadow: 0 20px 45px rgba(0,0,0,0.3), 0 0 25px var(--primary-glow);
-        }
-
-        .vinyl-artwork-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #1a202c;
-        }
-
+        .premium-vinyl.glowing-active { box-shadow: 0 20px 45px rgba(0,0,0,0.3), 0 0 25px rgba(255, 107, 107, 0.5); }
         .vinyl-arm-lever {
             position: absolute;
             top: -15px;
@@ -321,523 +110,391 @@
             pointer-events: none;
             z-index: 4;
         }
-        .vinyl-arm-lever.active {
-            transform: rotate(4deg);
-        }
+        .vinyl-arm-lever.active { transform: rotate(4deg); }
+        @keyframes rotateVinyl { to { transform: rotate(360deg); } }
 
-        @keyframes rotateVinyl {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Song Metadata Layout */
-        .song-details-area {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 18px;
-        }
-
-        .title-txt {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .artist-txt {
-            color: var(--text-sub);
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        /* Custom Interactive Scrubbing Bar (Upgraded To Draggable Range Slider) */
-        .timeline-scrub-box {
-            width: 100%;
-            margin-bottom: 18px;
-        }
-
-        .scrub-container {
-            width: 100%;
-            position: relative;
-            margin-bottom: 8px;
-        }
-
-        .premium-scrub-slider {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 8px;
-            border-radius: 20px;
-            background: rgba(0,0,0,0.06);
-            outline: none;
-            cursor: pointer;
-            display: block;
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-
-        /* Custom Drag Handle Paw style for Slider */
-        .premium-scrub-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--text-main);
-            border: 3px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            cursor: grab;
-            transition: transform 0.1s;
-        }
-        .premium-scrub-slider::-webkit-slider-thumb:active {
-            cursor: grabbing;
-            transform: scale(1.25);
-        }
-
-        .premium-scrub-slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--text-main);
-            border: 3px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            cursor: grab;
-            transition: transform 0.1s;
-        }
-        .premium-scrub-slider::-moz-range-thumb:active {
-            cursor: grabbing;
-            transform: scale(1.25);
-        }
-
-        /* Deck Main Actions Buttons Layout */
-        .deck-actions-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            width: 100%;
-            margin-bottom: 18px;
-        }
-
-        .btn-action-node {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .btn-action-node:hover {
-            color: var(--primary);
-            transform: scale(1.2) translateY(-2px);
-        }
-
-        .btn-action-node.master-trigger {
-            width: 62px;
-            height: 62px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border-radius: 50%;
-            box-shadow: 0 10px 25px var(--primary-glow);
-        }
-
-        .btn-action-node.master-trigger:hover {
-            transform: scale(1.06);
-            box-shadow: 0 12px 30px var(--primary-glow);
-        }
-        .btn-action-node.active-loop-state {
-            color: var(--secondary);
-            filter: drop-shadow(0 0 5px var(--secondary-glow));
-        }
-
-        .volume-control-strip {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0,0,0,0.03);
-            padding: 10px 15px;
-            border-radius: 18px;
-        }
-
-        .range-slider-element {
-            width: 100%;
-            accent-color: var(--primary);
-            height: 5px;
-            cursor: pointer;
-        }
-
-        /* LEFT PANEL: Equalizer, Lyrics & Dynamic Track List */
-        .utilities-scroller-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-height: 480px;
-            overflow-y: auto;
-            padding-left: 6px;
-        }
-
-        /* Equalizer Card Design */
-        .kawaii-equalizer-card {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 24px;
-            padding: 16px;
-            border: 1px solid var(--border-glow);
-        }
-
-        .eq-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-
-        .vertical-sliders-flex {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 95px;
-        }
-
-        .slider-column-node {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            height: 100%;
-        }
-
-        .vertical-slider-bar {
-            transform: rotate(-90deg);
-            width: 60px;
-            height: 6px;
-            margin: 25px 0;
-            accent-color: var(--secondary);
-            cursor: pointer;
-        }
-
-        .slider-caption {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: var(--text-sub);
-        }
-
-        /* Synchronized Rolling Script-Lyric Box */
-        .lyrics-rolling-container {
-            background: rgba(255, 107, 107, 0.03);
-            border-radius: 24px;
-            padding: 15px;
-            height: 110px;
-            overflow-y: auto;
-            text-align: center;
-            border: 1px solid var(--border-glow);
-            position: relative;
-            scroll-behavior: smooth;
-        }
-
+        .lyrics-rolling-container { scroll-behavior: smooth; }
         .lyrics-track-line {
             font-size: 0.95rem;
             padding: 6px 0;
-            color: var(--text-sub);
+            color: #94a3b8;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.5;
         }
-
         .lyrics-track-line.active-line-highlight {
-            color: var(--primary);
+            color: #ff6b6b;
             font-weight: 800;
             transform: scale(1.04);
             opacity: 1;
-            text-shadow: 0 2px 8px var(--primary-glow);
+            text-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
         }
 
-        /* High-Definition 32-Band Visualizer Graph Node Grid */
-        .hd-visualizer-grid {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            gap: 4px;
-            height: 40px;
-            width: 100%;
-            padding: 0 10px;
-        }
-        .visualizer-node-bar {
-            flex: 1;
-            height: 4px;
-            background: linear-gradient(to top, var(--primary), var(--secondary));
-            border-radius: 4px 4px 0 0;
-            transition: height 0.1s linear;
-        }
-
-        /* Advanced Track Playlist Manager Layout */
-        .playlist-card-container {
-            background: rgba(0,0,0,0.02);
-            border-radius: 24px;
-            padding: 16px;
-            border: 1px solid var(--border-glow);
-        }
-
-        .playlist-title-label {
-            font-size: 0.9rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .dynamic-tracks-ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .track-li-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            border: 1px solid transparent;
-        }
-        .track-li-row:hover {
-            background: rgba(0,0,0,0.04);
-            transform: translateX(-3px);
-        }
-        .track-li-row.active {
-            background: var(--active-item);
-            border-color: var(--border-glow);
-            color: var(--primary);
-            font-weight: bold;
-        }
-        
-        .flex-meta-side {
-            display: flex;
-            align-items: center;
-        }
-
-        /* UI Message Prompt Box */
-        .ui-status-bubble {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(45, 55, 72, 0.95);
-            color: #fff;
-            padding: 10px 24px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            z-index: 999;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
-        }
-        .ui-status-bubble.visible { transform: translateX(-50%) translateY(0); }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 850px) {
-            .dashboard-layout { grid-template-columns: 1fr; padding: 25px; gap: 25px; }
-            .turntable-panel { border-right: none; padding-right: 0; border-bottom: 2px dashed var(--border-glow); padding-bottom: 30px; }
-            .utilities-scroller-panel { max-height: none; }
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 12px; }
-            .dashboard-layout { padding: 18px; border-radius: 30px; }
-            .vinyl-wrapper-node { width: 180px; height: 180px; }
-            .cat-ears-ultra { padding: 0 40px; top: -28px; }
-            .ear-node { width: 55px; height: 55px; }
-            .url-injection-form { max-width: 100%; width: 100%; }
-            .url-input-field { width: 100%; }
-            .header-panel { flex-direction: column; gap: 15px; align-items: flex-start; }
-            .action-utilities { width: 100%; justify-content: space-between; flex-wrap: wrap; }
-        }
+        /* سفارشی‌سازی اسکرول‌بارها */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
     </style>
 </head>
-<body>
+<body class="text-slate-100 min-h-screen p-4 md:p-8 flex flex-col gap-8 overflow-x-hidden selection:bg-indigo-500/30">
 
-    <!-- HTML5 Audio Node for Isolated Core Streaming (Completely decoupled from script blocking loops) -->
+    <!-- هسته صوتی کلاینت‌ساید مستقل برای گربول پلیر -->
     <audio id="real-audio-element"></audio>
 
-    <div class="master-wrapper">
-        <!-- Cat Ear Layers -->
-        <div class="cat-ears-ultra">
+    <!-- ========================================================================= -->
+    <!-- 🎵 بخش اول: سوپر موزیک پلیر فانتزی و پیشرفته گربول اولترا (بالای صفحه) 🎵 -->
+    <!-- ========================================================================= -->
+    <section class="max-w-[1200px] w-full mx-auto relative master-music-wrapper mt-8">
+        <!-- گوش‌های گربه‌ای تزئینی بالای موزیک پلیر -->
+        <div class="absolute -top-8 left-0 w-full flex justify-between px-16 pointer-events-none z-10">
             <div class="ear-node left"></div>
             <div class="ear-node right"></div>
         </div>
 
-        <div class="dashboard-layout">
-            <!-- TOP BAR CONTROL CONSOLE -->
-            <div class="header-panel">
-                
-                    🐾</span>
-                    <span class="main-brand-title">استودیو موزیکال فرانت‌اند گربول اولترا</span>
+        <div class="glass-panel rounded-[40px] p-6 md:p-8 border-2 border-rose-500/30 shadow-2xl relative z-20">
+            <!-- هدر کنترلی موزیک پلیر -->
+            <div class="flex flex-wrap justify-between items-center border-b-2 border-dashed border-rose-500/30 pb-4 mb-6 gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl animate-bounce">🐾</span>
+                    <h2 class="text-xl font-black bg-gradient-to-r from-rose-400 to-violet-400 bg-clip-text text-transparent">استودیو موزیکال فرانت‌اند گربول اولترا</h2>
                 </div>
                 
-                <div class="action-utilities">
-                    <!-- URL Direct Input Inserter Layout -->
-                    <div class="url-injection-form">
-                        <input type="url" id="input-audio-url" class="url-input-field" placeholder="لینک مستقیم قطعه صوتی (MP3)..." dir="ltr">
-                        <button class="btn-submit-url" id="btn-inject-link" title="بارگذاری قطعه سفارشی از وب">ثبت 🐾</button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- فرم تزریق لینک مستقیم وب -->
+                    <div class="flex items-center bg-slate-950/60 border border-rose-500/20 px-2 py-1 rounded-xl gap-2 max-w-xs w-full">
+                        <input type="url" id="input-audio-url" placeholder="لینک مستقیم قطعه صوتی (MP3)..." class="bg-transparent text-xs outline-none py-1 w-44 text-slate-200" dir="ltr">
+                        <button id="btn-inject-link" class="bg-gradient-to-r from-rose-500 to-violet-600 text-white text-xs px-3 py-1 rounded-lg font-bold transition-transform active:scale-95">ثبت 🐾</button>
                     </div>
 
-                    <!-- Local Audio File Custom Picker Container -->
-                    <label class="local-upload-label" title="پخش فایل صوتی از روی کامپیوتر یا گوشی">
+                    <!-- دکمه فایل لوکال -->
+                    <label class="bg-slate-900 border border-slate-700/50 hover:bg-violet-600 text-white text-xs px-3 py-2 rounded-xl font-bold cursor-pointer flex items-center gap-1.5 transition-all">
                         📁 انتخاب فایل لوکال
-                        <input type="file" id="input-local-file" accept="audio/*" style="display: none;">
+                        <input type="file" id="input-local-file" accept="audio/*" class="hidden">
                     </label>
 
-                    <!-- Speed Changer Selection Selector -->
-                    <select id="playback-speed" class="speed-dropdown" title="سرعت گام پخش">
+                    <!-- منوی سرعت گام پخش -->
+                    <select id="playback-speed" class="bg-slate-900 border border-slate-700 text-white text-xs px-2 py-2 rounded-xl outline-none cursor-pointer">
                         <option value="0.5">0.5x</option>
                         <option value="1.0" selected>1.0x (اصلی)</option>
                         <option value="1.5">1.5x</option>
                         <option value="2.0">2.0x</option>
                     </select>
-
-                    <!-- Themes Swapper Button Toggle -->
-                    <button class="btn-theme-switcher" id="theme-toggler" title="تغییر حالت نئون">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                    </button>
                 </div>
             </div>
 
-            <!-- LEFT VIEW PANEL: Equalizer, Lyrics scroller and tracks -->
-            <div class="utilities-scroller-panel">
+            <!-- بدنه اصلی دو ستونه موزیک پلیر -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
-                <!-- Graphic 3-Band Parametric Equalizer Module Layout -->
-                <div class="kawaii-equalizer-card">
-                    <div class="eq-header-row">
-                        <span>میکسر فرکانس صوتی استودیو گربول</span>
-                        <select id="eq-preset" class="speed-dropdown">
-                            <option value="flat">پریست هموار (Flat)</option>
-                            <option value="bassboost">سوپر مِیو باس 🐾</option>
-                            <option value="vocal">وضوح آواز کلام</option>
-                            <option value="electronic">الکترونیک سایبرپانک</option>
-                        </select>
-                    </div>
-                    <div class="vertical-sliders-flex">
-                        <div class="slider-column-node">
-                            <input type="range" class="vertical-slider-bar" id="eq-bass" min="-10" max="10" value="0">
-                            <span class="slider-caption">BASS</span>
+                <!-- ستون چپ پلیر: اکولایزر، متن شعر متحرک و لیست پخش -->
+                <div class="lg:col-span-7 flex flex-col gap-4">
+                    <!-- میکسر اکولایزر پارامتریک -->
+                    <div class="bg-slate-950/40 border border-rose-500/20 rounded-2xl p-4">
+                        <div class="flex justify-between items-center mb-4 text-xs font-bold">
+                            <span class="text-slate-300">میکسر فرکانس صوتی استودیو گربول</span>
+                            <select id="eq-preset" class="bg-slate-900 border border-slate-800 text-slate-300 rounded px-2 py-0.5">
+                                <option value="flat">پریست هموار (Flat)</option>
+                                <option value="bassboost">سوپر مِیو باس 🐾</option>
+                                <option value="vocal">وضوح آواز کلام</option>
+                                <option value="electronic">الکترونیک سایبرپانک</option>
+                            </select>
                         </div>
-                        <div class="slider-column-node">
-                            <input type="range" class="vertical-slider-bar" id="eq-mid" min="-10" max="10" value="0">
-                            <span class="slider-caption">MID</span>
+                        <div class="flex justify-around items-center h-24">
+                            <div class="flex flex-col items-center gap-1">
+                                <input type="range" id="eq-bass" min="-10" max="10" value="0" class="h-16 accent-rose-500 cursor-pointer" style="transform: rotate(-90deg) translateX(0px);">
+                                <span class="text-[10px] font-bold text-slate-500 mt-4">BASS</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1">
+                                <input type="range" id="eq-mid" min="-10" max="10" value="0" class="h-16 accent-violet-500 cursor-pointer" style="transform: rotate(-90deg) translateX(0px);">
+                                <span class="text-[10px] font-bold text-slate-500 mt-4">MID</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1">
+                                <input type="range" id="eq-treble" min="-10" max="10" value="0" class="h-16 accent-rose-500 cursor-pointer" style="transform: rotate(-90deg) translateX(0px);">
+                                <span class="text-[10px] font-bold text-slate-500 mt-4">TREBLE</span>
+                            </div>
                         </div>
-                        <div class="slider-column-node">
-                            <input type="range" class="vertical-slider-bar" id="eq-treble" min="-10" max="10" value="0">
-                            <span class="slider-caption">TREBLE</span>
+                    </div>
+
+                    <!-- باکس متن ترانه همگام لوپ صوتی -->
+                    <div id="lyrics-viewport" class="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 h-24 overflow-y-auto text-center relative shadow-inner">
+                        <div class="lyrics-track-line active-line-highlight">آماده بارگذاری موزیک یا لینک سفارشی... 🐾</div>
+                    </div>
+
+                    <!-- رقص نور ردیفی ۳۲ کاناله فرکانس -->
+                    <div id="spectrum-bars-grid" class="flex items-end justify-center gap-1 h-12 w-full px-4 bg-slate-950/20 rounded-xl"></div>
+
+                    <!-- لیست تر ک‌های پروژه چندرسانه‌ای -->
+                    <div class="bg-slate-950/30 border border-slate-800/80 rounded-2xl p-4">
+                        <span class="text-xs font-black text-slate-400 block mb-2">📂 کتابخانه قطعات فعال پروژه گربول شجاع</span>
+                        <ul id="tracks-list-dom" class="flex flex-col gap-2 max-h-[110px] overflow-y-auto"></ul>
+                    </div>
+                </div>
+
+                <!-- ستون راست پلیر: دیسک وینیل دوار و دکمه‌های ناوبری اصلی دک -->
+                <div class="lg:col-span-5 flex flex-col items-center border-t lg:border-t-0 lg:border-r border-rose-500/20 pt-6 lg:pt-0 lg:pr-6">
+                    <div class="relative w-48 h-48 my-2">
+                        <img src="https://images.gstatic.com/images?q=tbn:ANd9GcR6A7L5760t0A03V_g7wWj3-kRkS81v_mE2vA&s" class="vinyl-arm-lever" id="turntable-arm-lever" alt="Arm Lever">
+                        <div class="premium-vinyl" id="vinyl-disk-node">
+                            <img src="https://images.unsplash.com/photo-1515002246390-7bf7e8f87b54?fm=jpg&q=60&w=3000&auto=format&fit=crop" class="w-full h-full rounded-full object-cover border-4 border-slate-900" id="deck-cover-artwork">
                         </div>
                     </div>
-                </div>
 
-                <!-- Synchronized Lyrics Scrolling Module Box Layout -->
-                <div class="lyrics-rolling-container" id="lyrics-viewport">
-                    <div class="lyrics-track-line active-line-highlight">آماده بارگذاری موزیک یا لینک سفارشی... 🐾</div>
-                </div>
-
-                <!-- 32-Band Audio Frequency Spectrum Visualizer Layout -->
-                <div class="hd-visualizer-grid" id="spectrum-bars-grid">
-                    <!-- Nodes added programmatically -->
-                </div>
-
-                <!-- Track Playlist Manager Container -->
-                <div class="playlist-card-container">
-                    <div class="playlist-title-label">
-                        <span>📂 کتابخانه قطعات فعال پروژه گربول شجاع</span>
+                    <div class="text-center w-full my-3">
+                        <h3 class="text-base font-black text-slate-100 truncate" id="deck-track-title">درحال دریافت سیگنال قطعه...</h3>
+                        <p class="text-xs text-slate-400 truncate mt-0.5" id="deck-track-artist">آلبوم دانشگاه مهندسی وب</p>
                     </div>
-                    <ul class="dynamic-tracks-ul" id="tracks-list-dom">
-                        <!-- Items rendered via engine -->
-                    </ul>
-                </div>
-            </div>
 
-            <!-- RIGHT PANEL: Vinyl Turntable Core Component Deck layout -->
-            <div class="turntable-panel">
-                
-                <!-- Core Rotating Vinyl Disk Artwork Layout -->
-                <div class="vinyl-wrapper-node">
-                    <img src="https://images.gstatic.com/images?q=tbn:ANd9GcR6A7L5760t0A03V_g7wWj3-kRkS81v_mE2vA&s" class="vinyl-arm-lever" id="turntable-arm-lever" alt="Lever arm">
-                    <div class="premium-vinyl" id="vinyl-disk-node">
-                        <img src="https://images.unsplash.com/photo-1515002246390-7bf7e8f87b54?fm=jpg&q=60&w=3000&auto=format&fit=crop" class="vinyl-artwork-img" id="deck-cover-artwork" alt="Album Cover">
+                    <!-- اسلایدر کنترل تایم‌لاین صوتی با پشتیبانی اصلاح‌شده و بهینه تعاملی -->
+                    <div class="w-full mb-3 flex flex-col gap-1 text-[11px] font-bold text-slate-400">
+                        <input type="range" id="premium-time-slider" min="0" max="100" value="0" class="w-full accent-rose-500 h-1 rounded bg-slate-800 cursor-pointer">
+                        <div class="flex justify-between">
+                            <span id="label-time-current">00:00</span>
+                            <span id="label-time-total">00:00</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Active Track Meta Description Context Info -->
-                <div class="song-details-area">
-                    <div class="title-txt" id="deck-track-title">درحال دریافت سیگنال قطعه...</div>
-                    <div class="artist-txt" id="deck-track-artist">آلبوم دانشگاه مهندسی وب</div>
-                </div>
-
-                <!-- Professional Interactive Timeline scrubbing progress track element (Upgraded to Drag Range) -->
-                <div class="timeline-scrub-box">
-                    <div class="scrub-container">
-                        <input type="range" class="premium-scrub-slider" id="premium-time-slider" min="0" max="100" value="0">
+                    <!-- دکمه‌های ناوبری و فرمان صوتی اصلی پلیر -->
+                    <div class="flex items-center gap-4 mb-4">
+                        <button id="btn-shuffle-toggle" class="text-slate-400 hover:text-rose-400 p-1" title="پخش اتفاقی">🎲</button>
+                        <button id="btn-prev-node" class="text-slate-300 hover:text-white text-lg">⏮️</button>
+                        <button id="btn-master-trigger-play" class="w-14 h-14 rounded-full bg-gradient-to-r from-rose-500 to-violet-600 text-white flex justify-center items-center shadow-lg hover:scale-105 active:scale-95 transition-transform text-xl">
+                            <span id="svg-ico-play">▶️</span>
+                            <span id="svg-ico-pause" class="hidden">⏸️</span>
+                        </button>
+                        <button id="btn-next-node" class="text-slate-300 hover:text-white text-lg">⏭️</button>
+                        <button id="btn-loop-toggle" class="text-slate-400 hover:text-rose-400 p-1" title="لوپ تکرار">🔁</button>
                     </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; opacity: 0.85;">
-                        <span id="label-time-current">00:00</span>
-                        <span id="label-time-total">00:00</span>
+
+                    <!-- نوار کنترل صدا و دکمه لایک -->
+                    <div class="w-full bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 flex items-center gap-2 text-xs">
+                        <span id="btn-mute-switch" class="cursor-pointer">🔊</span>
+                        <input type="range" id="slider-volume-node" min="0" max="100" value="80" class="w-full accent-rose-500 h-1">
+                        <button id="btn-favorite-heart" class="text-slate-500 hover:text-rose-500 ml-1">❤️</button>
                     </div>
                 </div>
 
-                <!-- Core Playing Execution Deck Controls Row Buttons Matrix Layout -->
-                <div class="deck-actions-row">
-                    <!-- Shuffle Button -->
-                    <button class="btn-action-node" id="btn-shuffle-toggle" title="پخش شافل اتفاقی">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="4" y1="4" x2="12" y2="12"></line></svg>
-                    </button>
-
-                    <!-- Prev Button -->
-                    <button class="btn-action-node" id="btn-prev-node" title="قطعه قبلی">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 12L20 6v12l-8.5-6zm-8.5 6V6h2v12H3z"/></svg>
-                    </button>
-
-                    <!-- Main Core Trigger Action Button -->
-                    <button class="btn-action-node master-trigger" id="btn-master-trigger-play" title="پخش / وقفه">
-                        <svg id="svg-ico-play" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                        <svg id="svg-ico-pause" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </button>
-
-                    <!-- Next Button -->
-                    <button class="btn-action-node" id="btn-next-node" title="قطعه بعدی">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18V6l8.5 6L6 18zm11-12h2v12h-2V6z"/></svg>
-                    </button>
-
-                    <!-- Repeat Loop Button -->
-                    <button class="btn-action-node" id="btn-loop-toggle" title="لوپ تکرار قطعه">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-                    </button>
-                </div>
-
-                <!-- Secondary Volume Deck Track -->
-                <div class="volume-control-strip">
-                    <button class="btn-action-node" id="btn-mute-switch" style="color: var(--text-sub);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
-                    </button>
-                    <input type="range" class="range-slider-element" min="0" max="100" value="80" id="slider-volume-node">
-                    <!-- Favorite Like State Heart -->
-                    <button class="btn-action-node" id="btn-favorite-heart" title="علاقه‌مندی" style="margin-right: auto; color: var(--text-sub);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 21.9 5.42 21.9 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    </button>
-                </div>
             </div>
         </div>
-    </div>
+        <!-- سیستم اعلان مینی توست پلیر -->
+        <div class="ui-status-bubble fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-rose-500/40 px-4 py-2 rounded-xl text-xs font-bold z-[100] shadow-2xl opacity-0 transition-opacity pointer-events-none" id="status-toast-node"></div>
+    </section>
 
-    <!-- UI Message Box Prompt -->
-    <div class="ui-status-bubble" id="status-toast-node">پیام فرانت‌اند گربول 🐾</div>
+    <!-- ========================================================================= -->
+    <!-- 🎨 بخش دوم: استودیوی متحرک‌سازی و طراحی گرافیکی استیکر (پایین صفحه) 🎨 -->
+    <!-- ========================================================================= -->
+    <section class="max-w-[1500px] w-full mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 items-start pt-4 border-t-2 border-slate-800/60">
+        
+        <!-- ستون راست استیکرساز: المان‌ها، اشکال برداری و ابزار قلم‌مو -->
+        <aside class="xl:col-span-3 glass-panel rounded-2xl p-4 flex flex-col gap-4 shadow-xl">
+            <div class="flex border-b border-slate-800 pb-2 gap-1 text-xs">
+                <button onclick="switchTab('tab-content')" id="btn-tab-content" class="flex-1 py-2 rounded-lg text-indigo-400 font-bold bg-slate-800/80 text-center">المان‌ها</button>
+                <button onclick="switchTab('tab-shapes')" id="btn-tab-shapes" class="flex-1 py-2 rounded-lg text-slate-400 text-center hover:bg-slate-800/40">📐 اشکال وکتور</button>
+                <button onclick="switchTab('tab-brush')" id="btn-tab-brush" class="flex-1 py-2 rounded-lg text-slate-400 text-center hover:bg-slate-800/40">🖌️ قلم‌مو</button>
+            </div>
 
+            <!-- تب درج متن و عکسبارگذاری -->
+            <div id="tab-content" class="flex flex-col gap-3">
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">🔠 درج متن با استایل اختصاصی</label>
+                    <div class="flex gap-2 mb-2">
+                        <input id="text-input" type="text" placeholder="متن استیکر را بنویسید..." class="bg-slate-900 border border-slate-700/60 rounded-xl px-3 py-1.5 text-xs w-full focus:outline-none text-white">
+                        <button id="btn-add-text" class="bg-indigo-600 hover:bg-indigo-500 px-3 rounded-xl text-xs font-bold transition-all">➕</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select id="text-font" class="bg-slate-900 border border-slate-700/60 rounded p-1 text-[11px] text-slate-300 outline-none">
+                            <option value="Vazirmatn">فونت وزیر</option>
+                            <option value="Impact">فونت Impact</option>
+                            <option value="Arial">فونت Arial</option>
+                        </select>
+                        <select id="text-weight" class="bg-slate-900 border border-slate-700/60 rounded p-1 text-[11px] text-slate-300 outline-none">
+                            <option value="bold">ضخیم (Bold)</option>
+                            <option value="normal">معمولی</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">🖼️ وارد کردن تصاویر لوکال</label>
+                    <label class="flex flex-col items-center justify-center border border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-3 cursor-pointer bg-slate-900/40 transition-colors group">
+                        <span class="text-[11px] text-slate-400 group-hover:text-indigo-400">📂 بارگذاری تصویر کامپیوتر یا موبایل</span>
+                        <input id="image-upload" type="file" accept="image/*" class="hidden">
+                    </label>
+                </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">😎 کاتالوگ سریع اموجی‌ها</label>
+                    <div class="grid grid-cols-5 gap-1.5 text-xl max-h-[90px] overflow-y-auto p-1 bg-slate-900/60 rounded-lg">
+                        <button class="emoji-btn hover:scale-125 transition-transform">🚀</button>
+                        <button class="emoji-btn hover:scale-125 transition-transform">🔥</button>
+                        <button class="emoji-btn hover:scale-125 transition-transform">💥</button>
+                        <button class="emoji-btn hover:scale-125 transition-transform">👑</button>
+                        <button class="emoji-btn hover:scale-125 transition-transform">⚡</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تب لایه اشکال هندسی برداری و بالن -->
+            <div id="tab-shapes" class="hidden flex flex-col gap-3">
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="addShapeLayer('rect')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">⬜ مستطیل</button>
+                        <button onclick="addShapeLayer('circle')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">🔮 دایره</button>
+                        <button onclick="addShapeLayer('star')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">⭐ ستاره ۵ پر</button>
+                        <button onclick="addShapeLayer('bubble')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">💬 بالن گفتار</button>
+                    </div>
+                </div>
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400">رنگ لایه:</span>
+                        <input id="shape-fill-color" type="color" value="#3b82f6" class="w-8 h-5 bg-transparent border-0 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- تب نقاشی و قلم‌مو متحرک -->
+            <div id="tab-brush" class="hidden flex flex-col gap-3">
+                <button id="btn-brush-mode" class="w-full bg-slate-800 hover:bg-slate-700 text-xs py-2.5 px-3 rounded-xl border border-slate-700 font-bold transition-all">
+                    <span id="brush-status">🖌️ غیرفعال (کلیک جهت فعال‌سازی)</span>
+                </button>
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 flex flex-col gap-3">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>ضخامت نوک:</span>
+                        <input id="brush-size" type="range" min="1" max="30" value="6" class="w-2/3 accent-indigo-500">
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>رنگ نقاشی:</span>
+                        <input id="brush-color" type="color" value="#f59e0b" class="w-8 h-6 bg-transparent border-0 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- تنظیم حاشیه چاپی دایکات استیکر -->
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 mt-auto shadow-inner">
+                <label class="flex items-center gap-3 cursor-pointer select-none">
+                    <input id="toggle-sticker-border" type="checkbox" checked class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 rounded focus:ring-indigo-500">
+                    <span class="text-xs font-bold text-slate-200">کادر سفید دور استیکر (Die-Cut)</span>
+                </label>
+            </div>
+        </aside>
+
+        <!-- ستون وسط استیکرساز: بوم پیش‌نمایش ۴۰۰ پیکسلی و خط زمان انیمیشن -->
+        <main class="xl:col-span-6 flex flex-col gap-4">
+            <div class="glass-panel rounded-2xl p-6 flex flex-col items-center justify-center relative min-h-[460px] border border-slate-800/60">
+                <div id="toast" class="absolute top-4 left-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl text-center font-bold opacity-0 transform -translate-y-2 pointer-events-none transition-all duration-300 z-50 text-xs"></div>
+                
+                <div id="canvas-view-frame" class="relative neon-checkerboard rounded-2xl overflow-hidden border-2 border-slate-800/80 transition-all duration-300" style="width: 400px; height: 400px;">
+                    <canvas id="sticker-canvas" width="400" height="400" class="absolute top-0 left-0 cursor-move z-10"></canvas>
+                </div>
+            </div>
+
+            <!-- نوار زمان موتور انیمیشن Stop-Motion استیکر -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col gap-3 shadow-xl">
+                <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-2 gap-2">
+                    <label class="flex items-center gap-1.5 cursor-pointer text-xs">
+                        <input id="toggle-onion-skin" type="checkbox" checked class="w-3.5 h-3.5 text-indigo-600 bg-slate-800 border-slate-700 rounded">
+                        <span class="text-slate-400 font-medium">پیازکاری (دیدن فریم پیشین)</span>
+                    </label>
+                    <div class="flex items-center gap-2 bg-slate-950/70 px-3 py-1 rounded-xl border border-slate-800 text-[11px]">
+                        <span>سرعت فریم:</span>
+                        <input id="control-fps" type="range" min="1" max="24" value="8" class="w-20 h-1 accent-indigo-500 cursor-pointer">
+                        <span id="val-fps" class="text-indigo-400 font-black">8 FPS</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/90 p-2 rounded-xl border border-slate-800/60">
+                    <div class="flex items-center gap-1">
+                        <button id="btn-play-gif" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">▶️ پخش انیمیشن</button>
+                        <button id="btn-add-frame" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium">➕ فریم جدید</button>
+                        <button id="btn-duplicate-frame" class="bg-slate-800/90 hover:bg-slate-700 text-indigo-300 text-xs px-3 py-1.5 rounded-lg font-medium">👥 تکثیر لایه‌ها</button>
+                        <button id="btn-export-gif" class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">📥 خروجی GIF واقعی</button>
+                    </div>
+                    <div class="text-[11px] font-medium text-slate-400">
+                        فریم: <span id="lbl-active-frame" class="text-indigo-400 font-black">1</span> از <span id="lbl-total-frames" class="text-slate-300">1</span>
+                    </div>
+                </div>
+                <div id="timeline-frames-container" class="flex gap-2 overflow-x-auto py-2 px-1 bg-slate-950/50 rounded-xl min-h-[85px] items-center border border-slate-900"></div>
+            </div>
+        </main>
+
+        <!-- ستون چپ استیکرساز: فیلترها، چرخش ۳بعدی و پنل لایه‌های استیکر -->
+        <aside class="xl:col-span-3 flex flex-col gap-4">
+            <!-- افکت‌های از پیش تعریف شده حرکتی کل بوم -->
+            <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2">
+                <h3 class="text-xs font-bold text-amber-400">🏃‍♂️ افکت‌های انیمیشنی خودکار و سریع بوم</h3>
+                <select id="select-global-effect" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 w-full outline-none">
+                    <option value="none">بدون افکت خودکار (طراحی دستی فریم‌ها)</option>
+                    <option value="float">شناور مواج مینی‌مال (Floating)</option>
+                    <option value="pulse">ضربان نئونی قلب (Pulse Glow)</option>
+                    <option value="wobble">لرزش شدید لوپ (Wobble)</option>
+                    <option value="spin3d">چرخش دوار سه‌بعدی لوپ (3D Spin GIF)</option>
+                </select>
+            </div>
+
+            <!-- مشخصات، فیلترها و خمش سه‌بعدی لایه انتخابی -->
+            <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
+                <h2 class="text-xs font-bold border-b border-slate-800 pb-2 text-emerald-400">🛠️ کنترل فیلترها و هندسه لایه فعال</h2>
+                <div id="no-layer-selected" class="text-xs text-slate-500 text-center py-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-800">برای ویرایش، یک لایه را انتخاب کنید.</div>
+                
+                <div id="layer-controls" class="hidden flex-col gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <div class="flex justify-between text-[10px] text-slate-400"><span>اندازه:</span><span id="val-scale">100%</span></div>
+                    <input id="control-scale" type="range" min="10" max="250" value="100" class="w-full h-1 accent-emerald-500">
+
+                    <div class="flex justify-between text-[10px] text-slate-400"><span>چرخش ۲بعدی:</span><span id="val-rotate">0°</span></div>
+                    <input id="control-rotate" type="range" min="0" max="360" value="0" class="w-full h-1 accent-emerald-500">
+
+                    <div class="flex justify-between text-[10px] text-slate-400"><span>شفافیت:</span><span id="val-opacity">100%</span></div>
+                    <input id="control-opacity" type="range" min="0" max="100" value="100" class="w-full h-1 accent-emerald-500">
+
+                    <div class="border-t border-slate-800 pt-2 flex flex-col gap-1.5">
+                        <span class="text-[10px] font-bold text-indigo-400">📐 زوایای خمش ۳بعدی لایه</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><span class="text-[9px] text-slate-400 block">محور افقی X:</span><input id="control-rotate-x" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
+                            <div><span class="text-[9px] text-slate-400 block">محور عمودی Y:</span><input id="control-rotate-y" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-2 flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-purple-400">🎨 افکت و فیلتر گرافیکی لایه</span>
+                        <select id="control-layer-filter" class="bg-slate-900 text-slate-300 rounded p-1 text-[11px] w-full outline-none">
+                            <option value="none">بدون فیلتر</option>
+                            <option value="grayscale(100%)">سیاه و سفید (Grayscale)</option>
+                            <option value="invert(100%)">نگاتیو / معکوس رنگ</option>
+                            <option value="blur(4px)">تاری (Blur)</option>
+                        </select>
+                    </div>
+
+                    <div id="text-specific-controls" class="hidden flex-col gap-2 border-t border-slate-800 pt-2 text-[10px] text-slate-400">
+                        <div class="flex justify-between items-center"><span>رنگ متن:</span><input id="control-text-color" type="color" class="bg-transparent border-0 cursor-pointer"></div>
+                        <div class="flex justify-between items-center"><span>خط مرزی:</span><input id="control-stroke-color" type="color" class="bg-transparent border-0 cursor-pointer"></div>
+                    </div>
+                    <button id="btn-delete-layer" class="w-full bg-red-950/40 border border-red-900/30 text-red-300 text-[11px] py-1.5 rounded-lg transition-all mt-1">🗑️ حذف لایه از فریم جاری</button>
+                </div>
+            </div>
+
+            <!-- ساختار لیست چیدمان لایه‌های روی بوم استیکر -->
+            <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2 min-h-[160px]">
+                <h2 class="text-xs font-bold border-b border-slate-800 pb-1.5 text-slate-400">🥞 ساختار چیدمان لایه‌های فریم فعال</h2>
+                <div id="layers-list-container" class="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto"></div>
+            </div>
+        </aside>
+    </section>
+
+    <!-- جاوااسکریپت و کدهای عملکردی یکپارچه شده پلتفرم صوتی و تصویری -->
     <script>
+        const canvas = document.getElementById('sticker-canvas');
+        const ctx = canvas.getContext('2d');
+        const canvasViewFrame = document.getElementById('canvas-view-frame');
+
+        // دیتابیس لوکال فریم‌های استیکر
+        let frames = [ { layers: [] } ];
+        let activeFrameIndex = 0;
+        let selectedLayerId = null;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let isBrushMode = false;
+        let isDrawing = false;
+        let currentBrushLayer = null;
+
+        // دیتابیس صوتی و متنی گربول پلیر اولترا
         const coreTrackDatabase = [
             {
                 title: "کدنویسی نیمه‌شب گربول شجاع",
@@ -845,8 +502,6 @@
                 duration: 35,
                 cover: "https://images.unsplash.com/photo-1515002246390-7bf7e8f87b54?fm=jpg&q=60&w=3000&auto=format&fit=crop",
                 baseFreq: 260,
-                isLocalFile: false,
-                isExternal: false,
                 liked: false,
                 lyrics: {
                     0: "🐾 نیمه شبه و گربول بیداره پای کد...",
@@ -861,14 +516,11 @@
                 duration: 40,
                 cover: "https://images.unsplash.com/photo-1561948955-570b270e7c36?fm=jpg&q=60&w=3000&auto=format&fit=crop",
                 baseFreq: 340,
-                isLocalFile: false,
-                isExternal: false,
                 liked: false,
                 lyrics: {
                     0: "🎵 تصمیم بزرگ گربول برای تغییر پوسته وب...",
                     10: "⚡ ری‌اکت و کامپوننت‌ها دارن رندر میشن امشب",
-                    22: "🧠 هیچ کی نمی‌تونه جلوشو بگیره توی این لوپ",
-                    32: "🌟 گربول پرو رو بشناس، گربه فرانت‌اند شجاع!"
+                    22: "🧠 هیچ کی نمی‌تونه جلوشو بگیره توی این لوپ"
                 }
             }
         ];
@@ -879,7 +531,7 @@
         let isMutedState = false;
         let isShuffleState = false;
         let isLoopTrackState = false;
-        let isUserDraggingSlider = false; // Flag to prevent update looping while scrubbing
+        let isUserDraggingSlider = false;
 
         let audioContextInstance = null;
         let liveOscillatorNode = null;
@@ -897,539 +549,423 @@
         let virtualTimeTrackerBase = 0;
         let virtualPlaybackAccumulator = 0;
 
-        const vinylDiskNode = document.getElementById('vinyl-disk-node');
-        const turntableArmLever = document.getElementById('turntable-arm-lever');
-        const deckCoverArtwork = document.getElementById('deck-cover-artwork');
-        const deckTrackTitle = document.getElementById('deck-track-title');
-        const deckTrackArtist = document.getElementById('deck-track-artist');
-        const premiumTimeSlider = document.getElementById('premium-time-slider');
-        const labelTimeCurrent = document.getElementById('label-time-current');
-        const labelTimeTotal = document.getElementById('label-time-total');
+        let isPlayingGif = false;
+        let gifInterval = null;
+        let animationFps = 8;
+        let currentGlobalEffect = 'none';
+        let auto3Ddeg = 0;
+        let auto3DLoop = null;
 
-        const btnMasterTriggerPlay = document.getElementById('btn-master-trigger-play');
-        const svgIcoPlay = document.getElementById('svg-ico-play');
-        const svgIcoPause = document.getElementById('svg-ico-pause');
-        const sliderVolumeNode = document.getElementById('slider-volume-node');
-
-        const btnFavoriteHeart = document.getElementById('btn-favorite-heart');
-        const btnShuffleToggle = document.getElementById('btn-shuffle-toggle');
-        const btnLoopToggle = document.getElementById('btn-loop-toggle');
-        const playbackSpeedDropdown = document.getElementById('playback-speed');
-        const eqPresetDropdown = document.getElementById('eq-preset');
-        const themeToggler = document.getElementById('theme-toggler');
-
-        const lyricsViewport = document.getElementById('lyrics-viewport');
-        const spectrumBarsGrid = document.getElementById('spectrum-bars-grid');
-        const tracksListDom = document.getElementById('tracks-list-dom');
-        const realAudioElement = document.getElementById('real-audio-element');
-        const inputLocalFile = document.getElementById('input-local-file');
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.innerText = msg;
+                toast.classList.remove('opacity-0', '-translate-y-2');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', '-translate-y-2');
+                }, 2500);
+            }
+        }
 
         function displayToastNotification(msg) {
             const bubble = document.getElementById('status-toast-node');
             bubble.textContent = msg;
-            bubble.classList.add('visible');
-            setTimeout(() => { bubble.classList.remove('visible'); }, 3000);
+            bubble.classList.remove('opacity-0');
+            bubble.classList.add('opacity-100');
+            setTimeout(() => {
+                bubble.classList.remove('opacity-100');
+                bubble.classList.add('opacity-0');
+            }, 3000);
         }
 
+        function generateId() { return 'layer_' + Math.random().toString(36).substr(2, 9); }
+
+        function switchTab(tabId) {
+            document.getElementById('tab-content').classList.add('hidden');
+            document.getElementById('tab-shapes').classList.add('hidden');
+            document.getElementById('tab-brush').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        // ================= رندر و کدهای منطقی استیکرساز متحرک =================
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const isOnionSkinEnabled = document.getElementById('toggle-onion-skin').checked;
+            if (isOnionSkinEnabled && activeFrameIndex > 0 && !isPlayingGif) {
+                ctx.save(); ctx.globalAlpha = 0.25;
+                frames[activeFrameIndex - 1].layers.forEach(l => renderSingleLayer(ctx, l, true));
+                ctx.restore();
+            }
+
+            const activeFrame = frames[activeFrameIndex];
+            if (activeFrame) {
+                activeFrame.layers.forEach(l => { ctx.save(); renderSingleLayer(ctx, l, false); ctx.restore(); });
+            }
+        }
+
+        function renderSingleLayer(targetCtx, layer, isOnionMode) {
+            targetCtx.save();
+            targetCtx.translate(layer.x, layer.y);
+            targetCtx.rotate((layer.rotate * Math.PI) / 180);
+            
+            const rX = ((layer.rotateX || 0) * Math.PI) / 180;
+            const rY = ((layer.rotateY || 0) * Math.PI) / 180;
+            targetCtx.scale(Math.cos(rY) * (layer.scale / 100), Math.cos(rX) * (layer.scale / 100));
+
+            if (!isOnionMode && layer.filter && layer.filter !== 'none') targetCtx.filter = layer.filter;
+            if (!isOnionMode && layer.opacity !== undefined) targetCtx.globalAlpha = layer.opacity / 100;
+
+            if (layer.type === 'text' || layer.type === 'emoji') {
+                const fW = layer.fontWeight || 'bold'; const fF = layer.fontFamily || 'Vazirmatn';
+                targetCtx.font = `${fW} ${layer.fontSize || 32}px ${fF}, Arial`;
+                targetCtx.textAlign = 'center'; targetCtx.textBaseline = 'middle';
+                if (layer.strokeWidth > 0) {
+                    targetCtx.strokeStyle = layer.strokeColor || '#000000'; targetCtx.lineWidth = layer.strokeWidth;
+                    targetCtx.lineJoin = 'round'; targetCtx.strokeText(layer.content, 0, 0);
+                }
+                targetCtx.fillStyle = layer.color || '#ffffff'; targetCtx.fillText(layer.content, 0, 0);
+            } else if (layer.type === 'image' && layer.imgReady) {
+                targetCtx.drawImage(layer.imgElement, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+            } else if (layer.type === 'brush') {
+                targetCtx.drawImage(layer.canvasElement, -canvas.width/2, -canvas.height/2);
+            } else if (layer.type === 'shape') {
+                targetCtx.fillStyle = layer.fillColor || '#3b82f6';
+                targetCtx.strokeStyle = layer.strokeColor || '#ffffff';
+                targetCtx.lineWidth = 3; targetCtx.beginPath();
+                const size = layer.shapeSize || 60;
+                if (layer.shapeType === 'rect') targetCtx.rect(-size/2, -size/2, size, size);
+                else if (layer.shapeType === 'circle') targetCtx.arc(0, 0, size/2, 0, Math.PI * 2);
+                else if (layer.shapeType === 'star') {
+                    for (let i = 0; i < 10; i++) {
+                        const r = (i % 2 === 0) ? size/2 : size/4;
+                        const currAngle = (Math.PI * 2 / 10) * i;
+                        targetCtx.lineTo(Math.cos(currAngle) * r, Math.sin(currAngle) * r);
+                    }
+                    targetCtx.closePath();
+                } else if (layer.shapeType === 'bubble') {
+                    targetCtx.roundRect(-size/1.5, -size/2, size*1.3, size, 10);
+                }
+                targetCtx.fill(); targetCtx.stroke();
+            }
+
+            if (!isOnionMode && layer.id === selectedLayerId && !isBrushMode && !isPlayingGif) {
+                targetCtx.strokeStyle = '#6366f1'; targetCtx.lineWidth = 2; targetCtx.setLineDash([5, 4]);
+                let bW = 80, bH = 50; targetCtx.strokeRect(-bW / 2, -bH / 2, bW, bH);
+            }
+            targetCtx.restore();
+        }
+
+        function updateStickerUI() {
+            document.getElementById('lbl-active-frame').innerText = activeFrameIndex + 1;
+            document.getElementById('lbl-total-frames').innerText = frames.length;
+
+            const timelineContainer = document.getElementById('timeline-frames-container');
+            timelineContainer.innerHTML = '';
+            frames.forEach((frame, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = `relative flex-shrink-0 w-14 h-14 rounded-xl cursor-pointer border-2 transition-all flex flex-col items-center justify-center font-bold text-[10px] ${idx === activeFrameIndex ? 'border-indigo-500 bg-indigo-950 text-indigo-300 shadow-md' : 'border-slate-800 bg-slate-900 text-slate-500'}`;
+                thumb.innerHTML = `<span>Fریم-${idx + 1}</span>`;
+                thumb.addEventListener('click', () => {
+                    if (isPlayingGif) stopGifPlayback();
+                    activeFrameIndex = idx; selectedLayerId = null; updateStickerUI(); drawCanvas();
+                });
+                timelineContainer.appendChild(thumb);
+            });
+
+            const activeFrame = frames[activeFrameIndex];
+            const layersList = document.getElementById('layers-list-container');
+            layersList.innerHTML = '';
+            if (activeFrame) {
+                [...activeFrame.layers].reverse().forEach(layer => {
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center p-2 bg-slate-800 rounded-xl text-[10px] mb-1 cursor-pointer border border-transparent ${layer.id === selectedLayerId ? 'border-indigo-500 text-indigo-300 bg-indigo-950/40' : 'text-slate-300'}`;
+                    row.innerHTML = `<span class="truncate max-w-[120px]">${layer.type}: ${layer.content || 'المان'}</span><button onclick="removeLayerFromFrame('${layer.id}')" class="text-red-400 font-black hover:text-red-300">×</button>`;
+                    row.addEventListener('click', () => { selectedLayerId = layer.id; updateStickerUI(); drawCanvas(); });
+                    layersList.appendChild(row);
+                });
+            }
+
+            const activeLayer = activeFrame ? activeFrame.layers.find(l => l.id === selectedLayerId) : null;
+            if (activeLayer) {
+                document.getElementById('layer-controls').classList.remove('hidden'); document.getElementById('layer-controls').classList.add('flex');
+                document.getElementById('no-layer-selected').classList.add('hidden');
+                document.getElementById('control-scale').value = activeLayer.scale;
+                document.getElementById('control-rotate').value = activeLayer.rotate;
+                document.getElementById('control-opacity').value = activeLayer.opacity || 100;
+                if (activeLayer.type === 'text') {
+                    document.getElementById('text-specific-controls').classList.remove('hidden'); document.getElementById('text-specific-controls').classList.add('flex');
+                } else { document.getElementById('text-specific-controls').classList.add('hidden'); }
+            } else {
+                document.getElementById('layer-controls').classList.add('hidden'); document.getElementById('layer-controls').classList.remove('flex');
+                document.getElementById('no-layer-selected').classList.remove('hidden');
+            }
+        }
+
+        window.removeLayerFromFrame = function(layerId) {
+            const activeFrame = frames[activeFrameIndex];
+            if(activeFrame) {
+                activeFrame.layers = activeFrame.layers.filter(l => l.id !== layerId);
+                if (selectedLayerId === layerId) selectedLayerId = null;
+                updateStickerUI(); drawCanvas();
+            }
+        };
+
+        document.getElementById('btn-add-frame').addEventListener('click', () => {
+            frames.push({ layers: [] }); activeFrameIndex = frames.length - 1; updateStickerUI(); drawCanvas();
+        });
+
+        document.getElementById('btn-duplicate-frame').addEventListener('click', () => {
+            const sourceFrame = frames[activeFrameIndex];
+            const duplicated = sourceFrame.layers.map(l => ({ ...l, id: generateId() }));
+            frames.splice(activeFrameIndex + 1, 0, { layers: duplicated });
+            activeFrameIndex++; updateStickerUI(); drawCanvas();
+        });
+
+        document.getElementById('btn-play-gif').addEventListener('click', () => {
+            if (isPlayingGif) stopGifPlayback(); else startGifPlayback();
+        });
+
+        function startGifPlayback() {
+            isPlayingGif = true; selectedLayerId = null;
+            document.getElementById('btn-play-gif').innerText = '⏸️ توقف پخش زنده';
+            gifInterval = setInterval(() => { activeFrameIndex = (activeFrameIndex + 1) % frames.length; updateStickerUI(); drawCanvas(); }, 1000 / animationFps);
+        }
+        function stopGifPlayback() { isPlayingGif = false; clearInterval(gifInterval); document.getElementById('btn-play-gif').innerText = '▶️ پخش انیمیشن'; updateStickerUI(); drawCanvas(); }
+
+        // ================= فرآیند کنترلی موزیک پلیر گربول اولترا =================
         function buildSpectrumVisualizerLayoutNodes() {
-            spectrumBarsGrid.innerHTML = '';
+            const grid = document.getElementById('spectrum-bars-grid');
+            grid.innerHTML = '';
             for(let i=0; i<32; i++) {
                 const node = document.createElement('div');
-                node.className = 'visualizer-node-bar';
-                spectrumBarsGrid.appendChild(node);
+                node.className = 'w-1 bg-gradient-to-t from-rose-500 to-violet-600 rounded-t h-1 transition-all duration-70';
+                grid.appendChild(node);
             }
         }
 
         function bootstrapStudioAudioNodes() {
             if (!audioContextInstance) {
                 audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
-                
-                bassBiquadFilter = audioContextInstance.createBiquadFilter();
-                bassBiquadFilter.type = 'lowshelf';
-                bassBiquadFilter.frequency.setValueAtTime(220, audioContextInstance.currentTime);
-
-                midBiquadFilter = audioContextInstance.createBiquadFilter();
-                midBiquadFilter.type = 'peaking';
-                midBiquadFilter.Q.setValueAtTime(1.0, audioContextInstance.currentTime);
-                midBiquadFilter.frequency.setValueAtTime(1100, audioContextInstance.currentTime);
-
-                trebleBiquadFilter = audioContextInstance.createBiquadFilter();
-                trebleBiquadFilter.type = 'highshelf';
-                trebleBiquadFilter.frequency.setValueAtTime(3200, audioContextInstance.currentTime);
-
-                gainNodeController = audioContextInstance.createGain();
-                synchronizeVolumeGainLevel();
+                bassBiquadFilter = audioContextInstance.createBiquadFilter(); bassBiquadFilter.type = 'lowshelf'; bassBiquadFilter.frequency.setValueAtTime(220, audioContextInstance.currentTime);
+                midBiquadFilter = audioContextInstance.createBiquadFilter(); midBiquadFilter.type = 'peaking'; midBiquadFilter.frequency.setValueAtTime(1100, audioContextInstance.currentTime);
+                trebleBiquadFilter = audioContextInstance.createBiquadFilter(); trebleBiquadFilter.type = 'highshelf'; trebleBiquadFilter.frequency.setValueAtTime(3200, audioContextInstance.currentTime);
+                gainNodeController = audioContextInstance.createGain(); synchronizeVolumeGainLevel();
             }
-
-            if (audioContextInstance && audioContextInstance.state === 'suspended') {
-                audioContextInstance.resume();
-            }
+            if (audioContextInstance.state === 'suspended') audioContextInstance.resume();
         }
 
         function synchronizeVolumeGainLevel() {
-            const targetVol = isMutedState ? 0 : (sliderVolumeNode.value / 100);
+            const targetVol = isMutedState ? 0 : (document.getElementById('slider-volume-node').value / 100);
             if (gainNodeController && audioContextInstance) {
                 const multiplier = liveOscillatorNode ? 0.20 : 1.0;
                 gainNodeController.gain.setValueAtTime(targetVol * multiplier, audioContextInstance.currentTime);
             }
-            // Master Hardware Audio-Routing Fix: Forcing stream targets to strictly consume direct output levels
-            realAudioElement.volume = targetVol;
-            realAudioElement.muted = isMutedState;
-        }
-
-        function transformSpeedAdjustmentRate() {
-            const rate = parseFloat(playbackSpeedDropdown.value);
-            if (isPlaying && currentDecodedAudioBuffer && activeBufferSourceNode) {
-                activeBufferSourceNode.playbackRate.setValueAtTime(rate, audioContextInstance.currentTime);
-            }
-        }
-
-        function executeOscillatorSynthPlay(freq) {
-            bootstrapStudioAudioNodes();
-            terminateOscillatorSynth();
-
-            liveOscillatorNode = audioContextInstance.createOscillator();
-            liveOscillatorNode.type = 'triangle';
-            liveOscillatorNode.frequency.setValueAtTime(freq * parseFloat(playbackSpeedDropdown.value), audioContextInstance.currentTime);
-
-            liveOscillatorNode.connect(bassBiquadFilter);
-            bassBiquadFilter.connect(midBiquadFilter);
-            midBiquadFilter.connect(trebleBiquadFilter);
-            trebleBiquadFilter.connect(gainNodeController);
-            gainNodeController.connect(audioContextInstance.destination);
-
-            liveOscillatorNode.start();
-            synchronizeVolumeGainLevel();
-        }
-
-        function terminateOscillatorSynth() {
-            if (liveOscillatorNode) {
-                try {
-                    liveOscillatorNode.stop();
-                    liveOscillatorNode.disconnect();
-                } catch(err) {}
-                liveOscillatorNode = null;
-            }
-        }
-
-        function stopActiveBufferSource() {
-            if (activeBufferSourceNode) {
-                try { activeBufferSourceNode.stop(); activeBufferSourceNode.disconnect(); } catch(e) {}
-                activeBufferSourceNode = null;
-            }
-        }
-
-        function renderTimeStringLayout(sec) {
-            if (isNaN(sec) || sec === Infinity || sec < 0) return "00:00";
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60);
-            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-        }
-
-        function rebuildTracksLibraryViewUI() {
-            tracksListDom.innerHTML = '';
-            coreTrackDatabase.forEach((track, i) => {
-                const li = document.createElement('li');
-                li.className = `track-li-row ${i === currentTrackIndex ? 'active' : ''}`;
-                li.innerHTML = `
-                    <div class="flex-meta-side">
-                        <span style="opacity: 0.65;">🐾 0${i+1}</span>
-                        <div style="margin-right: 8px;">${track.title}</div>
-                    </div>
-                    <div style="font-size: 0.75rem; opacity: 0.8;">${track.isExternal ? (track.isLocalFile ? 'فایل لوکال 📁' : 'منبع وب 🌐') : renderTimeStringLayout(track.duration)}</div>
-                `;
-                li.addEventListener('click', () => { triggerSelectTrackNode(i); });
-                tracksListDom.appendChild(li);
-            });
+            document.getElementById('real-audio-element').volume = targetVol;
+            document.getElementById('real-audio-element').muted = isMutedState;
         }
 
         function triggerSelectTrackNode(index) {
-            currentTrackIndex = index;
-            currentTimeSec = 0;
-            virtualPlaybackAccumulator = 0;
+            currentTrackIndex = index; currentTimeSec = 0; virtualPlaybackAccumulator = 0;
             const track = coreTrackDatabase[currentTrackIndex];
-
-            terminateOscillatorSynth();
-            stopActiveBufferSource();
-            realAudioElement.pause();
+            terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
             
-            if (track.audioBuffer) {
-                currentDecodedAudioBuffer = track.audioBuffer;
-                isNativeStreamingActive = false;
-                realAudioElement.removeAttribute('src');
-            } else {
-                currentDecodedAudioBuffer = null;
-                if (track.url) {
-                    isNativeStreamingActive = true;
-                    realAudioElement.src = track.url;
-                    realAudioElement.load();
-                } else {
-                    isNativeStreamingActive = false;
-                    realAudioElement.removeAttribute('src');
-                }
-            }
+            if (track.audioBuffer) { currentDecodedAudioBuffer = track.audioBuffer; isNativeStreamingActive = false; }
+            else if (track.url) { isNativeStreamingActive = true; document.getElementById('real-audio-element').src = track.url; }
 
-            deckTrackTitle.textContent = track.title;
-            deckTrackArtist.textContent = track.artist;
-            deckCoverArtwork.src = track.cover;
-            
-            labelTimeCurrent.textContent = "00:00";
-            labelTimeTotal.textContent = renderTimeStringLayout(track.duration);
-            
-            premiumTimeSlider.max = Math.floor(track.duration);
-            premiumTimeSlider.value = 0;
+            document.getElementById('deck-track-title').textContent = track.title;
+            document.getElementById('deck-track-artist').textContent = track.artist;
+            document.getElementById('deck-cover-artwork').src = track.cover;
+            document.getElementById('label-time-total').textContent = renderTimeStringLayout(track.duration);
+            document.getElementById('premium-time-slider').max = Math.floor(track.duration);
+            document.getElementById('premium-time-slider').value = 0;
 
-            btnFavoriteHeart.style.color = track.liked ? 'var(--primary)' : 'var(--text-sub)';
-
-            rebuildTracksLibraryViewUI();
-            generateLyricsListDOM();
-
+            rebuildTracksLibraryViewUI(); generateLyricsListDOM();
             if (isPlaying) {
+                virtualTimeTrackerBase = performance.now();
                 executeTrackPlaybackCore();
             }
         }
 
+        function renderTimeStringLayout(sec) {
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function rebuildTracksLibraryViewUI() {
+            const list = document.getElementById('tracks-list-dom'); list.innerHTML = '';
+            coreTrackDatabase.forEach((t, i) => {
+                const li = document.createElement('li');
+                li.className = `p-2 rounded-xl cursor-pointer text-xs flex justify-between ${i === currentTrackIndex ? 'text-rose-400 bg-slate-900 border border-rose-500/20 font-bold' : 'text-slate-400 hover:bg-slate-900/40'}`;
+                li.innerHTML = `<span>🐾 ${t.title}</span><span class="text-[10px] opacity-60">${renderTimeStringLayout(t.duration)}</span>`;
+                li.addEventListener('click', () => triggerSelectTrackNode(i));
+                list.appendChild(li);
+            });
+        }
+
         function generateLyricsListDOM() {
-            lyricsViewport.innerHTML = '';
+            const view = document.getElementById('lyrics-viewport'); view.innerHTML = '';
             const track = coreTrackDatabase[currentTrackIndex];
-            Object.keys(track.lyrics).forEach(timeKey => {
-                const div = document.createElement('div');
-                div.className = 'lyrics-track-line';
-                div.id = `line-node-key-${timeKey}`;
-                div.textContent = track.lyrics[timeKey];
-                lyricsViewport.appendChild(div);
+            if (!track.lyrics) return;
+            Object.keys(track.lyrics).forEach(k => {
+                const div = document.createElement('div'); div.className = 'lyrics-track-line opacity-40 text-slate-400 text-xs hidden';
+                div.id = `line-node-key-${k}`; div.textContent = track.lyrics[k];
+                view.appendChild(div);
             });
             executeLyricsHighlightSync();
         }
 
         function executeLyricsHighlightSync() {
-            const track = coreTrackDatabase[currentTrackIndex];
+            const track = coreTrackDatabase[currentTrackIndex]; if (!track.lyrics) return;
             let matchedKey = null;
-
-            Object.keys(track.lyrics).forEach(timeKey => {
-                if (currentTimeSec >= parseInt(timeKey)) {
-                    matchedKey = timeKey;
-                }
-            });
-
+            Object.keys(track.lyrics).forEach(k => { if (currentTimeSec >= parseInt(k)) matchedKey = k; });
             if (matchedKey !== null) {
-                const items = lyricsViewport.querySelectorAll('.lyrics-track-line');
-                items.forEach(item => item.classList.remove('active-line-highlight'));
-                
-                const targetLine = document.getElementById(`line-node-key-${matchedKey}`);
-                if (targetLine) {
-                    targetLine.classList.add('active-line-highlight');
-                    lyricsViewport.scrollTop = targetLine.offsetTop - 35;
-                }
+                document.querySelectorAll('.lyrics-track-line').forEach(l => l.classList.add('hidden'));
+                const target = document.getElementById(`line-node-key-${matchedKey}`);
+                if (target) { target.classList.remove('hidden'); target.classList.add('active-line-highlight'); }
             }
         }
 
         function handlePlayPauseMasterToggle() {
             bootstrapStudioAudioNodes();
+            const vinyl = document.getElementById('vinyl-disk-node');
+            const arm = document.getElementById('turntable-arm-lever');
             if (isPlaying) {
                 isPlaying = false;
-                svgIcoPlay.style.display = 'block';
-                svgIcoPause.style.display = 'none';
-                vinylDiskNode.style.animationPlayState = 'paused';
-                vinylDiskNode.classList.remove('glowing-active');
-                turntableArmLever.classList.remove('active');
-                
-                terminateOscillatorSynth();
-                stopActiveBufferSource();
-                realAudioElement.pause();
-                
+                document.getElementById('svg-ico-play').classList.remove('hidden');
+                document.getElementById('svg-ico-pause').classList.add('hidden');
+                vinyl.style.animationPlayState = 'paused'; vinyl.classList.remove('glowing-active');
+                arm.classList.remove('active');
+                terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
                 virtualPlaybackAccumulator += (performance.now() - virtualTimeTrackerBase) / 1000;
-                
-                clearInterval(clockTimerTicker);
-                clearInterval(spectrumVisualizerTicker);
-                resetVisualizerGraphToFloor();
+                clearInterval(clockTimerTicker); clearInterval(spectrumVisualizerTicker);
             } else {
                 isPlaying = true;
-                svgIcoPlay.style.display = 'none';
-                svgIcoPause.style.display = 'block';
-                vinylDiskNode.style.animationPlayState = 'running';
-                vinylDiskNode.classList.add('glowing-active');
-                turntableArmLever.classList.add('active');
-
-                virtualTimeTrackerBase = performance.now();
-                executeTrackPlaybackCore();
+                document.getElementById('svg-ico-play').classList.add('hidden');
+                document.getElementById('svg-ico-pause').classList.remove('hidden');
+                vinyl.style.animationPlayState = 'running'; vinyl.classList.add('glowing-active');
+                arm.classList.add('active');
+                virtualTimeTrackerBase = performance.now(); executeTrackPlaybackCore();
             }
         }
 
         function executeTrackPlaybackCore() {
             if (clockTimerTicker) clearInterval(clockTimerTicker);
             if (spectrumVisualizerTicker) clearInterval(spectrumVisualizerTicker);
-            terminateOscillatorSynth();
-            stopActiveBufferSource();
-
             const track = coreTrackDatabase[currentTrackIndex];
-            const speedRate = parseFloat(playbackSpeedDropdown.value);
-
+            const speedRate = parseFloat(document.getElementById('playback-speed').value);
             synchronizeVolumeGainLevel();
 
             if (currentDecodedAudioBuffer) {
-                activeBufferSourceNode = audioContextInstance.createBufferSource();
-                activeBufferSourceNode.buffer = currentDecodedAudioBuffer;
+                activeBufferSourceNode = audioContextInstance.createBufferSource(); activeBufferSourceNode.buffer = currentDecodedAudioBuffer;
                 activeBufferSourceNode.playbackRate.setValueAtTime(speedRate, audioContextInstance.currentTime);
-                
-                activeBufferSourceNode.connect(bassBiquadFilter);
-                bassBiquadFilter.connect(midBiquadFilter);
-                midBiquadFilter.connect(trebleBiquadFilter);
-                trebleBiquadFilter.connect(gainNodeController);
+                activeBufferSourceNode.connect(bassBiquadFilter); bassBiquadFilter.connect(midBiquadFilter);
+                midBiquadFilter.connect(trebleBiquadFilter); trebleBiquadFilter.connect(gainNodeController);
                 gainNodeController.connect(audioContextInstance.destination);
-                
-                const startLocation = currentTimeSec <= track.duration ? currentTimeSec : 0;
-                activeBufferSourceNode.start(0, startLocation);
-                
-                activeBufferSourceNode.onended = () => {
-                    if (isPlaying && currentTimeSec >= track.duration - 0.5) {
-                        handleTrackCycleFinished();
-                    }
-                };
+                activeBufferSourceNode.start(0, currentTimeSec);
             } else if (isNativeStreamingActive && track.url) {
-                realAudioElement.playbackRate = speedRate;
-                if(currentTimeSec > 0) {
-                    try { realAudioElement.currentTime = currentTimeSec; } catch(e) {}
+                document.getElementById('real-audio-element').playbackRate = speedRate;
+                if (currentTimeSec > 0) {
+                    try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(e) {}
                 }
-                const playPromise = realAudioElement.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log("Audio elements triggered cleanly.");
-                    });
-                }
+                document.getElementById('real-audio-element').play();
             } else {
                 executeOscillatorSynthPlay(track.baseFreq || 300);
             }
 
             virtualTimeTrackerBase = performance.now();
-
             clockTimerTicker = setInterval(() => {
-                if (isUserDraggingSlider) return; // Halt ticker synchronization while scrubbing manually
-
-                const totalDuration = track.duration || 180;
-                const deltaSession = (performance.now() - virtualTimeTrackerBase) / 1000;
+                if (isUserDraggingSlider) return;
+                const delta = (performance.now() - virtualTimeTrackerBase) / 1000;
+                currentTimeSec = virtualPlaybackAccumulator + (delta * speedRate);
                 
-                currentTimeSec = virtualPlaybackAccumulator + (deltaSession * speedRate);
-
-                if (currentTimeSec >= totalDuration) {
-                    currentTimeSec = totalDuration;
-                    labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
-                    premiumTimeSlider.value = Math.floor(currentTimeSec);
+                const maxLen = track.duration || 180;
+                if (currentTimeSec >= maxLen) {
+                    currentTimeSec = maxLen;
+                    document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec);
+                    document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec);
                     clearInterval(clockTimerTicker);
                     handleTrackCycleFinished();
                     return;
                 }
 
-                labelTimeCurrent.textContent = renderTimeStringLayout(currentTimeSec);
-                premiumTimeSlider.value = Math.floor(currentTimeSec);
+                document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec);
+                document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec);
                 executeLyricsHighlightSync();
             }, 250);
 
-            const nodes = document.querySelectorAll('.visualizer-node-bar');
+            const bars = document.querySelectorAll('#spectrum-bars-grid div');
             spectrumVisualizerTicker = setInterval(() => {
-                nodes.forEach((node, idx) => {
-                    let matrix = Math.sin(idx + currentTimeSec) * 10 + 16;
-                    let heightVal = Math.floor(Math.random() * matrix) + 4;
-                    node.style.height = `${Math.min(heightVal, 40)}px`;
+                bars.forEach((b, idx) => {
+                    let h = Math.floor(Math.random() * (Math.sin(idx + currentTimeSec) * 12 + 16)) + 2;
+                    b.style.height = `${Math.max(2, Math.min(h, 48))}px`;
                 });
             }, 90);
         }
 
         function handleTrackCycleFinished() {
-            currentTimeSec = 0;
-            virtualPlaybackAccumulator = 0;
+            currentTimeSec = 0; virtualPlaybackAccumulator = 0;
             virtualTimeTrackerBase = performance.now();
-            premiumTimeSlider.value = 0;
-            if (isLoopTrackState) {
-                triggerSelectTrackNode(currentTrackIndex);
-            } else if (isShuffleState) {
-                let random = Math.floor(Math.random() * coreTrackDatabase.length);
-                triggerSelectTrackNode(random);
-            } else {
-                let next = currentTrackIndex + 1;
-                if (next >= coreTrackDatabase.length) next = 0;
-                triggerSelectTrackNode(next);
-            }
+            document.getElementById('premium-time-slider').value = 0;
+            let next = currentTrackIndex + 1;
+            if (next >= coreTrackDatabase.length) next = 0;
+            triggerSelectTrackNode(next);
         }
 
-        function resetVisualizerGraphToFloor() {
-            document.querySelectorAll('.visualizer-node-bar').forEach(b => b.style.height = '4px');
+        function terminateOscillatorSynth() { if (liveOscillatorNode) { try { liveOscillatorNode.stop(); }catch(e){} liveOscillatorNode = null; } }
+        function stopActiveBufferSource() { if (activeBufferSourceNode) { try { activeBufferSourceNode.stop(); }catch(e){} activeBufferSourceNode = null; } }
+
+        function executeOscillatorSynthPlay(freq) {
+            terminateOscillatorSynth();
+            liveOscillatorNode = audioContextInstance.createOscillator(); liveOscillatorNode.type = 'triangle';
+            liveOscillatorNode.frequency.setValueAtTime(freq, audioContextInstance.currentTime);
+            liveOscillatorNode.connect(gainNodeController); gainNodeController.connect(audioContextInstance.destination);
+            liveOscillatorNode.start();
         }
 
-        function setupEqualizerListeners() {
-            const bass = document.getElementById('eq-bass');
-            const mid = document.getElementById('eq-mid');
-            const treble = document.getElementById('eq-treble');
-
-            bass.addEventListener('input', () => {
-                if (bassBiquadFilter) bassBiquadFilter.gain.setValueAtTime(bass.value, audioContextInstance.currentTime);
-            });
-            mid.addEventListener('input', () => {
-                if (midBiquadFilter) midBiquadFilter.gain.setValueAtTime(mid.value, audioContextInstance.currentTime);
-            });
-            treble.addEventListener('input', () => {
-                if (trebleBiquadFilter) trebleBiquadFilter.gain.setValueAtTime(treble.value, audioContextInstance.currentTime);
-            });
-        }
-
-        eqPresetDropdown.addEventListener('change', () => {
-            const val = eqPresetDropdown.value;
-            const b = document.getElementById('eq-bass');
-            const m = document.getElementById('eq-mid');
-            const t = document.getElementById('eq-treble');
-
-            if(val === 'bassboost') { b.value = 9; m.value = 2; t.value = -3; }
-            else if(val === 'vocal') { b.value = -4; m.value = 7; t.value = 3; }
-            else if(val === 'electronic') { b.value = 7; m.value = -2; t.value = 8; }
-            else { b.value = 0; m.value = 0; t.value = 0; }
-
-            if (audioContextInstance) {
-                bassBiquadFilter.gain.setValueAtTime(b.value, audioContextInstance.currentTime);
-                midBiquadFilter.gain.setValueAtTime(m.value, audioContextInstance.currentTime);
-                trebleBiquadFilter.gain.setValueAtTime(t.value, audioContextInstance.currentTime);
-            }
-        });
-
-        function processRawBinaryDecodeSequence(arrayBuffer, fileNameString, targetArtistLabel, sourceUrlValue) {
-            audioContextInstance.decodeAudioData(arrayBuffer, function(decodedBuffer) {
-                const decodedTrackObject = {
-                    title: fileNameString,
-                    artist: targetArtistLabel,
-                    duration: decodedBuffer.duration,
-                    cover: sourceUrlValue ? "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop" : "https://images.unsplash.com/photo-1484755560693-a4074577af3a?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                    baseFreq: 290,
-                    isLocalFile: sourceUrlValue ? false : true,
-                    isExternal: true,
-                    liked: false,
-                    audioBuffer: decodedBuffer,
-                    url: sourceUrlValue || '',
-                    lyrics: sourceUrlValue ? {
-                        0: "🌐 بارگذاری و رمزگشایی باینری لینک وب با موفقیت انجام شد! 🐾",
-                        12: "🎛️ فرکانس‌ها به صورت بافر مستقیم روی استودیو سوار شدند",
-                        25: "✨ دکمه پخش صورتی را فشار دهید تا استودیو فانتزی شروع به کار کند!"
-                    } : {
-                        0: "📁 رمزگشایی چندفرمتی لوکال با موفقیت انجام شد! قفل کانال شکست 🐾",
-                        8: "🎛️ جریانات فرکانسی مستقیماً روی لایه بافر رم سوار شدند",
-                        20: "✨ دکمه صورتی Play را بزنید تا استودیو فانتزی گربول شروع به رقص کند!"
-                    }
-                };
-
-                coreTrackDatabase.push(decodedTrackObject);
-                displayToastNotification("قطعه صوتی با موفقیت لود و بافر شد! دکمه Play را فشار دهید 🐾");
+        function processRawBinaryDecodeSequence(arrayBuffer, title, artist, url) {
+            audioContextInstance.decodeAudioData(arrayBuffer, function(buf) {
+                coreTrackDatabase.push({
+                    title: title, artist: artist, duration: buf.duration,
+                    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
+                    audioBuffer: buf, url: url || '', lyrics: { 0: "🎵 قطعه باینری با موفقیت لود شد 🐾" }
+                });
                 triggerSelectTrackNode(coreTrackDatabase.length - 1);
-            }, function(decodeErr) {
-                console.error("Binary execution matrix fault.");
             });
         }
 
+        // ================= رویدادها و شنودگرهای پلتفرم =================
+        document.getElementById('btn-master-trigger-play').addEventListener('click', handlePlayPauseMasterToggle);
+        document.getElementById('slider-volume-node').addEventListener('input', synchronizeVolumeGainLevel);
+        
         document.getElementById('btn-inject-link').addEventListener('click', () => {
-            const urlValue = document.getElementById('input-audio-url').value.trim();
-            if(!urlValue) {
-                displayToastNotification("لطفاً ابتدا لینک مستقیم معتبر فایل صوتی را بنویسید! 🐾");
-                return;
-            }
-
-            if (!urlValue.startsWith('http://') && !urlValue.startsWith('https://')) {
-                displayToastNotification("لینک بارگذاری شده باید با http:// یا https:// شروع شود! 🐾");
-                return;
-            }
-
-            lyricsViewport.innerHTML = `<div class="lyrics-track-line active-line-highlight" style="animation: bounceMeow 1s infinite;">⏳ استودیو گربول درحال اتصال و دریافت بی قفل سیگنال صوتی اینترنت...</div>`;
-            displayToastNotification("⏳ درحال اتصال مستقیم به لایه توزیع لایو شبکه...");
+            const url = document.getElementById('input-audio-url').value.trim(); if(!url) return;
             bootstrapStudioAudioNodes();
-
-            if (isPlaying) {
-                handlePlayPauseMasterToggle();
-            }
-
-            let filename = "قطعه سفارشی وب گربول";
-            try {
-                const parsed = new URL(urlValue);
-                const pathParts = parsed.pathname.split('/');
-                const lastPart = pathParts[pathParts.length - 1];
-                if(lastPart && lastPart.includes('.mp3')) {
-                    filename = decodeURIComponent(lastPart);
-                }
-            } catch(err) {}
-
-            const secureProxyArray = [
-                "https://allorigins.win",
-                "https://corsproxy.io?"
-            ];
-
-            fetch(secureProxyArray[0] + encodeURIComponent(urlValue))
-                .then(response => {
-                    if (!response.ok) throw new Error();
-                    return response.arrayBuffer();
-                })
-                .then(arrayBuffer => {
-                    processRawBinaryDecodeSequence(arrayBuffer, filename, "استریم صوتی بافر مستقیم رم 🌐", urlValue);
-                    document.getElementById('input-audio-url').value = '';
-                })
+            displayToastNotification("⏳ در حال برقراری اتصال صوتی شبکه وب...");
+            fetch("https://corsproxy.io?" + encodeURIComponent(url))
+                .then(r => r.arrayBuffer())
+                .then(ab => processRawBinaryDecodeSequence(ab, "ترک آنلاین شبکه", "استریم مستقیم", url))
                 .catch(() => {
-                    fetch(secureProxyArray[1] + encodeURIComponent(urlValue))
-                        .then(res => { if(!res.ok) throw new Error(); return res.arrayBuffer(); })
-                        .then(ab => {
-                            processRawBinaryDecodeSequence(ab, filename, "استریم صوتی بافر مستقیم رم 🌐", urlValue);
-                            document.getElementById('input-audio-url').value = '';
-                        })
-                        .catch(() => {
-                            const onlineStreamTrackItem = {
-                                title: filename,
-                                artist: "استریم زنده بومی شبکه 🌐",
-                                duration: 258, 
-                                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                                baseFreq: 310,
-                                isLocalFile: false,
-                                isExternal: true,
-                                liked: false,
-                                audioBuffer: null, 
-                                url: urlValue,
-                                lyrics: {
-                                    0: "🌐 اتصال فرکانسی مستقیم بدون تداخل بافرینگ لایه امنیتی رم برقرار شد!",
-                                    10: "⚡ انیمیشن‌های لایه رقص‌نور با فرکانس لایو شبکه همگام شدند",
-                                    25: "🐾 موسیقی واقعی با خروجی صدای تضمین‌شده درحال اجراست!"
-                                }
-                            };
-                            
-                            coreTrackDatabase.push(onlineStreamTrackItem);
-                            document.getElementById('input-audio-url').value = '';
-                            displayToastNotification("آهنگ آنلاین متصل شد! دکمه صورتی Play را بزنید 🐾");
-                            triggerSelectTrackNode(coreTrackDatabase.length - 1);
-                        });
+                    coreTrackDatabase.push({ title: "ترک زنده وب گربول", artist: "شبکه استریم", duration: 240, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", url: url });
+                    triggerSelectTrackNode(coreTrackDatabase.length - 1);
                 });
         });
 
-        inputLocalFile.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            lyricsViewport.innerHTML = `<div class="lyrics-track-line active-line-highlight" style="animation: bounceMeow 1s infinite;">⏳ استودیو گربول درحال خواندن باینری فرکانس‌های فایل محلی...</div>`;
-            displayToastNotification("⏳ درحال رمزگشایی دیجیتال بافر صوتی فایل محلی شما...");
+        document.getElementById('input-local-file').addEventListener('change', (e) => {
+            const file = e.target.files[0]; if (!file) return;
             bootstrapStudioAudioNodes();
-
-            if (isPlaying) {
-                handlePlayPauseMasterToggle();
-            }
-
-            let trackName = file.name;
-            if (trackName.includes('.')) {
-                trackName = trackName.substring(0, trackName.lastIndexOf('.'));
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
-                processRawBinaryDecodeSequence(arrayBuffer, trackName, `فرمت لوکال (${file.type.split('/')[1]?.toUpperCase() || 'صوتی'})`, null);
-            };
-            
-            reader.readAsArrayBuffer(file);
+            const r = new FileReader(); r.onload = (ev) => processRawBinaryDecodeSequence(ev.target.result, file.name, "فایل محلی لوکال", null);
+            r.readAsArrayBuffer(file);
         });
 
-        // Event Listeners for the Premium Draggable Slider (Real-time Scrubbing Optimization)
+        // 🛠️ بهینه‌سازی و اصلاح جامع شنودگرهای اسکرول‌بار تایم‌لاین موسیقی (Scrub Optimization)
+        const premiumTimeSlider = document.getElementById('premium-time-slider');
+        
         premiumTimeSlider.addEventListener('input', () => {
             isUserDraggingSlider = true;
-            labelTimeCurrent.textContent = renderTimeStringLayout(parseInt(premiumTimeSlider.value));
+            document.getElementById('label-time-current').textContent = renderTimeStringLayout(parseInt(premiumTimeSlider.value));
         });
 
         premiumTimeSlider.addEventListener('change', () => {
@@ -1439,7 +975,7 @@
             virtualTimeTrackerBase = performance.now();
             
             if (isNativeStreamingActive) {
-                try { realAudioElement.currentTime = currentTimeSec; } catch(err) {}
+                try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(err) {}
             }
             
             if (isPlaying) {
@@ -1449,54 +985,75 @@
             }
         });
 
-        btnMasterTriggerPlay.addEventListener('click', handlePlayPauseMasterToggle);
-        document.getElementById('btn-next-node').addEventListener('click', () => {
-            let next = currentTrackIndex + 1; if(next >= coreTrackDatabase.length) next = 0; triggerSelectTrackNode(next);
+        // شنودگر درگ و کلیک لایه‌های روی بوم استیکر
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            const activeFrame = frames[activeFrameIndex];
+            let target = null;
+            if (activeFrame) {
+                for(let i=activeFrame.layers.length-1; i>=0; i--) {
+                    let l = activeFrame.layers[i];
+                    if (Math.sqrt(Math.pow(pos.x - l.x, 2) + Math.pow(pos.y - l.y, 2)) < 40) { target = l; break; }
+                }
+            }
+            if (target) { isDragging = true; selectedLayerId = target.id; startX = pos.x - target.x; startY = pos.y - target.y; }
+            else { selectedLayerId = null; }
+            updateStickerUI(); drawCanvas();
         });
-        document.getElementById('btn-prev-node').addEventListener('click', () => {
-            let prev = currentTrackIndex - 1; if(prev < 0) prev = coreTrackDatabase.length - 1; triggerSelectTrackNode(prev);
-        });
-
-        btnShuffleToggle.addEventListener('click', () => {
-            isShuffleState = !isShuffleState;
-            btnShuffleToggle.classList.toggle('active-loop-state', isShuffleState);
-            displayToastNotification(isShuffleState ? "حالت پخش تصادفی فعال شد 🐾" : "پخش تصادفی غیرفعال شد");
-        });
-        btnLoopToggle.addEventListener('click', () => {
-            isLoopTrackState = !isLoopTrackState;
-            btnLoopToggle.classList.toggle('active-loop-state', isLoopTrackState);
-            displayToastNotification(isLoopTrackState ? "تکرار قطعه فعال شد 🔁" : "تکرار قطعه غیرفعال شد");
-        });
-
-        btnFavoriteHeart.addEventListener('click', () => {
-            const track = coreTrackDatabase[currentTrackIndex];
-            track.liked = !track.liked;
-            btnFavoriteHeart.style.color = track.liked ? 'var(--primary)' : 'var(--text-sub)';
-        });
-
-        sliderVolumeNode.addEventListener('input', synchronizeVolumeGainLevel);
-        document.getElementById('btn-mute-switch').addEventListener('click', () => {
-            isMutedState = !isMutedState;
-            document.getElementById('btn-mute-switch').style.color = isMutedState ? 'var(--primary)' : 'var(--text-sub)';
-            synchronizeVolumeGainLevel();
-        });
-
-        playbackSpeedDropdown.addEventListener('change', () => {
-            transformSpeedAdjustmentRate();
-            if (isPlaying) {
-                virtualPlaybackAccumulator = currentTimeSec;
-                virtualTimeTrackerBase = performance.now();
-                executeTrackPlaybackCore();
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging && selectedLayerId) {
+                const rect = canvas.getBoundingClientRect();
+                const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+                if (l) { l.x = (e.clientX - rect.left) - startX; l.y = (e.clientY - rect.top) - startY; drawCanvas(); }
             }
         });
+        canvas.addEventListener('mouseup', () => isDragging = false);
 
-        themeToggler.addEventListener('click', () => {
-            document.body.classList.toggle('dark-cyber-cute');
+        document.getElementById('btn-add-text').addEventListener('click', () => {
+            const val = document.getElementById('text-input').value.trim(); if(!val) return;
+            frames[activeFrameIndex].layers.push({ id: generateId(), type: 'text', content: val, x: 200, y: 200, scale: 100, rotate: 0, color: '#ffffff' });
+            document.getElementById('text-input').value = ''; updateStickerUI(); drawCanvas();
         });
 
-        buildSpectrumVisualizerLayoutNodes();
-        triggerSelectTrackNode(0);
-        setupEqualizerListeners();
+        window.addShapeLayer = function(type) {
+            frames[activeFrameIndex].layers.push({ id: generateId(), type: 'shape', shapeType: type, x: 200, y: 200, scale: 100, rotate: 0, fillColor: document.getElementById('shape-fill-color').value });
+            updateStickerUI(); drawCanvas();
+        };
+
+        // هندلر خروجی متحرک GIF کلاینت‌ساید استیکرها
+        document.getElementById('btn-export-gif').addEventListener('click', () => {
+            if (typeof gifshot === 'undefined') {
+                showToast('خطا: کتابخانه پردازش انیمیشن بارگذاری نشده است.');
+                return;
+            }
+            showToast('در حال رندر و پردازش فریم‌های متحرک استیکر GIF...');
+            const compiled = [];
+            const tempCnv = document.createElement('canvas'); tempCnv.width = 400; tempCnv.height = 400;
+            const tempCtx = tempCnv.getContext('2d');
+            for (let i = 0; i < frames.length; i++) {
+                tempCtx.clearRect(0,0,400,400);
+                frames[i].layers.forEach(l => {
+                    tempCtx.save(); tempCtx.translate(l.x, l.y);
+                    if(l.type==='text') { tempCtx.font="bold 28px Vazirmatn"; tempCtx.fillStyle=l.color; tempCtx.fillText(l.content, 0,0); }
+                    else if(l.type==='shape') { tempCtx.fillStyle=l.fillColor; tempCtx.fillRect(-30,-30,60,60); }
+                    tempCtx.restore();
+                });
+                compiled.push(tempCnv.toDataURL('image/png'));
+            }
+            gifshot.createGIF({ images: compiled, gifWidth: 400, gifHeight: 400, interval: 0.15 }, function(obj) {
+                if(!obj.error) { const a = document.createElement('a'); a.download='animated-sticker.gif'; a.href=obj.image; a.click(); showToast('فایل GIF شفاف استیکر با موفقیت رندر شد! 🎉'); }
+            });
+        });
+
+        // لود بارگذاری ساختار اولیه پلتفرم
+        window.onload = function() {
+            frames[0].layers.push({ id: generateId(), type: 'text', content: 'استودیو گربول 🐾', x: 200, y: 180, scale: 100, rotate: 0, color: '#6366f1' });
+            buildSpectrumVisualizerLayoutNodes();
+            triggerSelectTrackNode(0);
+            updateStickerUI();
+            drawCanvas();
+        };
     </script>
 </body>
 </html>
