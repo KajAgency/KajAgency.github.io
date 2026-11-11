@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پلتفرم چندرسانه‌ای گربول اولترا و استودیوی پویانمایی استیکر</title>
-    <!-- Tailwind CSS جهت طراحی خیره‌کننده و مدرن UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- کتابخانه استاندارد پردازش تصاویر متحرک کلاینت‌ساید تحت دامنه مجاز cloudflare -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js"></script>
+    <!-- کتابخانه gifshot با Fallback چندگانه -->
+    <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js" 
+            onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/gifshot@0.4.5/dist/gifshot.min.js';s.onerror=function(){var s2=document.createElement('script');s2.src='https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js';document.head.appendChild(s2);};document.head.appendChild(s);"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;750;900&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Vazirmatn', sans-serif;
             background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         }
-        /* پس‌زمینه شطرنجی آلفا نئو نی بوم استیکر */
         .neon-checkerboard {
             background-image: linear-gradient(45deg, #090d16 25%, transparent 25%), 
                               linear-gradient(-45deg, #090d16 25%, transparent 25%), 
@@ -24,14 +24,11 @@
             background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
             background-color: #111827;
         }
-        /* استایل‌های گلس‌مورفیسم پیشرفته کامپوننت‌ها */
         .glass-panel {
             background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.06);
         }
-        
-        /* انیمیشن‌های اختصاصی بخش استیکر */
         .anim-float { animation: stickerFloat 2.5s infinite ease-in-out; }
         .anim-pulse { animation: stickerPulse 1.2s infinite ease-in-out; }
         .anim-shake { animation: stickerShake 0.4s infinite linear; }
@@ -53,7 +50,6 @@
             90% { transform: translate(-1px, -1px) rotate(1deg); }
         }
 
-        /* استایل‌های اختصاصی گربول پلیر */
         .ear-node {
             width: 75px;
             height: 75px;
@@ -129,7 +125,6 @@
             text-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
         }
 
-        /* سفارشی‌سازی اسکرول‌بارها */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9px; }
@@ -138,21 +133,18 @@
 </head>
 <body class="text-slate-100 min-h-screen p-4 md:p-8 flex flex-col gap-8 overflow-x-hidden selection:bg-indigo-500/30">
 
-    <!-- هسته صوتی کلاینت‌ساید مستقل برای گربول پلیر -->
     <audio id="real-audio-element"></audio>
 
     <!-- ========================================================================= -->
-    <!-- 🎵 بخش اول: سوپر موزیک پلیر فانتزی و پیشرفته گربول اولترا (بالای صفحه) 🎵 -->
+    <!-- 🎵 بخش اول: موزیک پلیر گربول اولترا -->
     <!-- ========================================================================= -->
     <section class="max-w-[1200px] w-full mx-auto relative master-music-wrapper mt-8">
-        <!-- گوش‌های گربه‌ای تزئینی بالای موزیک پلیر -->
         <div class="absolute -top-8 left-0 w-full flex justify-between px-16 pointer-events-none z-10">
             <div class="ear-node left"></div>
             <div class="ear-node right"></div>
         </div>
 
         <div class="glass-panel rounded-[40px] p-6 md:p-8 border-2 border-rose-500/30 shadow-2xl relative z-20">
-            <!-- هدر کنترلی موزیک پلیر -->
             <div class="flex flex-wrap justify-between items-center border-b-2 border-dashed border-rose-500/30 pb-4 mb-6 gap-4">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl animate-bounce">🐾</span>
@@ -160,19 +152,16 @@
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-3">
-                    <!-- فرم تزریق لینک مستقیم وب -->
                     <div class="flex items-center bg-slate-950/60 border border-rose-500/20 px-2 py-1 rounded-xl gap-2 max-w-xs w-full">
                         <input type="url" id="input-audio-url" placeholder="لینک مستقیم قطعه صوتی (MP3)..." class="bg-transparent text-xs outline-none py-1 w-44 text-slate-200" dir="ltr">
                         <button id="btn-inject-link" class="bg-gradient-to-r from-rose-500 to-violet-600 text-white text-xs px-3 py-1 rounded-lg font-bold transition-transform active:scale-95">ثبت 🐾</button>
                     </div>
 
-                    <!-- دکمه فایل لوکال -->
                     <label class="bg-slate-900 border border-slate-700/50 hover:bg-violet-600 text-white text-xs px-3 py-2 rounded-xl font-bold cursor-pointer flex items-center gap-1.5 transition-all">
                         📁 انتخاب فایل لوکال
                         <input type="file" id="input-local-file" accept="audio/*" class="hidden">
                     </label>
 
-                    <!-- منوی سرعت گام پخش -->
                     <select id="playback-speed" class="bg-slate-900 border border-slate-700 text-white text-xs px-2 py-2 rounded-xl outline-none cursor-pointer">
                         <option value="0.5">0.5x</option>
                         <option value="1.0" selected>1.0x (اصلی)</option>
@@ -182,12 +171,9 @@
                 </div>
             </div>
 
-            <!-- بدنه اصلی دو ستونه موزیک پلیر -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
-                <!-- ستون چپ پلیر: اکولایزر، متن شعر متحرک و لیست پخش -->
                 <div class="lg:col-span-7 flex flex-col gap-4">
-                    <!-- میکسر اکولایزر پارامتریک -->
                     <div class="bg-slate-950/40 border border-rose-500/20 rounded-2xl p-4">
                         <div class="flex justify-between items-center mb-4 text-xs font-bold">
                             <span class="text-slate-300">میکسر فرکانس صوتی استودیو گربول</span>
@@ -214,22 +200,18 @@
                         </div>
                     </div>
 
-                    <!-- باکس متن ترانه همگام لوپ صوتی -->
                     <div id="lyrics-viewport" class="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 h-24 overflow-y-auto text-center relative shadow-inner">
                         <div class="lyrics-track-line active-line-highlight">آماده بارگذاری موزیک یا لینک سفارشی... 🐾</div>
                     </div>
 
-                    <!-- رقص نور ردیفی ۳۲ کاناله فرکانس -->
                     <div id="spectrum-bars-grid" class="flex items-end justify-center gap-1 h-12 w-full px-4 bg-slate-950/20 rounded-xl"></div>
 
-                    <!-- لیست تر ک‌های پروژه چندرسانه‌ای -->
                     <div class="bg-slate-950/30 border border-slate-800/80 rounded-2xl p-4">
                         <span class="text-xs font-black text-slate-400 block mb-2">📂 کتابخانه قطعات فعال پروژه گربول شجاع</span>
                         <ul id="tracks-list-dom" class="flex flex-col gap-2 max-h-[110px] overflow-y-auto"></ul>
                     </div>
                 </div>
 
-                <!-- ستون راست پلیر: دیسک وینیل دوار و دکمه‌های ناوبری اصلی دک -->
                 <div class="lg:col-span-5 flex flex-col items-center border-t lg:border-t-0 lg:border-r border-rose-500/20 pt-6 lg:pt-0 lg:pr-6">
                     <div class="relative w-48 h-48 my-2">
                         <img src="https://images.gstatic.com/images?q=tbn:ANd9GcR6A7L5760t0A03V_g7wWj3-kRkS81v_mE2vA&s" class="vinyl-arm-lever" id="turntable-arm-lever" alt="Arm Lever">
@@ -243,7 +225,6 @@
                         <p class="text-xs text-slate-400 truncate mt-0.5" id="deck-track-artist">آلبوم دانشگاه مهندسی وب</p>
                     </div>
 
-                    <!-- اسلایدر کنترل تایم‌لاین صوتی با پشتیبانی اصلاح‌شده و بهینه تعاملی -->
                     <div class="w-full mb-3 flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                         <input type="range" id="premium-time-slider" min="0" max="100" value="0" class="w-full accent-rose-500 h-1 rounded bg-slate-800 cursor-pointer">
                         <div class="flex justify-between">
@@ -252,7 +233,6 @@
                         </div>
                     </div>
 
-                    <!-- دکمه‌های ناوبری و فرمان صوتی اصلی پلیر -->
                     <div class="flex items-center gap-4 mb-4">
                         <button id="btn-shuffle-toggle" class="text-slate-400 hover:text-rose-400 p-1" title="پخش اتفاقی">🎲</button>
                         <button id="btn-prev-node" class="text-slate-300 hover:text-white text-lg">⏮️</button>
@@ -264,7 +244,6 @@
                         <button id="btn-loop-toggle" class="text-slate-400 hover:text-rose-400 p-1" title="لوپ تکرار">🔁</button>
                     </div>
 
-                    <!-- نوار کنترل صدا و دکمه لایک -->
                     <div class="w-full bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 flex items-center gap-2 text-xs">
                         <span id="btn-mute-switch" class="cursor-pointer">🔊</span>
                         <input type="range" id="slider-volume-node" min="0" max="100" value="80" class="w-full accent-rose-500 h-1">
@@ -274,16 +253,14 @@
 
             </div>
         </div>
-        <!-- سیستم اعلان مینی توست پلیر -->
         <div class="ui-status-bubble fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-rose-500/40 px-4 py-2 rounded-xl text-xs font-bold z-[100] shadow-2xl opacity-0 transition-opacity pointer-events-none" id="status-toast-node"></div>
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 🎨 بخش دوم: استودیوی متحرک‌سازی و طراحی گرافیکی استیکر (وسط صفحه) 🎨 -->
+    <!-- 🎨 بخش دوم: استودیوی استیکر -->
     <!-- ========================================================================= -->
     <section class="max-w-[1500px] w-full mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 items-start pt-4 border-t-2 border-slate-800/60">
         
-        <!-- ستون راست استیکرساز: المان‌ها، اشکال برداری و ابزار قلم‌مو -->
         <aside class="xl:col-span-3 glass-panel rounded-2xl p-4 flex flex-col gap-4 shadow-xl">
             <div class="flex border-b border-slate-800 pb-2 gap-1 text-xs">
                 <button onclick="switchTab('tab-content')" id="btn-tab-content" class="flex-1 py-2 rounded-lg text-indigo-400 font-bold bg-slate-800/80 text-center">المان‌ها</button>
@@ -291,7 +268,6 @@
                 <button onclick="switchTab('tab-brush')" id="btn-tab-brush" class="flex-1 py-2 rounded-lg text-slate-400 text-center hover:bg-slate-800/40">🖌️ قلم‌مو</button>
             </div>
 
-            <!-- تب درج متن و عکسبارگذاری -->
             <div id="tab-content" class="flex flex-col gap-3">
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
                     <label class="block text-[11px] font-bold text-slate-400 mb-1.5">🔠 درج متن با استایل اختصاصی</label>
@@ -301,12 +277,15 @@
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
                         <select id="text-font" class="bg-slate-900 border border-slate-700/60 rounded p-1 text-[11px] text-slate-300 outline-none">
-                            <option value="Vazirmatn">فونت وزیر</option>
+                            <option value="Vazirmatn" selected>فونت وزیر</option>
                             <option value="Impact">فونت Impact</option>
                             <option value="Arial">فونت Arial</option>
+                            <option value="Courier New">فونت ماشین تحریر</option>
+                            <option value="Comic Sans MS">فونت فانتزی Comic</option>
                         </select>
                         <select id="text-weight" class="bg-slate-900 border border-slate-700/60 rounded p-1 text-[11px] text-slate-300 outline-none">
                             <option value="bold">ضخیم (Bold)</option>
+                            <option value="900">فوق ضخیم (Black)</option>
                             <option value="normal">معمولی</option>
                         </select>
                     </div>
@@ -321,62 +300,106 @@
                 </div>
 
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
-                    <label class="block text-[11px] font-bold text-slate-400 mb-1.5">😎 کاتالوگ سریع اموجی‌ها</label>
-                    <div class="grid grid-cols-5 gap-1.5 text-xl max-h-[90px] overflow-y-auto p-1 bg-slate-900/60 rounded-lg">
-                        <button class="emoji-btn hover:scale-125 transition-transform">🚀</button>
-                        <button class="emoji-btn hover:scale-125 transition-transform">🔥</button>
-                        <button class="emoji-btn hover:scale-125 transition-transform">💥</button>
-                        <button class="emoji-btn hover:scale-125 transition-transform">👑</button>
-                        <button class="emoji-btn hover:scale-125 transition-transform">⚡</button>
+                    <label class="block text-[11px] font-bold text-slate-400 mb-2 text-indigo-300">😎 کاتالوگ جامع استیکرها</label>
+                    
+                    <span class="text-[9px] text-slate-500 block mb-1">🐾 گربه‌ها و حیوانات فانتزی:</span>
+                    <div class="grid grid-cols-5 gap-1.5 text-xl p-1 bg-slate-900/60 rounded-lg mb-2">
+                        <button onclick="addEmojiLayer('🐱')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐱</button>
+                        <button onclick="addEmojiLayer('🐈')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐈</button>
+                        <button onclick="addEmojiLayer('🦁')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🦁</button>
+                        <button onclick="addEmojiLayer('🐯')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐯</button>
+                        <button onclick="addEmojiLayer('🦊')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🦊</button>
+                        <button onclick="addEmojiLayer('🐼')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐼</button>
+                        <button onclick="addEmojiLayer('🐻')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐻</button>
+                        <button onclick="addEmojiLayer('🐨')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐨</button>
+                        <button onclick="addEmojiLayer('🐰')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐰</button>
+                        <button onclick="addEmojiLayer('🐾')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🐾</button>
+                    </div>
+
+                    <span class="text-[9px] text-slate-500 block mb-1">⚡ سایبرپانک:</span>
+                    <div class="grid grid-cols-5 gap-1.5 text-xl p-1 bg-slate-900/60 rounded-lg mb-2">
+                        <button onclick="addEmojiLayer('🚀')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🚀</button>
+                        <button onclick="addEmojiLayer('🔥')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🔥</button>
+                        <button onclick="addEmojiLayer('💥')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">💥</button>
+                        <button onclick="addEmojiLayer('👑')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">👑</button>
+                        <button onclick="addEmojiLayer('⚡')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">⚡</button>
+                        <button onclick="addEmojiLayer('🛸')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🛸</button>
+                        <button onclick="addEmojiLayer('🤖')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🤖</button>
+                        <button onclick="addEmojiLayer('👾')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">👾</button>
+                        <button onclick="addEmojiLayer('😎')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">😎</button>
+                        <button onclick="addEmojiLayer('💯')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">💯</button>
+                    </div>
+
+                    <span class="text-[9px] text-slate-500 block mb-1">💻 کدنویسی:</span>
+                    <div class="grid grid-cols-5 gap-1.5 text-xl p-1 bg-slate-900/60 rounded-lg max-h-[90px] overflow-y-auto">
+                        <button onclick="addEmojiLayer('💻')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">💻</button>
+                        <button onclick="addEmojiLayer('🖥️')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🖥️</button>
+                        <button onclick="addEmojiLayer('⌨️')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">⌨️</button>
+                        <button onclick="addEmojiLayer('🖱️')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🖱️</button>
+                        <button onclick="addEmojiLayer('⚙️')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">⚙️</button>
+                        <button onclick="addEmojiLayer('🔋')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🔋</button>
+                        <button onclick="addEmojiLayer('💡')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">💡</button>
+                        <button onclick="addEmojiLayer('🛡️')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🛡️</button>
+                        <button onclick="addEmojiLayer('💎')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">💎</button>
+                        <button onclick="addEmojiLayer('🎨')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🎨</button>
+                        <button onclick="addEmojiLayer('🎯')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🎯</button>
+                        <button onclick="addEmojiLayer('✨')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">✨</button>
+                        <button onclick="addEmojiLayer('🎈')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🎈</button>
+                        <button onclick="addEmojiLayer('🎉')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🎉</button>
+                        <button onclick="addEmojiLayer('🏆')" class="hover:scale-125 transition-transform p-1 bg-slate-800 rounded">🏆</button>
                     </div>
                 </div>
             </div>
 
-            <!-- تب لایه اشکال هندسی برداری و بالن -->
             <div id="tab-shapes" class="hidden flex flex-col gap-3">
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
+                    <span class="text-[11px] font-bold text-slate-400 block mb-2">اشکال پیشرفته هندسی:</span>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="addShapeLayer('rect')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">⬜ مستطیل</button>
                         <button onclick="addShapeLayer('circle')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">🔮 دایره</button>
-                        <button onclick="addShapeLayer('star')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">⭐ ستاره ۵ پر</button>
-                        <button onclick="addShapeLayer('bubble')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">💬 بالن گفتار</button>
+                        <button onclick="addShapeLayer('star')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">⭐ ستاره</button>
+                        <button onclick="addShapeLayer('triangle')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">🔺 مثلث</button>
+                        <button onclick="addShapeLayer('rhombus')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">🔷 لوزی</button>
+                        <button onclick="addShapeLayer('bubble')" class="bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded-lg font-medium">💬 بالن</button>
                     </div>
                 </div>
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 flex flex-col gap-2">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-400">رنگ لایه:</span>
+                        <span class="text-slate-400">رنگ پر کردن:</span>
                         <input id="shape-fill-color" type="color" value="#3b82f6" class="w-8 h-5 bg-transparent border-0 cursor-pointer">
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400">رنگ خط مرزی:</span>
+                        <input id="shape-stroke-color" type="color" value="#ffffff" class="w-8 h-5 bg-transparent border-0 cursor-pointer">
                     </div>
                 </div>
             </div>
 
-            <!-- تب نقاشی و قلم‌مو متحرک -->
             <div id="tab-brush" class="hidden flex flex-col gap-3">
                 <button id="btn-brush-mode" class="w-full bg-slate-800 hover:bg-slate-700 text-xs py-2.5 px-3 rounded-xl border border-slate-700 font-bold transition-all">
                     <span id="brush-status">🖌️ غیرفعال (کلیک جهت فعال‌سازی)</span>
                 </button>
                 <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 flex flex-col gap-3">
                     <div class="flex justify-between items-center text-xs text-slate-400">
-                        <span>ضخامت نوک:</span>
-                        <input id="brush-size" type="range" min="1" max="30" value="6" class="w-2/3 accent-indigo-500">
+                        <span>ضخامت:</span>
+                        <input id="brush-size" type="range" min="1" max="40" value="6" class="w-2/3 accent-indigo-500">
                     </div>
                     <div class="flex justify-between items-center text-xs text-slate-400">
-                        <span>رنگ نقاشی:</span>
+                        <span>رنگ:</span>
                         <input id="brush-color" type="color" value="#f59e0b" class="w-8 h-6 bg-transparent border-0 cursor-pointer">
                     </div>
+                    <button id="btn-clear-brush" class="w-full bg-slate-900 hover:bg-slate-800 text-[10px] text-slate-400 py-1 rounded">💥 پاک کردن نقاشی</button>
                 </div>
             </div>
 
-            <!-- تنظیم حاشیه چاپی دایکات استیکر -->
             <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 mt-auto shadow-inner">
                 <label class="flex items-center gap-3 cursor-pointer select-none">
                     <input id="toggle-sticker-border" type="checkbox" checked class="w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 rounded focus:ring-indigo-500">
-                    <span class="text-xs font-bold text-slate-200">کادر سفید دور استیکر (Die-Cut)</span>
+                    <span class="text-xs font-bold text-slate-200">کادر سفید دور استیکر</span>
                 </label>
             </div>
         </aside>
 
-        <!-- ستون وسط استیکرساز: بوم پیش‌نمایش ۴۰۰ پیکسلی و خط زمان انیمیشن -->
         <main class="xl:col-span-6 flex flex-col gap-4">
             <div class="glass-panel rounded-2xl p-6 flex flex-col items-center justify-center relative min-h-[460px] border border-slate-800/60">
                 <div id="toast" class="absolute top-4 left-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl text-center font-bold opacity-0 transform -translate-y-2 pointer-events-none transition-all duration-300 z-50 text-xs"></div>
@@ -386,26 +409,26 @@
                 </div>
             </div>
 
-            <!-- نوار زمان موتور انیمیشن Stop-Motion استیکر -->
             <div class="glass-panel rounded-2xl p-4 flex flex-col gap-3 shadow-xl">
                 <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-2 gap-2">
                     <label class="flex items-center gap-1.5 cursor-pointer text-xs">
                         <input id="toggle-onion-skin" type="checkbox" checked class="w-3.5 h-3.5 text-indigo-600 bg-slate-800 border-slate-700 rounded">
-                        <span class="text-slate-400 font-medium">پیازکاری (دیدن فریم پیشین)</span>
+                        <span class="text-slate-400 font-medium">پیازکاری</span>
                     </label>
                     <div class="flex items-center gap-2 bg-slate-950/70 px-3 py-1 rounded-xl border border-slate-800 text-[11px]">
-                        <span>سرعت فریم:</span>
+                        <span>سرعت:</span>
                         <input id="control-fps" type="range" min="1" max="24" value="8" class="w-20 h-1 accent-indigo-500 cursor-pointer">
                         <span id="val-fps" class="text-indigo-400 font-black">8 FPS</span>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/90 p-2 rounded-xl border border-slate-800/60">
-                    <div class="flex items-center gap-1">
-                        <button id="btn-play-gif" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">▶️ پخش انیمیشن</button>
-                        <button id="btn-add-frame" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium">➕ فریم جدید</button>
-                        <button id="btn-duplicate-frame" class="bg-slate-800/90 hover:bg-slate-700 text-indigo-300 text-xs px-3 py-1.5 rounded-lg font-medium">👥 تکثیر لایه‌ها</button>
-                        <button id="btn-export-gif" class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">📥 خروجی GIF واقعی</button>
+                    <div class="flex flex-wrap items-center gap-1">
+                        <button id="btn-play-gif" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">▶️ پخش</button>
+                        <button id="btn-add-frame" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg font-medium">➕ فریم</button>
+                        <button id="btn-duplicate-frame" class="bg-slate-800/90 hover:bg-slate-700 text-indigo-300 text-xs px-3 py-1.5 rounded-lg font-medium">👥 تکثیر</button>
+                        <button id="btn-download-png" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition-all">📥 PNG</button>
+                        <button id="btn-export-gif" class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition-all">📥 GIF</button>
                     </div>
                     <div class="text-[11px] font-medium text-slate-400">
                         فریم: <span id="lbl-active-frame" class="text-indigo-400 font-black">1</span> از <span id="lbl-total-frames" class="text-slate-300">1</span>
@@ -415,89 +438,91 @@
             </div>
         </main>
 
-        <!-- ستون چپ استیکرساز: فیلترها، چرخش ۳بعدی و پنل لایه‌های استیکر -->
         <aside class="xl:col-span-3 flex flex-col gap-4">
-            <!-- افکت‌های از پیش تعریف شده حرکتی کل بوم -->
             <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2">
-                <h3 class="text-xs font-bold text-amber-400">🏃‍♂️ افکت‌های انیمیشنی خودکار و سریع بوم</h3>
+                <h3 class="text-xs font-bold text-amber-400">🏃‍♂️ افکت‌های انیمیشنی</h3>
                 <select id="select-global-effect" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 w-full outline-none">
-                    <option value="none">بدون افکت خودکار (طراحی دستی فریم‌ها)</option>
-                    <option value="float">شناور مواج مینی‌مال (Floating)</option>
-                    <option value="pulse">ضربان نئونی قلب (Pulse Glow)</option>
-                    <option value="wobble">لرزش شدید لوپ (Wobble)</option>
-                    <option value="spin3d">چرخش دوار سه‌بعدی لوپ (3D Spin GIF)</option>
+                    <option value="none">بدون افکت خودکار</option>
+                    <option value="float">شناور مواج</option>
+                    <option value="pulse">ضربان نئونی</option>
+                    <option value="wobble">لرزش شدید</option>
+                    <option value="spin3d">چرخش سه‌بعدی</option>
                 </select>
             </div>
 
-            <!-- مشخصات، فیلترها و خمش سه‌بعدی لایه انتخابی -->
             <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
-                <h2 class="text-xs font-bold border-b border-slate-800 pb-2 text-emerald-400">🛠️ کنترل فیلترها و هندسه لایه فعال</h2>
+                <h2 class="text-xs font-bold border-b border-slate-800 pb-2 text-emerald-400">🛠️ کنترل لایه فعال</h2>
                 <div id="no-layer-selected" class="text-xs text-slate-500 text-center py-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-800">برای ویرایش، یک لایه را انتخاب کنید.</div>
                 
                 <div id="layer-controls" class="hidden flex-col gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
                     <div class="flex justify-between text-[10px] text-slate-400"><span>اندازه:</span><span id="val-scale">100%</span></div>
                     <input id="control-scale" type="range" min="10" max="250" value="100" class="w-full h-1 accent-emerald-500">
 
-                    <div class="flex justify-between text-[10px] text-slate-400"><span>چرخش ۲بعدی:</span><span id="val-rotate">0°</span></div>
+                    <div class="flex justify-between text-[10px] text-slate-400"><span>چرخش:</span><span id="val-rotate">0°</span></div>
                     <input id="control-rotate" type="range" min="0" max="360" value="0" class="w-full h-1 accent-emerald-500">
 
                     <div class="flex justify-between text-[10px] text-slate-400"><span>شفافیت:</span><span id="val-opacity">100%</span></div>
                     <input id="control-opacity" type="range" min="0" max="100" value="100" class="w-full h-1 accent-emerald-500">
 
                     <div class="border-t border-slate-800 pt-2 flex flex-col gap-1.5">
-                        <span class="text-[10px] font-bold text-indigo-400">📐 زوایای خمش ۳بعدی لایه</span>
+                        <span class="text-[10px] font-bold text-indigo-400">📐 خمش سه‌بعدی</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <div><span class="text-[9px] text-slate-400 block">محور افقی X:</span><input id="control-rotate-x" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
-                            <div><span class="text-[9px] text-slate-400 block">محور عمودی Y:</span><input id="control-rotate-y" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
+                            <div><span class="text-[9px] text-slate-400 block">X:</span><input id="control-rotate-x" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
+                            <div><span class="text-[9px] text-slate-400 block">Y:</span><input id="control-rotate-y" type="range" min="-70" max="70" value="0" class="w-full h-1 accent-indigo-500"></div>
                         </div>
                     </div>
 
                     <div class="border-t border-slate-800 pt-2 flex flex-col gap-1">
-                        <span class="text-[10px] font-bold text-purple-400">🎨 افکت و فیلتر گرافیکی لایه</span>
+                        <span class="text-[10px] font-bold text-purple-400">🎨 فیلتر</span>
                         <select id="control-layer-filter" class="bg-slate-900 text-slate-300 rounded p-1 text-[11px] w-full outline-none">
                             <option value="none">بدون فیلتر</option>
-                            <option value="grayscale(100%)">سیاه و سفید (Grayscale)</option>
-                            <option value="invert(100%)">نگاتیو / معکوس رنگ</option>
-                            <option value="blur(4px)">تاری (Blur)</option>
+                            <option value="grayscale(100%)">سیاه و سفید</option>
+                            <option value="invert(100%)">نگاتیو</option>
+                            <option value="blur(4px)">تاری</option>
                         </select>
                     </div>
 
                     <div id="text-specific-controls" class="hidden flex-col gap-2 border-t border-slate-800 pt-2 text-[10px] text-slate-400">
-                        <div class="flex justify-between items-center"><span>رنگ متن:</span><input id="control-text-color" type="color" class="bg-transparent border-0 cursor-pointer"></div>
+                        <div class="flex justify-between items-center"><span>رنگ اصلی:</span><input id="control-text-color" type="color" class="bg-transparent border-0 cursor-pointer"></div>
                         <div class="flex justify-between items-center"><span>خط مرزی:</span><input id="control-stroke-color" type="color" class="bg-transparent border-0 cursor-pointer"></div>
+                        <div class="flex justify-between items-center"><span>ضخامت مرز:</span><input id="control-stroke-width" type="range" min="0" max="10" value="2" class="accent-indigo-500"></div>
                     </div>
-                    <button id="btn-delete-layer" class="w-full bg-red-950/40 border border-red-900/30 text-red-300 text-[11px] py-1.5 rounded-lg transition-all mt-1">🗑️ حذف لایه از فریم جاری</button>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button id="btn-layer-up" class="bg-slate-800 text-slate-200 text-[10px] py-1 rounded">🔼 بالا</button>
+                        <button id="btn-layer-down" class="bg-slate-800 text-slate-200 text-[10px] py-1 rounded">🔽 پایین</button>
+                    </div>
+
+                    <button id="btn-delete-layer" class="w-full bg-red-950/40 border border-red-900/30 text-red-300 text-[11px] py-1.5 rounded-lg transition-all mt-1">🗑️ حذف لایه</button>
                 </div>
             </div>
 
-            <!-- ساختار لیست چیدمان لایه‌های روی بوم استیکر -->
             <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col gap-2 min-h-[160px]">
-                <h2 class="text-xs font-bold border-b border-slate-800 pb-1.5 text-slate-400">🥞 ساختار چیدمان لایه‌های فریم فعال</h2>
+                <h2 class="text-xs font-bold border-b border-slate-800 pb-1.5 text-slate-400">🥞 لایه‌های فریم فعال</h2>
                 <div id="layers-list-container" class="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto"></div>
             </div>
         </aside>
     </section>
 
     <!-- ========================================================================= -->
-    <!-- 🎚️ بخش سوم: استودیوی حرفه‌ای و کامل ادیت و افکت‌گذاری وویس (پایین صفحه) 🎚️ -->
+    <!-- 🎚️ بخش سوم: استودیوی ادیت وویس -->
     <!-- ========================================================================= -->
     <section class="max-w-[1200px] w-full mx-auto glass-panel rounded-[30px] p-6 border border-cyan-500/30 shadow-2xl mt-8 mb-12">
         <div class="flex items-center gap-3 border-b border-cyan-500/20 pb-3 mb-4">
             <span class="text-2xl animate-pulse">🎙️</span>
-            <h2 class="text-lg font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">آزمایشگاه و استودیوی ادیت صدا و وویس (Voice Audio Lab)</h2>
+            <h2 class="text-lg font-black bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">آزمایشگاه و استودیوی ادیت صدا و وویس</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            <!-- ستون ابزارها و اکشن‌های فایل وویس -->
             <div class="md:col-span-4 flex flex-col gap-3">
                 <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
-                    <span class="text-xs text-slate-400 block mb-2 font-bold">🎯 ورودی صدا و ضبط زنده</span>
+                    <span class="text-xs text-slate-400 block mb-2 font-bold">🎯 ورودی صدا</span>
                     <div class="flex gap-2">
                         <button id="btn-record-voice" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1">
                             <span id="record-icon">🔴</span> <span id="record-text">ضبط با میکروفون</span>
                         </button>
                         <label class="bg-slate-900 border border-slate-700 hover:bg-cyan-600 text-white text-xs px-3 py-2 rounded-lg font-bold cursor-pointer transition-all text-center flex items-center justify-center">
-                            📁 بارگذاری وویس
+                            📁 بارگذاری
                             <input type="file" id="upload-voice-file" accept="audio/*" class="hidden">
                         </label>
                     </div>
@@ -505,31 +530,28 @@
                 </div>
 
                 <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
-                    <span class="text-xs text-slate-400 block font-bold">✨ اعمال افکت صوتی دیجیتال (DSP)</span>
+                    <span class="text-xs text-slate-400 block font-bold">✨ افکت صوتی (DSP)</span>
                     <select id="select-voice-effect" class="bg-slate-900 border border-slate-800 text-xs p-2 rounded-lg text-slate-200 outline-none w-full cursor-pointer">
                         <option value="none">بدون افکت (صدای طبیعی)</option>
-                        <option value="robot">🤖 ربات سایبرپانک (Robot Synth)</option>
-                        <option value="echo">🌌 اکو فضایی و طنین (Space Echo)</option>
-                        <option value="radio">📻 رادیو قدیمی و بیسیم (Old Radio)</option>
-                        <option value="highpitch">🐿️ صدای نازک کارتونی (Chipmunk)</option>
-                        <option value="lowpitch">👹 صدای بم غول‌آسا (Monster Pitch)</option>
+                        <option value="robot">🤖 ربات سایبرپانک</option>
+                        <option value="echo">🌌 اکو فضایی</option>
+                        <option value="radio">📻 رادیو قدیمی</option>
+                        <option value="highpitch">🐿️ صدای نازک</option>
+                        <option value="lowpitch">👹 صدای بم</option>
                     </select>
 
-                    <button id="btn-reverse-voice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 text-xs py-2 rounded-lg font-bold transition-all">🔄 معکوس‌سازی کامل وویس (Reverse)</button>
+                    <button id="btn-reverse-voice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 text-xs py-2 rounded-lg font-bold transition-all">🔄 معکوس‌سازی وویس</button>
                 </div>
             </div>
 
-            <!-- ستون تایم‌لاین ادیت، پیش‌نمایش موج و ابزار برش -->
             <div class="md:col-span-8 flex flex-col gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800">
-                <span class="text-xs text-slate-400 font-bold block">🎛️ ابزار زمان‌بندی و بازه ادیت وویس</span>
+                <span class="text-xs text-slate-400 font-bold block">🎛️ زمان‌بندی و ادیت</span>
                 
-                <!-- پیش‌نمایش گرافیکی موج صوتی وویس بارگذاری‌شده -->
                 <div class="h-16 bg-slate-950 rounded-xl relative border border-cyan-500/20 flex items-center justify-center overflow-hidden">
                     <div id="voice-wave-placeholder" class="text-xs text-slate-600 font-medium">موج صوتی وویس در این بخش رندر می‌شود</div>
                     <div id="voice-waveform-canvas" class="absolute inset-0 flex items-center justify-center gap-0.5 px-2 pointer-events-none"></div>
                 </div>
 
-                <!-- کنترلرهای بازه برش وویس -->
                 <div class="grid grid-cols-2 gap-4 text-xs font-bold bg-slate-950/80 p-3 rounded-lg border border-slate-900">
                     <div>
                         <span class="text-slate-500 text-[10px] block mb-1">شروع برش (ثانیه):</span>
@@ -541,25 +563,31 @@
                     </div>
                 </div>
 
-                <!-- کنترل پخش و خروجی نهایی وویس ادیت شده -->
                 <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-3">
                     <div class="flex gap-2">
-                        <button id="btn-play-voice" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-4 rounded-lg transition-all">▶️ پخش وویس ادیت‌شده</button>
+                        <button id="btn-play-voice" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-4 rounded-lg transition-all">▶️ پخش</button>
                         <button id="btn-stop-voice" class="bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs py-2 px-3 rounded-lg transition-all">⏹️ توقف</button>
                     </div>
-                    <button id="btn-download-voice" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs py-2 px-4 rounded-lg transition-transform active:scale-95 shadow-md">📥 دانلود وویس نهایی (WAV)</button>
+                    
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-[10px] text-slate-400 font-bold">فرمت خروجی:</span>
+                        <label class="flex items-center gap-1 text-[10px] text-slate-300 cursor-pointer bg-slate-900 border border-slate-700 px-2 py-1 rounded">
+                            <input type="radio" name="voice-output-format" value="wav" checked class="accent-cyan-500"> WAV
+                        </label>
+                        <label class="flex items-center gap-1 text-[10px] text-slate-300 cursor-pointer bg-slate-900 border border-slate-700 px-2 py-1 rounded">
+                            <input type="radio" name="voice-output-format" value="mp3" class="accent-cyan-500"> MP3
+                        </label>
+                        <button id="btn-download-voice" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs py-2 px-4 rounded-lg transition-transform active:scale-95 shadow-md">📥 دانلود وویس</button>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- جاوااسکریپت و کدهای عملکردی یکپارچه شده پلتفرم صوتی و تصویری -->
     <script>
         const canvas = document.getElementById('sticker-canvas');
         const ctx = canvas.getContext('2d');
-        const canvasViewFrame = document.getElementById('canvas-view-frame');
 
-        // دیتابیس لوکال فریم‌های استیکر
         let frames = [ { layers: [] } ];
         let activeFrameIndex = 0;
         let selectedLayerId = null;
@@ -567,9 +595,7 @@
         let startX = 0, startY = 0;
         let isBrushMode = false;
         let isDrawing = false;
-        let currentBrushLayer = null;
 
-        // دیتابیس صوتی و متنی گربول پلیر اولترا
         const coreTrackDatabase = [
             {
                 title: "کدنویسی نیمه‌شب گربول شجاع",
@@ -604,8 +630,6 @@
         let isPlaying = false;
         let currentTimeSec = 0;
         let isMutedState = false;
-        let isShuffleState = false;
-        let isLoopTrackState = false;
         let isUserDraggingSlider = false;
 
         let audioContextInstance = null;
@@ -628,10 +652,7 @@
         let gifInterval = null;
         let animationFps = 8;
         let currentGlobalEffect = 'none';
-        let auto3Ddeg = 0;
-        let auto3DLoop = null;
 
-        // دیتابیس مستقل ابزار ادیت وویس بخش سوم
         let voiceAudioContext = null;
         let voiceAudioBuffer = null;
         let voiceActiveSource = null;
@@ -640,6 +661,74 @@
         let isRecording = false;
         let recordTimeSec = 0;
         let recordTimerInterval = null;
+
+        // ═══════════════════════════════════════════════════════════
+        //   بارگذاری مطمئن gifshot با چند CDN جایگزین
+        // ═══════════════════════════════════════════════════════════
+        let gifshotLoadingPromise = null;
+        
+        function ensureGifshotLoaded() {
+            if (typeof gifshot !== 'undefined') {
+                return Promise.resolve();
+            }
+            
+            if (gifshotLoadingPromise) {
+                return gifshotLoadingPromise;
+            }
+            
+            gifshotLoadingPromise = new Promise((resolve, reject) => {
+                const cdns = [
+                    'https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js',
+                    'https://unpkg.com/gifshot@0.4.5/dist/gifshot.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js',
+                    'https://cdn.statically.io/gh/yahoo/gifshot/master/dist/gifshot.min.js'
+                ];
+                
+                let idx = 0;
+                let resolved = false;
+                
+                function tryLoad() {
+                    if (idx >= cdns.length) {
+                        if (!resolved) {
+                            reject(new Error('همه CDNها شکست خوردند'));
+                        }
+                        return;
+                    }
+                    
+                    const src = cdns[idx++];
+                    const script = document.createElement('script');
+                    script.src = src;
+                    
+                    script.onload = () => {
+                        setTimeout(() => {
+                            if (typeof gifshot !== 'undefined') {
+                                resolved = true;
+                                resolve();
+                            } else {
+                                tryLoad();
+                            }
+                        }, 100);
+                    };
+                    
+                    script.onerror = () => {
+                        tryLoad();
+                    };
+                    
+                    document.head.appendChild(script);
+                }
+                
+                tryLoad();
+                
+                // Timeout کلی
+                setTimeout(() => {
+                    if (!resolved && typeof gifshot === 'undefined') {
+                        reject(new Error('Timeout: کتابخانه در زمان مقرر لود نشد'));
+                    }
+                }, 15000);
+            });
+            
+            return gifshotLoadingPromise;
+        }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
@@ -676,7 +765,7 @@
             document.getElementById(tabId).classList.remove('hidden');
         }
 
-        // ================= رندر و کدهای منطقی استیکرساز متحرک =================
+        // ================= استیکرساز =================
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -695,54 +784,115 @@
 
         function renderSingleLayer(targetCtx, layer, isOnionMode) {
             targetCtx.save();
-            targetCtx.translate(layer.x, layer.y);
-            targetCtx.rotate((layer.rotate * Math.PI) / 180);
+            
+            let effectX = 0; let effectY = 0; let effectRot = 0; let effectScale = 1;
+            if (currentGlobalEffect === 'float') {
+                effectY = Math.sin(performance.now() / 200) * 10;
+            } else if (currentGlobalEffect === 'pulse') {
+                effectScale = 1 + Math.sin(performance.now() / 150) * 0.05;
+            } else if (currentGlobalEffect === 'wobble') {
+                effectRot = Math.sin(performance.now() / 50) * 0.08;
+            }
+
+            targetCtx.translate(layer.x + effectX, layer.y + effectY);
+            targetCtx.rotate(((layer.rotate + (effectRot * 180 / Math.PI)) * Math.PI) / 180);
             
             const rX = ((layer.rotateX || 0) * Math.PI) / 180;
             const rY = ((layer.rotateY || 0) * Math.PI) / 180;
-            targetCtx.scale(Math.cos(rY) * (layer.scale / 100), Math.cos(rX) * (layer.scale / 100));
+            targetCtx.scale(Math.cos(rY) * (layer.scale / 100) * effectScale, Math.cos(rX) * (layer.scale / 100) * effectScale);
 
             if (!isOnionMode && layer.filter && layer.filter !== 'none') targetCtx.filter = layer.filter;
             if (!isOnionMode && layer.opacity !== undefined) targetCtx.globalAlpha = layer.opacity / 100;
 
+            const isDieCut = document.getElementById('toggle-sticker-border').checked;
+
             if (layer.type === 'text' || layer.type === 'emoji') {
                 const fW = layer.fontWeight || 'bold'; const fF = layer.fontFamily || 'Vazirmatn';
-                targetCtx.font = `${fW} ${layer.fontSize || 32}px ${fF}, Arial`;
+                const fSize = layer.fontSize || (layer.type === 'emoji' ? 50 : 32);
+                targetCtx.font = `${fW} ${fSize}px ${fF}, Arial`;
                 targetCtx.textAlign = 'center'; targetCtx.textBaseline = 'middle';
-                if (layer.strokeWidth > 0) {
-                    targetCtx.strokeStyle = layer.strokeColor || '#000000'; targetCtx.lineWidth = layer.strokeWidth;
-                    targetCtx.lineJoin = 'round'; targetCtx.strokeText(layer.content, 0, 0);
+                
+                if (isDieCut && !isOnionMode) {
+                    targetCtx.strokeStyle = '#ffffff';
+                    targetCtx.lineWidth = (layer.strokeWidth || 2) + 12;
+                    targetCtx.lineJoin = 'round';
+                    targetCtx.strokeText(layer.content, 0, 0);
                 }
-                targetCtx.fillStyle = layer.color || '#ffffff'; targetCtx.fillText(layer.content, 0, 0);
+                if (layer.strokeWidth > 0) {
+                    targetCtx.strokeStyle = layer.strokeColor || '#000000'; 
+                    targetCtx.lineWidth = layer.strokeWidth;
+                    targetCtx.lineJoin = 'round'; 
+                    targetCtx.strokeText(layer.content, 0, 0);
+                }
+                targetCtx.fillStyle = layer.color || '#ffffff'; 
+                targetCtx.fillText(layer.content, 0, 0);
+
             } else if (layer.type === 'image' && layer.imgReady) {
+                if (isDieCut && !isOnionMode) {
+                    targetCtx.fillStyle = '#ffffff';
+                    targetCtx.fillRect((-layer.width / 2) - 6, (-layer.height / 2) - 6, layer.width + 12, layer.height + 12);
+                }
                 targetCtx.drawImage(layer.imgElement, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
-            } else if (layer.type === 'brush') {
-                targetCtx.drawImage(layer.canvasElement, -canvas.width/2, -canvas.height/2);
+            } else if (layer.type === 'brush' && layer.canvasElement) {
+                targetCtx.drawImage(layer.canvasElement, -200, -200);
             } else if (layer.type === 'shape') {
                 targetCtx.fillStyle = layer.fillColor || '#3b82f6';
                 targetCtx.strokeStyle = layer.strokeColor || '#ffffff';
-                targetCtx.lineWidth = 3; targetCtx.beginPath();
-                const size = layer.shapeSize || 60;
-                if (layer.shapeType === 'rect') targetCtx.rect(-size/2, -size/2, size, size);
-                else if (layer.shapeType === 'circle') targetCtx.arc(0, 0, size/2, 0, Math.PI * 2);
-                else if (layer.shapeType === 'star') {
-                    for (let i = 0; i < 10; i++) {
-                        const r = (i % 2 === 0) ? size/2 : size/4;
-                        const currAngle = (Math.PI * 2 / 10) * i;
-                        targetCtx.lineTo(Math.cos(currAngle) * r, Math.sin(currAngle) * r);
-                    }
-                    targetCtx.closePath();
-                } else if (layer.shapeType === 'bubble') {
-                    targetCtx.roundRect(-size/1.5, -size/2, size*1.3, size, 10);
+                targetCtx.lineWidth = layer.strokeWidth || 3; 
+                targetCtx.lineJoin = 'round';
+                
+                targetCtx.beginPath();
+                const size = layer.shapeSize || 70;
+                
+                if (isDieCut && !isOnionMode) {
+                    targetCtx.save();
+                    targetCtx.lineWidth = (layer.strokeWidth || 3) + 12;
+                    targetCtx.strokeStyle = '#ffffff';
+                    buildShapePath(targetCtx, layer.shapeType, size);
+                    targetCtx.stroke();
+                    targetCtx.restore();
+                    targetCtx.beginPath();
                 }
-                targetCtx.fill(); targetCtx.stroke();
+
+                buildShapePath(targetCtx, layer.shapeType, size);
+                targetCtx.fill(); 
+                targetCtx.stroke();
             }
 
             if (!isOnionMode && layer.id === selectedLayerId && !isBrushMode && !isPlayingGif) {
                 targetCtx.strokeStyle = '#6366f1'; targetCtx.lineWidth = 2; targetCtx.setLineDash([5, 4]);
-                let bW = 80, bH = 50; targetCtx.strokeRect(-bW / 2, -bH / 2, bW, bH);
+                targetCtx.strokeRect(-45, -45, 90, 90);
             }
             targetCtx.restore();
+        }
+
+        function buildShapePath(targetCtx, type, size) {
+            if (type === 'rect') targetCtx.rect(-size/2, -size/2, size, size);
+            else if (type === 'circle') targetCtx.arc(0, 0, size/2, 0, Math.PI * 2);
+            else if (type === 'star') {
+                for (let i = 0; i < 10; i++) {
+                    const r = (i % 2 === 0) ? size/2 : size/4;
+                    const currAngle = (Math.PI * 2 / 10) * i - Math.PI/2;
+                    targetCtx.lineTo(Math.cos(currAngle) * r, Math.sin(currAngle) * r);
+                }
+                targetCtx.closePath();
+            } else if (type === 'triangle') {
+                targetCtx.moveTo(0, -size/2);
+                targetCtx.lineTo(size/2, size/2);
+                targetCtx.lineTo(-size/2, size/2);
+                targetCtx.closePath();
+            } else if (type === 'rhombus') {
+                targetCtx.moveTo(0, -size/2);
+                targetCtx.lineTo(size/2, 0);
+                targetCtx.lineTo(0, size/2);
+                targetCtx.lineTo(-size/2, 0);
+                targetCtx.closePath();
+            } else if (type === 'bubble') {
+                targetCtx.roundRect(-size/1.3, -size/2, size*1.5, size, 15);
+                targetCtx.moveTo(-10, size/2);
+                targetCtx.lineTo(-25, size/2 + 15);
+                targetCtx.lineTo(5, size/2);
+            }
         }
 
         function updateStickerUI() {
@@ -754,7 +904,7 @@
             frames.forEach((frame, idx) => {
                 const thumb = document.createElement('div');
                 thumb.className = `relative flex-shrink-0 w-14 h-14 rounded-xl cursor-pointer border-2 transition-all flex flex-col items-center justify-center font-bold text-[10px] ${idx === activeFrameIndex ? 'border-indigo-500 bg-indigo-950 text-indigo-300 shadow-md' : 'border-slate-800 bg-slate-900 text-slate-500'}`;
-                thumb.innerHTML = `<span>Fریم-${idx + 1}</span>`;
+                thumb.innerHTML = `<span>فریم-${idx + 1}</span>`;
                 thumb.addEventListener('click', () => {
                     if (isPlayingGif) stopGifPlayback();
                     activeFrameIndex = idx; selectedLayerId = null; updateStickerUI(); drawCanvas();
@@ -769,7 +919,7 @@
                 [...activeFrame.layers].reverse().forEach(layer => {
                     const row = document.createElement('div');
                     row.className = `flex justify-between items-center p-2 bg-slate-800 rounded-xl text-[10px] mb-1 cursor-pointer border border-transparent ${layer.id === selectedLayerId ? 'border-indigo-500 text-indigo-300 bg-indigo-950/40' : 'text-slate-300'}`;
-                    row.innerHTML = `<span class="truncate max-w-[120px]">${layer.type}: ${layer.content || 'المان'}</span><button onclick="removeLayerFromFrame('${layer.id}')" class="text-red-400 font-black hover:text-red-300">×</button>`;
+                    row.innerHTML = `<span class="truncate max-w-[120px]">${layer.type}: ${layer.content || layer.shapeType || 'المان'}</span><button onclick="removeLayerFromFrame('${layer.id}')" class="text-red-400 font-black hover:text-red-300">×</button>`;
                     row.addEventListener('click', () => { selectedLayerId = layer.id; updateStickerUI(); drawCanvas(); });
                     layersList.appendChild(row);
                 });
@@ -782,9 +932,15 @@
                 document.getElementById('control-scale').value = activeLayer.scale;
                 document.getElementById('control-rotate').value = activeLayer.rotate;
                 document.getElementById('control-opacity').value = activeLayer.opacity || 100;
-                if (activeLayer.type === 'text') {
-                    document.getElementById('text-specific-controls').classList.remove('hidden'); document.getElementById('text-specific-controls').classList.add('flex');
-                } else { document.getElementById('text-specific-controls').classList.add('hidden'); }
+                document.getElementById('control-rotate-x').value = activeLayer.rotateX || 0;
+                document.getElementById('control-rotate-y').value = activeLayer.rotateY || 0;
+                document.getElementById('control-layer-filter').value = activeLayer.filter || 'none';
+                
+                document.getElementById('text-specific-controls').classList.remove('hidden'); 
+                document.getElementById('text-specific-controls').classList.add('flex');
+                document.getElementById('control-text-color').value = activeLayer.color || activeLayer.fillColor || '#ffffff';
+                document.getElementById('control-stroke-color').value = activeLayer.strokeColor || '#000000';
+                document.getElementById('control-stroke-width').value = activeLayer.strokeWidth || 2;
             } else {
                 document.getElementById('layer-controls').classList.add('hidden'); document.getElementById('layer-controls').classList.remove('flex');
                 document.getElementById('no-layer-selected').classList.remove('hidden');
@@ -800,15 +956,206 @@
             }
         };
 
+        window.addEmojiLayer = function(emojiStr) {
+            const activeFrame = frames[activeFrameIndex];
+            if (!activeFrame) return;
+            const newLayer = {
+                id: generateId(), type: 'emoji', content: emojiStr, x: 200, y: 200, scale: 100, rotate: 0, rotateX: 0, rotateY: 0, opacity: 100, filter: 'none', color: '#ffffff', strokeColor: '#000000', strokeWidth: 0
+            };
+            activeFrame.layers.push(newLayer); selectedLayerId = newLayer.id; updateStickerUI(); drawCanvas();
+        };
+
+        window.addShapeLayer = function(type) {
+            const activeFrame = frames[activeFrameIndex];
+            if (!activeFrame) return;
+            const newLayer = {
+                id: generateId(), type: 'shape', shapeType: type, x: 200, y: 200, scale: 100, rotate: 0, rotateX: 0, rotateY: 0, opacity: 100, filter: 'none', fillColor: document.getElementById('shape-fill-color').value, strokeColor: document.getElementById('shape-stroke-color').value, strokeWidth: 3
+            };
+            activeFrame.layers.push(newLayer); selectedLayerId = newLayer.id; updateStickerUI(); drawCanvas();
+        };
+
+        function initBrushLayerIfNeeded() {
+            const activeFrame = frames[activeFrameIndex];
+            let brushLayer = activeFrame.layers.find(l => l.type === 'brush');
+            if (!brushLayer) {
+                const bCanvas = document.createElement('canvas'); bCanvas.width = 400; bCanvas.height = 400;
+                brushLayer = {
+                    id: generateId(), type: 'brush', canvasElement: bCanvas, ctxElement: bCanvas.getContext('2d'), x: 200, y: 200, scale: 100, rotate: 0, opacity: 100, filter: 'none'
+                };
+                activeFrame.layers.push(brushLayer);
+            }
+            return brushLayer;
+        }
+
+        document.getElementById('btn-brush-mode').addEventListener('click', () => {
+            isBrushMode = !isBrushMode;
+            document.getElementById('brush-status').innerText = isBrushMode ? '🖌️ فعال' : '🖌️ غیرفعال';
+            document.getElementById('btn-brush-mode').classList.toggle('bg-indigo-600', isBrushMode);
+        });
+
+        document.getElementById('btn-clear-brush').addEventListener('click', () => {
+            const activeFrame = frames[activeFrameIndex];
+            activeFrame.layers = activeFrame.layers.filter(l => l.type !== 'brush');
+            drawCanvas(); showToast('نقاشی پاک شد.');
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            
+            if (isBrushMode) {
+                isDrawing = true;
+                const bLayer = initBrushLayerIfNeeded();
+                bLayer.ctxElement.beginPath(); bLayer.ctxElement.moveTo(pos.x, pos.y);
+                return;
+            }
+
+            const activeFrame = frames[activeFrameIndex];
+            let target = null;
+            if (activeFrame) {
+                for(let i=activeFrame.layers.length-1; i>=0; i--) {
+                    let l = activeFrame.layers[i];
+                    if (Math.sqrt(Math.pow(pos.x - l.x, 2) + Math.pow(pos.y - l.y, 2)) < 60) { target = l; break; }
+                }
+            }
+            if (target) { isDragging = true; selectedLayerId = target.id; startX = pos.x - target.x; startY = pos.y - target.y; }
+            else { selectedLayerId = null; }
+            updateStickerUI(); drawCanvas();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (isBrushMode && isDrawing) {
+                const bLayer = initBrushLayerIfNeeded();
+                bLayer.ctxElement.lineTo(pos.x, pos.y);
+                bLayer.ctxElement.strokeStyle = document.getElementById('brush-color').value;
+                bLayer.ctxElement.lineWidth = document.getElementById('brush-size').value;
+                bLayer.ctxElement.lineCap = 'round';
+                bLayer.ctxElement.stroke(); drawCanvas(); return;
+            }
+
+            if (isDragging && selectedLayerId) {
+                const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+                if (l) { l.x = pos.x - startX; l.y = pos.y - startY; drawCanvas(); }
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => { isDragging = false; isDrawing = false; });
+
+        document.getElementById('control-scale').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.scale = parseInt(e.target.value); document.getElementById('val-scale').innerText = l.scale+'%'; drawCanvas(); }
+        });
+        document.getElementById('control-rotate').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.rotate = parseInt(e.target.value); document.getElementById('val-rotate').innerText = l.rotate+'°'; drawCanvas(); }
+        });
+        document.getElementById('control-opacity').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.opacity = parseInt(e.target.value); document.getElementById('val-opacity').innerText = l.opacity+'%'; drawCanvas(); }
+        });
+        document.getElementById('control-rotate-x').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.rotateX = parseInt(e.target.value); drawCanvas(); }
+        });
+        document.getElementById('control-rotate-y').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.rotateY = parseInt(e.target.value); drawCanvas(); }
+        });
+        document.getElementById('control-layer-filter').addEventListener('change', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.filter = e.target.value; drawCanvas(); }
+        });
+        document.getElementById('control-text-color').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { if(l.type==='shape') l.fillColor = e.target.value; else l.color = e.target.value; drawCanvas(); }
+        });
+        document.getElementById('control-stroke-color').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.strokeColor = e.target.value; drawCanvas(); }
+        });
+        document.getElementById('control-stroke-width').addEventListener('input', (e) => {
+            const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
+            if(l) { l.strokeWidth = parseInt(e.target.value); drawCanvas(); }
+        });
+
+        document.getElementById('btn-layer-up').addEventListener('click', () => {
+            const activeFrame = frames[activeFrameIndex];
+            const idx = activeFrame.layers.findIndex(l => l.id === selectedLayerId);
+            if (idx !== -1 && idx < activeFrame.layers.length - 1) {
+                const temp = activeFrame.layers[idx]; activeFrame.layers[idx] = activeFrame.layers[idx+1]; activeFrame.layers[idx+1] = temp; updateStickerUI(); drawCanvas();
+            }
+        });
+        document.getElementById('btn-layer-down').addEventListener('click', () => {
+            const activeFrame = frames[activeFrameIndex];
+            const idx = activeFrame.layers.findIndex(l => l.id === selectedLayerId);
+            if (idx > 0) {
+                const temp = activeFrame.layers[idx]; activeFrame.layers[idx] = activeFrame.layers[idx-1]; activeFrame.layers[idx-1] = temp; updateStickerUI(); drawCanvas();
+            }
+        });
+
+        document.getElementById('btn-delete-layer').addEventListener('click', () => {
+            if (selectedLayerId) removeLayerFromFrame(selectedLayerId);
+        });
+
+        document.getElementById('toggle-sticker-border').addEventListener('change', drawCanvas);
+        document.getElementById('control-fps').addEventListener('input', (e) => {
+            animationFps = parseInt(e.target.value); document.getElementById('val-fps').innerText = animationFps + ' FPS';
+            if (isPlayingGif) { stopGifPlayback(); startGifPlayback(); }
+        });
+
+        document.getElementById('select-global-effect').addEventListener('change', (e) => {
+            currentGlobalEffect = e.target.value;
+            if (currentGlobalEffect !== 'none') {
+                if (!gifInterval && !isPlayingGif) { gifInterval = setInterval(() => { drawCanvas(); }, 30); }
+            } else if (!isPlayingGif) {
+                clearInterval(gifInterval); gifInterval = null; drawCanvas();
+            }
+        });
+
+        document.getElementById('btn-add-text').addEventListener('click', () => {
+            const val = document.getElementById('text-input').value.trim(); if(!val) return;
+            const newLayer = {
+                id: generateId(), type: 'text', content: val, x: 200, y: 200, scale: 100, rotate: 0, rotateX: 0, rotateY: 0, opacity: 100, filter: 'none', color: '#ffffff', strokeColor: '#000000', strokeWidth: 2,
+                fontFamily: document.getElementById('text-font').value, fontWeight: document.getElementById('text-weight').value
+            };
+            frames[activeFrameIndex].layers.push(newLayer); selectedLayerId = newLayer.id; document.getElementById('text-input').value = ''; updateStickerUI(); drawCanvas();
+        });
+
+        document.getElementById('image-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const newLayer = {
+                        id: generateId(), type: 'image', imgElement: img, imgReady: true, x: 200, y: 200, width: 100, height: 100, scale: 100, rotate: 0, opacity: 100, filter: 'none'
+                    };
+                    frames[activeFrameIndex].layers.push(newLayer); selectedLayerId = newLayer.id; updateStickerUI(); drawCanvas();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
         document.getElementById('btn-add-frame').addEventListener('click', () => {
             frames.push({ layers: [] }); activeFrameIndex = frames.length - 1; updateStickerUI(); drawCanvas();
         });
 
         document.getElementById('btn-duplicate-frame').addEventListener('click', () => {
             const sourceFrame = frames[activeFrameIndex];
-            const duplicated = sourceFrame.layers.map(l => ({ ...l, id: generateId() }));
-            frames.splice(activeFrameIndex + 1, 0, { layers: duplicated });
-            activeFrameIndex++; updateStickerUI(); drawCanvas();
+            const duplicated = sourceFrame.layers.map(l => {
+                if (l.type === 'brush') {
+                    const bCanvas = document.createElement('canvas'); bCanvas.width = 400; bCanvas.height = 400;
+                    const bCtx = bCanvas.getContext('2d'); bCtx.drawImage(l.canvasElement, 0, 0);
+                    return { ...l, id: generateId(), canvasElement: bCanvas, ctxElement: bCtx };
+                }
+                return { ...l, id: generateId() };
+            });
+            frames.splice(activeFrameIndex + 1, 0, { layers: duplicated }); activeFrameIndex++; updateStickerUI(); drawCanvas();
         });
 
         document.getElementById('btn-play-gif').addEventListener('click', () => {
@@ -816,20 +1163,227 @@
         });
 
         function startGifPlayback() {
-            isPlayingGif = true; selectedLayerId = null;
-            document.getElementById('btn-play-gif').innerText = '⏸️ توقف پخش زنده';
+            isPlayingGif = true; selectedLayerId = null; document.getElementById('btn-play-gif').innerText = '⏸️ توقف';
+            if (gifInterval) clearInterval(gifInterval);
             gifInterval = setInterval(() => { activeFrameIndex = (activeFrameIndex + 1) % frames.length; updateStickerUI(); drawCanvas(); }, 1000 / animationFps);
         }
-        function stopGifPlayback() { isPlayingGif = false; clearInterval(gifInterval); document.getElementById('btn-play-gif').innerText = '▶️ پخش انیمیشن'; updateStickerUI(); drawCanvas(); }
+        function stopGifPlayback() { 
+            isPlayingGif = false; clearInterval(gifInterval); gifInterval = null; document.getElementById('btn-play-gif').innerText = '▶️ پخش'; 
+            if (currentGlobalEffect !== 'none') { gifInterval = setInterval(() => { drawCanvas(); }, 30); }
+            updateStickerUI(); drawCanvas(); 
+        }
 
-        // ================= فرآیند کنترلی موزیک پلیر گربول اولترا =================
+        // ================= دانلود PNG =================
+        document.getElementById('btn-download-png').addEventListener('click', () => {
+            const tempCnv = document.createElement('canvas'); tempCnv.width = 400; tempCnv.height = 400;
+            const tempCtx = tempCnv.getContext('2d');
+            
+            frames[activeFrameIndex].layers.forEach(l => {
+                tempCtx.save(); tempCtx.translate(l.x, l.y); tempCtx.rotate((l.rotate * Math.PI) / 180);
+                const rX = ((l.rotateX || 0) * Math.PI) / 180; const rY = ((l.rotateY || 0) * Math.PI) / 180;
+                tempCtx.scale(Math.cos(rY) * (l.scale / 100), Math.cos(rX) * (l.scale / 100));
+                if (l.filter && l.filter !== 'none') tempCtx.filter = l.filter;
+                if (l.opacity !== undefined) tempCtx.globalAlpha = l.opacity / 100;
+
+                const isDieCut = document.getElementById('toggle-sticker-border').checked;
+
+                if (l.type === 'text' || l.type === 'emoji') {
+                    const fW = l.fontWeight || 'bold'; const fF = l.fontFamily || 'Vazirmatn';
+                    const fSize = l.fontSize || (l.type === 'emoji' ? 50 : 32);
+                    tempCtx.font = `${fW} ${fSize}px ${fF}, Arial`; tempCtx.textAlign = 'center'; tempCtx.textBaseline = 'middle';
+                    if (isDieCut) {
+                        tempCtx.strokeStyle = '#ffffff'; tempCtx.lineWidth = (l.strokeWidth || 2) + 12; tempCtx.lineJoin = 'round'; tempCtx.strokeText(l.content, 0, 0);
+                    }
+                    if (l.strokeWidth > 0) {
+                        tempCtx.strokeStyle = l.strokeColor || '#000000'; tempCtx.lineWidth = l.strokeWidth; tempCtx.lineJoin = 'round'; tempCtx.strokeText(l.content, 0, 0);
+                    }
+                    tempCtx.fillStyle = l.color || '#ffffff'; tempCtx.fillText(l.content, 0, 0);
+                } else if (l.type === 'shape') {
+                    tempCtx.fillStyle = l.fillColor || '#3b82f6'; tempCtx.strokeStyle = l.strokeColor || '#ffffff'; tempCtx.lineWidth = l.strokeWidth || 3; tempCtx.beginPath();
+                    const size = l.shapeSize || 70;
+                    if (isDieCut) {
+                        tempCtx.save(); tempCtx.lineWidth = (l.strokeWidth || 3) + 12; tempCtx.strokeStyle = '#ffffff'; buildShapePath(tempCtx, l.shapeType, size); tempCtx.stroke(); tempCtx.restore(); tempCtx.beginPath();
+                    }
+                    buildShapePath(tempCtx, l.shapeType, size); tempCtx.fill(); tempCtx.stroke();
+                } else if (l.type === 'brush') {
+                    tempCtx.drawImage(l.canvasElement, -200, -200);
+                } else if (l.type === 'image' && l.imgReady) {
+                    tempCtx.drawImage(l.imgElement, -l.width/2, -l.height/2, l.width, l.height);
+                }
+                tempCtx.restore();
+            });
+
+            const link = document.createElement('a'); link.download = 'sticker-frame.png'; link.href = tempCnv.toDataURL('image/png'); link.click();
+            showToast('✅ تصویر PNG ذخیره شد!');
+        });
+
+        // ================= خروجی GIF (اصلاح‌شده با await) =================
+        document.getElementById('btn-export-gif').addEventListener('click', async () => {
+            const exportBtn = document.getElementById('btn-export-gif');
+            const originalText = exportBtn.innerText;
+            
+            if (frames.length === 0) {
+                showToast('❌ هیچ فریمی برای خروجی وجود ندارد.');
+                return;
+            }
+            
+            // ─── اطمینان از بارگذاری gifshot ───
+            exportBtn.disabled = true;
+            exportBtn.innerText = '⏳ لود کتابخانه...';
+            showToast('⏳ در حال بارگذاری کتابخانه GIF...');
+            
+            try {
+                await ensureGifshotLoaded();
+            } catch (err) {
+                console.error('gifshot load error:', err);
+                showToast('❌ خطا: کتابخانه gifshot از هیچ CDN لود نشد. اتصال اینترنت را بررسی کنید.');
+                exportBtn.disabled = false;
+                exportBtn.innerText = originalText;
+                return;
+            }
+            
+            if (typeof gifshot === 'undefined') {
+                showToast('❌ خطا: کتابخانه gifshot در دسترس نیست.');
+                exportBtn.disabled = false;
+                exportBtn.innerText = originalText;
+                return;
+            }
+            
+            exportBtn.innerText = '⏳ رندر...';
+            showToast('⏳ در حال آماده‌سازی فریم‌ها...');
+            
+            setTimeout(() => {
+                try {
+                    const compiled = [];
+                    const SIZE = 400;
+                    const tempCnv = document.createElement('canvas');
+                    tempCnv.width = SIZE;
+                    tempCnv.height = SIZE;
+                    const tempCtx = tempCnv.getContext('2d');
+                    
+                    const isDieCut = document.getElementById('toggle-sticker-border').checked;
+                    
+                    for (let i = 0; i < frames.length; i++) {
+                        tempCtx.clearRect(0, 0, SIZE, SIZE);
+                        
+                        frames[i].layers.forEach(l => {
+                            tempCtx.save();
+                            tempCtx.translate(l.x, l.y);
+                            tempCtx.rotate((l.rotate * Math.PI) / 180);
+                            const rX = ((l.rotateX || 0) * Math.PI) / 180;
+                            const rY = ((l.rotateY || 0) * Math.PI) / 180;
+                            tempCtx.scale(
+                                Math.max(0.01, Math.cos(rY)) * (l.scale / 100),
+                                Math.max(0.01, Math.cos(rX)) * (l.scale / 100)
+                            );
+                            if (l.filter && l.filter !== 'none') tempCtx.filter = l.filter;
+                            if (l.opacity !== undefined) tempCtx.globalAlpha = l.opacity / 100;
+
+                            if (l.type === 'text' || l.type === 'emoji') {
+                                const fW = l.fontWeight || 'bold';
+                                const fF = l.fontFamily || 'Vazirmatn';
+                                const fSize = l.fontSize || (l.type === 'emoji' ? 50 : 32);
+                                tempCtx.font = `${fW} ${fSize}px ${fF}, Arial`;
+                                tempCtx.textAlign = 'center';
+                                tempCtx.textBaseline = 'middle';
+                                if (isDieCut) {
+                                    tempCtx.strokeStyle = '#ffffff';
+                                    tempCtx.lineWidth = (l.strokeWidth || 2) + 12;
+                                    tempCtx.lineJoin = 'round';
+                                    tempCtx.strokeText(l.content, 0, 0);
+                                }
+                                if (l.strokeWidth > 0) {
+                                    tempCtx.strokeStyle = l.strokeColor || '#000000';
+                                    tempCtx.lineWidth = l.strokeWidth;
+                                    tempCtx.lineJoin = 'round';
+                                    tempCtx.strokeText(l.content, 0, 0);
+                                }
+                                tempCtx.fillStyle = l.color || '#ffffff';
+                                tempCtx.fillText(l.content, 0, 0);
+                            } else if (l.type === 'shape') {
+                                tempCtx.fillStyle = l.fillColor || '#3b82f6';
+                                tempCtx.strokeStyle = l.strokeColor || '#ffffff';
+                                tempCtx.lineWidth = l.strokeWidth || 3;
+                                tempCtx.beginPath();
+                                const size = l.shapeSize || 70;
+                                if (isDieCut) {
+                                    tempCtx.save();
+                                    tempCtx.lineWidth = (l.strokeWidth || 3) + 12;
+                                    tempCtx.strokeStyle = '#ffffff';
+                                    buildShapePath(tempCtx, l.shapeType, size);
+                                    tempCtx.stroke();
+                                    tempCtx.restore();
+                                    tempCtx.beginPath();
+                                }
+                                buildShapePath(tempCtx, l.shapeType, size);
+                                tempCtx.fill();
+                                tempCtx.stroke();
+                            } else if (l.type === 'brush') {
+                                tempCtx.drawImage(l.canvasElement, -200, -200);
+                            } else if (l.type === 'image' && l.imgReady) {
+                                if (isDieCut) {
+                                    tempCtx.fillStyle = '#ffffff';
+                                    tempCtx.fillRect(-l.width/2 - 6, -l.height/2 - 6, l.width + 12, l.height + 12);
+                                }
+                                tempCtx.drawImage(l.imgElement, -l.width/2, -l.height/2, l.width, l.height);
+                            }
+                            tempCtx.restore();
+                        });
+                        
+                        compiled.push(tempCnv.toDataURL('image/png'));
+                    }
+                    
+                    if (compiled.length === 0) {
+                        showToast('❌ فریمی برای خروجی وجود ندارد.');
+                        exportBtn.disabled = false;
+                        exportBtn.innerText = originalText;
+                        return;
+                    }
+                    
+                    showToast(`⏳ در حال ساخت GIF از ${compiled.length} فریم...`);
+                    
+                    const gifFrames = compiled.length === 1 ? [compiled[0], compiled[0]] : compiled;
+                    
+                    gifshot.createGIF({
+                        images: gifFrames,
+                        gifWidth: SIZE,
+                        gifHeight: SIZE,
+                        interval: Math.max(0.05, 1 / animationFps),
+                        numWorkers: 1,
+                        sampleInterval: 10,
+                        numFrames: gifFrames.length
+                    }, function(obj) {
+                        exportBtn.disabled = false;
+                        exportBtn.innerText = originalText;
+                        
+                        if (!obj.error) {
+                            const a = document.createElement('a');
+                            a.download = `animated-sticker-${Date.now()}.gif`;
+                            a.href = obj.image;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            showToast('✅ فایل GIF با موفقیت ذخیره شد!');
+                        } else {
+                            console.error('GIFShot error:', obj.errorMsg || obj.error);
+                            showToast('❌ خطا در ساخت GIF: ' + (obj.errorMsg || 'ناشناخته'));
+                        }
+                    });
+                } catch (err) {
+                    console.error('GIF export error:', err);
+                    showToast('❌ خطای غیرمنتظره: ' + err.message);
+                    exportBtn.disabled = false;
+                    exportBtn.innerText = originalText;
+                }
+            }, 50);
+        });
+
+        // ================= موزیک پلیر =================
         function buildSpectrumVisualizerLayoutNodes() {
             const grid = document.getElementById('spectrum-bars-grid');
             grid.innerHTML = '';
             for(let i=0; i<32; i++) {
-                const node = document.createElement('div');
-                node.className = 'w-1 bg-gradient-to-t from-rose-500 to-violet-600 rounded-t h-1 transition-all duration-70';
-                grid.appendChild(node);
+                const node = document.createElement('div'); node.className = 'w-1 bg-gradient-to-t from-rose-500 to-violet-600 rounded-t h-1 transition-all'; grid.appendChild(node);
             }
         }
 
@@ -847,68 +1401,51 @@
         function synchronizeVolumeGainLevel() {
             const targetVol = isMutedState ? 0 : (document.getElementById('slider-volume-node').value / 100);
             if (gainNodeController && audioContextInstance) {
-                const multiplier = liveOscillatorNode ? 0.20 : 1.0;
-                gainNodeController.gain.setValueAtTime(targetVol * multiplier, audioContextInstance.currentTime);
+                const multiplier = liveOscillatorNode ? 0.20 : 1.0; gainNodeController.gain.setValueAtTime(targetVol * multiplier, audioContextInstance.currentTime);
             }
-            document.getElementById('real-audio-element').volume = targetVol;
-            document.getElementById('real-audio-element').muted = isMutedState;
+            document.getElementById('real-audio-element').volume = targetVol; document.getElementById('real-audio-element').muted = isMutedState;
         }
 
         function triggerSelectTrackNode(index) {
             currentTrackIndex = index; currentTimeSec = 0; virtualPlaybackAccumulator = 0;
-            const track = coreTrackDatabase[currentTrackIndex];
-            terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
+            const track = coreTrackDatabase[currentTrackIndex]; terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
             
             if (track.audioBuffer) { currentDecodedAudioBuffer = track.audioBuffer; isNativeStreamingActive = false; }
             else if (track.url) { isNativeStreamingActive = true; currentDecodedAudioBuffer = null; document.getElementById('real-audio-element').src = track.url; }
             else { currentDecodedAudioBuffer = null; isNativeStreamingActive = false; }
 
-            document.getElementById('deck-track-title').textContent = track.title;
-            document.getElementById('deck-track-artist').textContent = track.artist;
-            document.getElementById('deck-cover-artwork').src = track.cover;
-            document.getElementById('label-time-total').textContent = renderTimeStringLayout(track.duration);
-            document.getElementById('premium-time-slider').max = Math.floor(track.duration);
-            document.getElementById('premium-time-slider').value = 0;
+            document.getElementById('deck-track-title').textContent = track.title; document.getElementById('deck-track-artist').textContent = track.artist; document.getElementById('deck-cover-artwork').src = track.cover; document.getElementById('label-time-total').textContent = renderTimeStringLayout(track.duration);
+            document.getElementById('premium-time-slider').max = Math.floor(track.duration); document.getElementById('premium-time-slider').value = 0;
 
             rebuildTracksLibraryViewUI(); generateLyricsListDOM();
-            if (isPlaying) {
-                virtualTimeTrackerBase = performance.now();
-                executeTrackPlaybackCore();
-            }
+            if (isPlaying) { virtualTimeTrackerBase = performance.now(); executeTrackPlaybackCore(); }
         }
 
         function renderTimeStringLayout(sec) {
-            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
-            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
         function rebuildTracksLibraryViewUI() {
             const list = document.getElementById('tracks-list-dom'); list.innerHTML = '';
             coreTrackDatabase.forEach((t, i) => {
-                const li = document.createElement('li');
-                li.className = `p-2 rounded-xl cursor-pointer text-xs flex justify-between ${i === currentTrackIndex ? 'text-rose-400 bg-slate-900 border border-rose-500/20 font-bold' : 'text-slate-400 hover:bg-slate-900/40'}`;
+                const li = document.createElement('li'); li.className = `p-2 rounded-xl cursor-pointer text-xs flex justify-between ${i === currentTrackIndex ? 'text-rose-400 bg-slate-900 border border-rose-500/20 font-bold' : 'text-slate-400 hover:bg-slate-900/40'}`;
                 li.innerHTML = `<span>🐾 ${t.title}</span><span class="text-[10px] opacity-60">${renderTimeStringLayout(t.duration)}</span>`;
-                li.addEventListener('click', () => triggerSelectTrackNode(i));
-                list.appendChild(li);
+                li.addEventListener('click', () => triggerSelectTrackNode(i)); list.appendChild(li);
             });
         }
 
         function generateLyricsListDOM() {
             const view = document.getElementById('lyrics-viewport'); view.innerHTML = '';
-            const track = coreTrackDatabase[currentTrackIndex];
-            if (!track.lyrics) return;
+            const track = coreTrackDatabase[currentTrackIndex]; if (!track.lyrics) return;
             Object.keys(track.lyrics).forEach(k => {
-                const div = document.createElement('div'); div.className = 'lyrics-track-line opacity-40 text-slate-400 text-xs hidden';
-                div.id = `line-node-key-${k}`; div.textContent = track.lyrics[k];
-                view.appendChild(div);
+                const div = document.createElement('div'); div.className = 'lyrics-track-line opacity-40 text-slate-400 text-xs hidden'; div.id = `line-node-key-${k}`; div.textContent = track.lyrics[k]; view.appendChild(div);
             });
             executeLyricsHighlightSync();
         }
 
         function executeLyricsHighlightSync() {
             const track = coreTrackDatabase[currentTrackIndex]; if (!track.lyrics) return;
-            let matchedKey = null;
-            Object.keys(track.lyrics).forEach(k => { if (currentTimeSec >= parseInt(k)) matchedKey = k; });
+            let matchedKey = null; Object.keys(track.lyrics).forEach(k => { if (currentTimeSec >= parseInt(k)) matchedKey = k; });
             if (matchedKey !== null) {
                 document.querySelectorAll('.lyrics-track-line').forEach(l => l.classList.add('hidden'));
                 const target = document.getElementById(`line-node-key-${matchedKey}`);
@@ -918,23 +1455,16 @@
 
         function handlePlayPauseMasterToggle() {
             bootstrapStudioAudioNodes();
-            const vinyl = document.getElementById('vinyl-disk-node');
-            const arm = document.getElementById('turntable-arm-lever');
+            const vinyl = document.getElementById('vinyl-disk-node'); const arm = document.getElementById('turntable-arm-lever');
             if (isPlaying) {
-                isPlaying = false;
-                document.getElementById('svg-ico-play').classList.remove('hidden');
-                document.getElementById('svg-ico-pause').classList.add('hidden');
-                vinyl.style.animationPlayState = 'paused'; vinyl.classList.remove('glowing-active');
-                arm.classList.remove('active');
+                isPlaying = false; document.getElementById('svg-ico-play').classList.remove('hidden'); document.getElementById('svg-ico-pause').classList.add('hidden');
+                vinyl.style.animationPlayState = 'paused'; vinyl.classList.remove('glowing-active'); arm.classList.remove('active');
                 terminateOscillatorSynth(); stopActiveBufferSource(); document.getElementById('real-audio-element').pause();
                 virtualPlaybackAccumulator += (performance.now() - virtualTimeTrackerBase) / 1000;
                 clearInterval(clockTimerTicker); clearInterval(spectrumVisualizerTicker);
             } else {
-                isPlaying = true;
-                document.getElementById('svg-ico-play').classList.add('hidden');
-                document.getElementById('svg-ico-pause').classList.remove('hidden');
-                vinyl.style.animationPlayState = 'running'; vinyl.classList.add('glowing-active');
-                arm.classList.add('active');
+                isPlaying = true; document.getElementById('svg-ico-play').classList.add('hidden'); document.getElementById('svg-ico-pause').classList.remove('hidden');
+                vinyl.style.animationPlayState = 'running'; vinyl.classList.add('glowing-active'); arm.classList.add('active');
                 virtualTimeTrackerBase = performance.now(); executeTrackPlaybackCore();
             }
         }
@@ -942,26 +1472,16 @@
         function executeTrackPlaybackCore() {
             if (clockTimerTicker) clearInterval(clockTimerTicker);
             if (spectrumVisualizerTicker) clearInterval(spectrumVisualizerTicker);
-            
-            // جلوگیری از تداخل چند صدایی با خاموش کردن و قطع اتصال سورس‌نود قبلی قبل از شروع سورس جدید
             stopActiveBufferSource();
             
-            const track = coreTrackDatabase[currentTrackIndex];
-            const speedRate = parseFloat(document.getElementById('playback-speed').value);
-            synchronizeVolumeGainLevel();
+            const track = coreTrackDatabase[currentTrackIndex]; const speedRate = parseFloat(document.getElementById('playback-speed').value); synchronizeVolumeGainLevel();
 
             if (currentDecodedAudioBuffer) {
-                activeBufferSourceNode = audioContextInstance.createBufferSource(); activeBufferSourceNode.buffer = currentDecodedAudioBuffer;
-                activeBufferSourceNode.playbackRate.setValueAtTime(speedRate, audioContextInstance.currentTime);
-                activeBufferSourceNode.connect(bassBiquadFilter); bassBiquadFilter.connect(midBiquadFilter);
-                midBiquadFilter.connect(trebleBiquadFilter); trebleBiquadFilter.connect(gainNodeController);
-                gainNodeController.connect(audioContextInstance.destination);
-                activeBufferSourceNode.start(0, currentTimeSec);
+                activeBufferSourceNode = audioContextInstance.createBufferSource(); activeBufferSourceNode.buffer = currentDecodedAudioBuffer; activeBufferSourceNode.playbackRate.setValueAtTime(speedRate, audioContextInstance.currentTime);
+                activeBufferSourceNode.connect(bassBiquadFilter); bassBiquadFilter.connect(midBiquadFilter); midBiquadFilter.connect(trebleBiquadFilter); trebleBiquadFilter.connect(gainNodeController); gainNodeController.connect(audioContextInstance.destination); activeBufferSourceNode.start(0, currentTimeSec);
             } else if (isNativeStreamingActive && track.url) {
                 document.getElementById('real-audio-element').playbackRate = speedRate;
-                if (currentTimeSec > 0) {
-                    try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(e) {}
-                }
+                if (currentTimeSec > 0) { try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(e) {} }
                 document.getElementById('real-audio-element').play();
             } else {
                 executeOscillatorSynthPlay(track.baseFreq || 300);
@@ -970,115 +1490,58 @@
             virtualTimeTrackerBase = performance.now();
             clockTimerTicker = setInterval(() => {
                 if (isUserDraggingSlider) return;
-                const delta = (performance.now() - virtualTimeTrackerBase) / 1000;
-                currentTimeSec = virtualPlaybackAccumulator + (delta * speedRate);
+                const delta = (performance.now() - virtualTimeTrackerBase) / 1000; currentTimeSec = virtualPlaybackAccumulator + (delta * speedRate);
                 
                 const maxLen = track.duration || 180;
                 if (currentTimeSec >= maxLen) {
-                    currentTimeSec = maxLen;
-                    document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec);
-                    document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec);
-                    clearInterval(clockTimerTicker);
-                    handleTrackCycleFinished();
-                    return;
+                    currentTimeSec = maxLen; document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec); document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec); clearInterval(clockTimerTicker); handleTrackCycleFinished(); return;
                 }
-
-                document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec);
-                document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec);
-                executeLyricsHighlightSync();
+                document.getElementById('label-time-current').textContent = renderTimeStringLayout(currentTimeSec); document.getElementById('premium-time-slider').value = Math.floor(currentTimeSec); executeLyricsHighlightSync();
             }, 250);
 
             const bars = document.querySelectorAll('#spectrum-bars-grid div');
             spectrumVisualizerTicker = setInterval(() => {
                 bars.forEach((b, idx) => {
-                    let h = Math.floor(Math.random() * (Math.sin(idx + currentTimeSec) * 12 + 16)) + 2;
-                    b.style.height = `${Math.max(2, Math.min(h, 48))}px`;
+                    let h = Math.floor(Math.random() * (Math.sin(idx + currentTimeSec) * 12 + 16)) + 2; b.style.height = `${Math.max(2, Math.min(h, 48))}px`;
                 });
             }, 90);
         }
 
         function handleTrackCycleFinished() {
-            currentTimeSec = 0; virtualPlaybackAccumulator = 0;
-            virtualTimeTrackerBase = performance.now();
-            document.getElementById('premium-time-slider').value = 0;
-            let next = currentTrackIndex + 1;
-            if (next >= coreTrackDatabase.length) next = 0;
-            triggerSelectTrackNode(next);
+            currentTimeSec = 0; virtualPlaybackAccumulator = 0; virtualTimeTrackerBase = performance.now(); document.getElementById('premium-time-slider').value = 0;
+            let next = currentTrackIndex + 1; if (next >= coreTrackDatabase.length) next = 0; triggerSelectTrackNode(next);
         }
 
         function terminateOscillatorSynth() { if (liveOscillatorNode) { try { liveOscillatorNode.stop(); }catch(e){} liveOscillatorNode = null; } }
-        
-        // پاکسازی و قطع گره بومی برای از بین بردن تداخل لایه‌های چندگانه صوتی در زمان اسکرول
-        function stopActiveBufferSource() { 
-            if (activeBufferSourceNode) { 
-                try { 
-                    activeBufferSourceNode.stop(); 
-                    activeBufferSourceNode.disconnect();
-                } catch(e){} 
-                activeBufferSourceNode = null; 
-            } 
-        }
+        function stopActiveBufferSource() { if (activeBufferSourceNode) { try { activeBufferSourceNode.stop(); activeBufferSourceNode.disconnect(); } catch(e){} activeBufferSourceNode = null; } }
 
         function executeOscillatorSynthPlay(freq) {
-            terminateOscillatorSynth();
-            liveOscillatorNode = audioContextInstance.createOscillator(); liveOscillatorNode.type = 'triangle';
-            liveOscillatorNode.frequency.setValueAtTime(freq, audioContextInstance.currentTime);
-            liveOscillatorNode.connect(gainNodeController); gainNodeController.connect(audioContextInstance.destination);
-            liveOscillatorNode.start();
+            terminateOscillatorSynth(); liveOscillatorNode = audioContextInstance.createOscillator(); liveOscillatorNode.type = 'triangle'; liveOscillatorNode.frequency.setValueAtTime(freq, audioContextInstance.currentTime); liveOscillatorNode.connect(gainNodeController); gainNodeController.connect(audioContextInstance.destination); liveOscillatorNode.start();
         }
 
-        function processRawBinaryDecodeSequence(arrayBuffer, title, artist, url) {
-            audioContextInstance.decodeAudioData(arrayBuffer, function(buf) {
-                coreTrackDatabase.push({
-                    title: title, artist: artist, duration: buf.duration,
-                    cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                    audioBuffer: buf, url: url || '', lyrics: { 0: "🎵 قطعه باینری با موفقیت لود شد 🐾" }
-                });
-                triggerSelectTrackNode(coreTrackDatabase.length - 1);
-            });
-        }
-
-        // =========================================================================
-        // 🎙️ فرآیند، کدهای پردازشی نئون و منطقی ادیت وویس (Voice Audio Lab) 🎙️
-        // =========================================================================
+        // ================= ادیت وویس =================
         function initVoiceAudioContext() {
-            if (!voiceAudioContext) {
-                voiceAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!voiceAudioContext) { voiceAudioContext = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (voiceAudioContext.state === 'suspended') voiceAudioContext.resume();
         }
 
         function renderVoiceWaveform(buffer) {
-            const container = document.getElementById('voice-waveform-canvas');
-            const placeholder = document.getElementById('voice-wave-placeholder');
-            container.innerHTML = '';
-            if (placeholder) placeholder.style.display = 'none';
+            const container = document.getElementById('voice-waveform-canvas'); const placeholder = document.getElementById('voice-wave-placeholder');
+            container.innerHTML = ''; if (placeholder) placeholder.style.display = 'none';
 
-            const rawData = buffer.getChannelData(0); 
-            const samples = 60; 
-            const blockSize = Math.floor(rawData.length / samples);
-            
+            const rawData = buffer.getChannelData(0); const samples = 60; const blockSize = Math.floor(rawData.length / samples);
             for (let i = 0; i < samples; i++) {
-                let blockStart = blockSize * i;
-                let sum = 0;
-                for (let j = 0; j < blockSize; j++) {
-                    sum += Math.abs(rawData[blockStart + j]);
-                }
-                let volume = sum / blockSize;
-                const bar = document.createElement('div');
-                bar.className = 'w-[4px] bg-cyan-400 rounded-full transition-all';
-                let height = Math.max(4, Math.floor(volume * 140));
-                bar.style.height = `${Math.min(height, 56)}px`;
-                container.appendChild(bar);
+                let blockStart = blockSize * i; let sum = 0;
+                for (let j = 0; j < blockSize; j++) { sum += Math.abs(rawData[blockStart + j]); }
+                let volume = sum / blockSize; const bar = document.createElement('div'); bar.className = 'w-[4px] bg-cyan-400 rounded-full transition-all';
+                let height = Math.max(4, Math.floor(volume * 140)); bar.style.height = `${Math.min(height, 56)}px`; container.appendChild(bar);
             }
-
-            document.getElementById('voice-trim-start').value = 0;
-            document.getElementById('voice-trim-end').value = buffer.duration.toFixed(1);
+            document.getElementById('voice-trim-start').value = 0; document.getElementById('voice-trim-end').value = buffer.duration.toFixed(2);
         }
 
         function playModifiedVoiceEngine() {
             if (!voiceAudioBuffer) return;
-            stopVoiceEngine();
-            initVoiceAudioContext();
+            stopVoiceEngine(); initVoiceAudioContext();
 
             const startTrim = parseFloat(document.getElementById('voice-trim-start').value) || 0;
             const endTrim = parseFloat(document.getElementById('voice-trim-end').value) || voiceAudioBuffer.duration;
@@ -1086,7 +1549,6 @@
 
             if (startTrim >= endTrim || startTrim > voiceAudioBuffer.duration) return;
 
-            // محاسبه و جداسازی بخش ادیت‌شده وویس
             const sampleRate = voiceAudioBuffer.sampleRate;
             const startSample = Math.floor(startTrim * sampleRate);
             const endSample = Math.floor(Math.min(endTrim, voiceAudioBuffer.duration) * sampleRate);
@@ -1094,38 +1556,24 @@
 
             if (frameCount <= 0) return;
 
-            const trimmedBuffer = voiceAudioContext.createBuffer(
-                voiceAudioBuffer.numberOfChannels,
-                frameCount,
-                sampleRate
-            );
+            const trimmedBuffer = voiceAudioContext.createBuffer(voiceAudioBuffer.numberOfChannels, frameCount, sampleRate);
 
             for (let channel = 0; channel < voiceAudioBuffer.numberOfChannels; channel++) {
-                const nowBuffering = trimmedBuffer.getChannelData(channel);
-                const originalData = voiceAudioBuffer.getChannelData(channel);
-                for (let i = 0; i < frameCount; i++) {
-                    nowBuffering[i] = originalData[startSample + i];
-                }
+                const nowBuffering = trimmedBuffer.getChannelData(channel); const originalData = voiceAudioBuffer.getChannelData(channel);
+                for (let i = 0; i < frameCount; i++) { nowBuffering[i] = originalData[startSample + i]; }
             }
 
-            voiceActiveSource = voiceAudioContext.createBufferSource();
-            voiceActiveSource.buffer = trimmedBuffer;
-
-            // پیاده‌سازی گره‌های اختصاصی افکت نئون صوتی
+            voiceActiveSource = voiceAudioContext.createBufferSource(); voiceActiveSource.buffer = trimmedBuffer;
             let lastNode = voiceActiveSource;
 
             if (effectType === 'robot') {
-                const biquad = voiceAudioContext.createBiquadFilter();
-                biquad.type = 'peaking'; biquad.frequency.value = 120; biquad.gain.value = 25;
+                const biquad = voiceAudioContext.createBiquadFilter(); biquad.type = 'peaking'; biquad.frequency.value = 120; biquad.gain.value = 25;
                 lastNode.connect(biquad); lastNode = biquad;
             } else if (effectType === 'echo') {
-                const delay = voiceAudioContext.createDelay(); delay.delayTime.value = 0.35;
-                const feedback = voiceAudioContext.createGain(); feedback.gain.value = 0.45;
-                lastNode.connect(delay); delay.connect(feedback); feedback.connect(delay);
-                lastNode.connect(voiceAudioContext.destination); delay.connect(voiceAudioContext.destination);
+                const delay = voiceAudioContext.createDelay(); delay.delayTime.value = 0.35; const feedback = voiceAudioContext.createGain(); feedback.gain.value = 0.45;
+                lastNode.connect(delay); delay.connect(feedback); feedback.connect(delay); lastNode.connect(voiceAudioContext.destination); delay.connect(voiceAudioContext.destination);
             } else if (effectType === 'radio') {
-                const bandpass = voiceAudioContext.createBiquadFilter();
-                bandpass.type = 'bandpass'; bandpass.frequency.value = 1500; bandpass.Q.value = 3.5;
+                const bandpass = voiceAudioContext.createBiquadFilter(); bandpass.type = 'bandpass'; bandpass.frequency.value = 1500; bandpass.Q.value = 3.5;
                 lastNode.connect(bandpass); lastNode = bandpass;
             } else if (effectType === 'highpitch') {
                 voiceActiveSource.playbackRate.value = 1.6;
@@ -1133,123 +1581,278 @@
                 voiceActiveSource.playbackRate.value = 0.65;
             }
 
-            const voiceGain = voiceAudioContext.createGain();
-            voiceGain.gain.value = 1.0;
-            lastNode.connect(voiceGain);
-            voiceGain.connect(voiceAudioContext.destination);
-
+            const voiceGain = voiceAudioContext.createGain(); voiceGain.gain.value = 1.0;
+            lastNode.connect(voiceGain); voiceGain.connect(voiceAudioContext.destination);
             voiceActiveSource.start(0);
         }
 
-        function stopVoiceEngine() {
-            if (voiceActiveSource) {
-                try { voiceActiveSource.stop(); } catch(e){}
-                voiceActiveSource = null;
+        function stopVoiceEngine() { if (voiceActiveSource) { try { voiceActiveSource.stop(); } catch(e){} voiceActiveSource = null; } }
+
+        function renderTrimmedAndEffectedBuffer() {
+            if (!voiceAudioBuffer) return null;
+            initVoiceAudioContext();
+            
+            const startTrim = parseFloat(document.getElementById('voice-trim-start').value) || 0;
+            const endTrim = parseFloat(document.getElementById('voice-trim-end').value) || voiceAudioBuffer.duration;
+            const effectType = document.getElementById('select-voice-effect').value;
+            
+            const sampleRate = voiceAudioBuffer.sampleRate;
+            const startSample = Math.floor(startTrim * sampleRate);
+            const endSample = Math.floor(Math.min(endTrim, voiceAudioBuffer.duration) * sampleRate);
+            const frameCount = endSample - startSample;
+            
+            if (frameCount <= 0) return null;
+            
+            const resultBuffer = voiceAudioContext.createBuffer(voiceAudioBuffer.numberOfChannels, frameCount, sampleRate);
+            
+            for (let channel = 0; channel < voiceAudioBuffer.numberOfChannels; channel++) {
+                const outData = resultBuffer.getChannelData(channel);
+                const inData = voiceAudioBuffer.getChannelData(channel);
+                for (let i = 0; i < frameCount; i++) {
+                    let sample = inData[startSample + i];
+                    
+                    if (effectType === 'robot') {
+                        sample = Math.sin(i * 0.1) * Math.abs(sample);
+                    } else if (effectType === 'radio') {
+                        sample = sample * 1.3; 
+                    }
+                    outData[i] = sample;
+                }
+            }
+            return resultBuffer;
+        }
+
+        document.getElementById('upload-voice-file').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            displayToastNotification("⏳ در حال بارگذاری و رمزگشایی فایل...");
+            
+            try {
+                initVoiceAudioContext();
+                const arrayBuffer = await file.arrayBuffer();
+                
+                const decodedBuffer = await new Promise((resolve, reject) => {
+                    voiceAudioContext.decodeAudioData(arrayBuffer, resolve, reject);
+                });
+                
+                voiceAudioBuffer = decodedBuffer;
+                renderVoiceWaveform(voiceAudioBuffer);
+                document.getElementById('voice-trim-start').value = 0;
+                document.getElementById('voice-trim-end').value = voiceAudioBuffer.duration.toFixed(2);
+                
+                displayToastNotification(`✅ "${file.name}" بارگذاری شد (${voiceAudioBuffer.duration.toFixed(1)}s)`);
+            } catch (err) {
+                console.error('Audio decode error:', err);
+                displayToastNotification("❌ خطا: فرمت پشتیبانی نمی‌شود");
+            }
+            
+            e.target.value = '';
+        });
+
+        document.getElementById('btn-play-voice').addEventListener('click', () => {
+            if (!voiceAudioBuffer) { displayToastNotification("⚠️ ابتدا فایل بارگذاری کنید"); return; }
+            playModifiedVoiceEngine();
+            displayToastNotification("▶️ در حال پخش...");
+        });
+
+        document.getElementById('btn-stop-voice').addEventListener('click', () => {
+            stopVoiceEngine();
+            displayToastNotification("⏹️ متوقف شد");
+        });
+
+        document.getElementById('btn-reverse-voice').addEventListener('click', () => {
+            if (!voiceAudioBuffer) { displayToastNotification("⚠️ ابتدا فایل بارگذاری کنید"); return; }
+            
+            initVoiceAudioContext();
+            const numChannels = voiceAudioBuffer.numberOfChannels;
+            const length = voiceAudioBuffer.length;
+            const sampleRate = voiceAudioBuffer.sampleRate;
+            
+            const reversedBuffer = voiceAudioContext.createBuffer(numChannels, length, sampleRate);
+            
+            for (let ch = 0; ch < numChannels; ch++) {
+                const original = voiceAudioBuffer.getChannelData(ch);
+                const reversed = reversedBuffer.getChannelData(ch);
+                for (let i = 0; i < length; i++) {
+                    reversed[i] = original[length - 1 - i];
+                }
+            }
+            
+            voiceAudioBuffer = reversedBuffer;
+            renderVoiceWaveform(voiceAudioBuffer);
+            document.getElementById('voice-trim-start').value = 0;
+            document.getElementById('voice-trim-end').value = voiceAudioBuffer.duration.toFixed(2);
+            
+            displayToastNotification("🔄 وویس معکوس شد");
+        });
+
+        document.getElementById('btn-record-voice').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-record-voice');
+            const icon = document.getElementById('record-icon');
+            const text = document.getElementById('record-text');
+            const timer = document.getElementById('voice-record-timer');
+            
+            if (isRecording && mediaRecorder) {
+                mediaRecorder.stop();
+                isRecording = false;
+                clearInterval(recordTimerInterval);
+                timer.classList.add('hidden');
+                btn.classList.remove('bg-rose-700', 'animate-pulse');
+                btn.classList.add('bg-red-600');
+                icon.textContent = '🔴';
+                text.textContent = 'ضبط با میکروفون';
+                displayToastNotification("⏹️ ضبط متوقف شد، در حال پردازش...");
+                return;
+            }
+            
+            try {
+                initVoiceAudioContext();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = (ev) => {
+                    if (ev.data && ev.data.size > 0) recordedChunks.push(ev.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    stream.getTracks().forEach(t => t.stop());
+                    
+                    if (recordedChunks.length === 0) {
+                        displayToastNotification("⚠️ هیچ صدایی ضبط نشد");
+                        return;
+                    }
+                    
+                    try {
+                        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                        const arrayBuffer = await blob.arrayBuffer();
+                        
+                        const decodedBuffer = await new Promise((resolve, reject) => {
+                            voiceAudioContext.decodeAudioData(arrayBuffer, resolve, reject);
+                        });
+                        
+                        voiceAudioBuffer = decodedBuffer;
+                        renderVoiceWaveform(voiceAudioBuffer);
+                        document.getElementById('voice-trim-start').value = 0;
+                        document.getElementById('voice-trim-end').value = voiceAudioBuffer.duration.toFixed(2);
+                        
+                        displayToastNotification(`✅ وویس ضبط شد (${voiceAudioBuffer.duration.toFixed(1)}s)`);
+                    } catch (err) {
+                        console.error('Decode error:', err);
+                        displayToastNotification("❌ خطا در پردازش صدا");
+                    }
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                recordTimeSec = 0;
+                
+                btn.classList.remove('bg-red-600');
+                btn.classList.add('bg-rose-700', 'animate-pulse');
+                icon.textContent = '⏹️';
+                text.textContent = 'توقف ضبط';
+                timer.classList.remove('hidden');
+                timer.textContent = '00:00';
+                
+                recordTimerInterval = setInterval(() => {
+                    recordTimeSec++;
+                    const m = Math.floor(recordTimeSec / 60).toString().padStart(2, '0');
+                    const s = (recordTimeSec % 60).toString().padStart(2, '0');
+                    timer.textContent = `${m}:${s}`;
+                }, 1000);
+                
+                displayToastNotification("🎙️ در حال ضبط...");
+                
+            } catch (err) {
+                console.error('Microphone error:', err);
+                displayToastNotification("❌ دسترسی به میکروفون رد شد");
+            }
+        });
+
+        async function downloadVoiceAsMP3(finalBuffer, filename) {
+            if (typeof lamejs === 'undefined') {
+                displayToastNotification("❌ کتابخانه lamejs بارگذاری نشده");
+                return;
+            }
+            
+            try {
+                displayToastNotification("⏳ در حال تبدیل به MP3...");
+                
+                const numChannels = Math.min(2, finalBuffer.numberOfChannels);
+                const sampleRate = finalBuffer.sampleRate;
+                const mp3encoder = new lamejs.Mp3Encoder(numChannels, sampleRate, 128);
+                
+                const mp3Data = [];
+                const sampleBlockSize = 1152;
+                
+                const leftChannel = finalBuffer.getChannelData(0);
+                const rightChannel = numChannels === 2 ? finalBuffer.getChannelData(1) : leftChannel;
+                
+                const leftSamples = new Int16Array(leftChannel.length);
+                const rightSamples = numChannels === 2 ? new Int16Array(rightChannel.length) : leftSamples;
+                
+                for (let i = 0; i < leftChannel.length; i++) {
+                    let s = Math.max(-1, Math.min(1, leftChannel[i]));
+                    leftSamples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                }
+                if (numChannels === 2) {
+                    for (let i = 0; i < rightChannel.length; i++) {
+                        let s = Math.max(-1, Math.min(1, rightChannel[i]));
+                        rightSamples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    }
+                }
+                
+                for (let i = 0; i < leftSamples.length; i += sampleBlockSize) {
+                    const leftChunk = leftSamples.subarray(i, i + sampleBlockSize);
+                    const rightChunk = numChannels === 2 
+                        ? rightSamples.subarray(i, i + sampleBlockSize) 
+                        : leftChunk;
+                    
+                    const mp3buf = numChannels === 2
+                        ? mp3encoder.encodeBuffer(leftChunk, rightChunk)
+                        : mp3encoder.encodeBuffer(leftChunk);
+                    
+                    if (mp3buf.length > 0) mp3Data.push(mp3buf);
+                }
+                
+                const mp3buf = mp3encoder.flush();
+                if (mp3buf.length > 0) mp3Data.push(mp3buf);
+                
+                const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.download = filename;
+                a.href = url;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                
+                displayToastNotification("🎉 فایل MP3 دانلود شد!");
+                
+            } catch (err) {
+                console.error('MP3 encode error:', err);
+                displayToastNotification("❌ خطا: " + err.message);
             }
         }
 
-        // معکوس‌سازی باینری سیگنال‌های وویس (Reverse Effect)
-        document.getElementById('btn-reverse-voice').addEventListener('click', () => {
-            if (!voiceAudioBuffer) {
-                displayToastNotification("⚠️ لطفا ابتدا یک وویس ضبط یا بارگذاری کنید!");
-                return;
-            }
-            displayToastNotification("⏳ در حال معکوس‌سازی دیجیتال کانال‌های وویس...");
-            for (let channel = 0; channel < voiceAudioBuffer.numberOfChannels; channel++) {
-                const data = voiceAudioBuffer.getChannelData(channel);
-                Array.prototype.reverse.call(data);
-            }
-            renderVoiceWaveform(voiceAudioBuffer);
-            displayToastNotification("🎉 افکت معکوس‌سازی بر روی وویس با موفقیت اعمال شد!");
-        });
-
-        // مدیریت فرآیند ضبط مستقیم وویس با میکروفون کلاینت
-        document.getElementById('btn-record-voice').addEventListener('click', async () => {
-            if (!isRecording) {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    displayToastNotification("❌ مرورگر شما از ضبط صدا پشتیبانی نمی‌کند.");
-                    return;
-                }
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    initVoiceAudioContext();
-                    recordedChunks = [];
-                    mediaRecorder = new MediaRecorder(stream);
-                    
-                    mediaRecorder.ondataavailable = (e) => {
-                        if (e.data.size > 0) recordedChunks.push(e.data);
-                    };
-
-                    mediaRecorder.onstop = async () => {
-                        const blob = new Blob(recordedChunks, { type: 'audio/wav' });
-                        const arrayBuffer = await blob.arrayBuffer();
-                        voiceAudioContext.decodeAudioData(arrayBuffer, (buf) => {
-                            voiceAudioBuffer = buf;
-                            renderVoiceWaveform(buf);
-                            displayToastNotification("🎙️ وویس ضبط شده با موفقیت بافر و آماده ادیت شد!");
-                        });
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    recordTimeSec = 0;
-                    document.getElementById('voice-record-timer').classList.remove('hidden');
-                    document.getElementById('record-icon').innerText = '⏹️';
-                    document.getElementById('record-text').innerText = 'توقف ضبط';
-                    
-                    recordTimerInterval = setInterval(() => {
-                        recordTimeSec++;
-                        const m = Math.floor(recordTimeSec / 60).toString().padStart(2, '0');
-                        const s = (recordTimeSec % 60).toString().padStart(2, '0');
-                        document.getElementById('voice-record-timer').innerText = `${m}:${s}`;
-                    }, 1000);
-
-                } catch (err) {
-                    displayToastNotification("⚠️ دسترسی به میکروفون رد شد یا وجود ندارد.");
-                }
-            } else {
-                if (mediaRecorder && isRecording) {
-                    mediaRecorder.stop();
-                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
-                    isRecording = false;
-                    clearInterval(recordTimerInterval);
-                    document.getElementById('voice-record-timer').classList.add('hidden');
-                    document.getElementById('record-icon').innerText = '🔴';
-                    document.getElementById('record-text').innerText = 'ضبط با میکروفون';
-                }
-            }
-        });
-
-        document.getElementById('upload-voice-file').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            initVoiceAudioContext();
-            displayToastNotification("⏳ در حال پردازش و بافر کردن فایل وویس...");
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                voiceAudioContext.decodeAudioData(event.target.result, (buf) => {
-                    voiceAudioBuffer = buf;
-                    renderVoiceWaveform(buf);
-                    displayToastNotification("🎉 فایل وویس با موفقیت لود و آماده افکت‌گذاری شد!");
-                }, () => {
-                    displayToastNotification("❌ خطای رمزگشایی؛ فرمت صوتی وویس معتبر نیست.");
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        document.getElementById('btn-play-voice').addEventListener('click', playModifiedVoiceEngine);
-        document.getElementById('btn-stop-voice').addEventListener('click', stopVoiceEngine);
-
-        // تولید هدر باینری و دانلود وویس نهایی اصلاح‌شده به صورت استاندارد WAV
         document.getElementById('btn-download-voice').addEventListener('click', () => {
-            if (!voiceAudioBuffer) {
-                displayToastNotification("⚠️ وویسی برای دانلود رندر نشده است!");
+            initVoiceAudioContext();
+            const finalBuffer = renderTrimmedAndEffectedBuffer();
+            if (!finalBuffer) { displayToastNotification("⚠️ وویسی برای دانلود وجود ندارد!"); return; }
+            
+            const selectedFormat = document.querySelector('input[name="voice-output-format"]:checked')?.value || 'wav';
+            
+            if (selectedFormat === 'mp3') {
+                downloadVoiceAsMP3(finalBuffer, `edited-voice-${Date.now()}.mp3`);
                 return;
             }
-            // تبدیل بافر فعلی به قالب لینک باینری استاندارد صوتی
-            const bufferLen = voiceAudioBuffer.length;
-            const numOfChan = voiceAudioBuffer.numberOfChannels;
-            const sampleRate = voiceAudioBuffer.sampleRate;
+            
+            const bufferLen = finalBuffer.length;
+            const numOfChan = finalBuffer.numberOfChannels;
+            const sampleRate = finalBuffer.sampleRate;
             const bitsPerSample = 16;
             const byteRate = (sampleRate * numOfChan * bitsPerSample) / 8;
             const blockAlign = (numOfChan * bitsPerSample) / 8;
@@ -1259,7 +1862,6 @@
             const arrayBuffer = new ArrayBuffer(totalLen);
             const view = new DataView(arrayBuffer);
 
-            // نوشتن هدرهای فایل صوتی کلاینت‌ساید WAV
             function writeString(offset, string) { for (let i = 0; i < string.length; i++) { view.setUint8(offset + i, string.charCodeAt(i)); } }
             writeString(0, 'RIFF'); view.setUint32(4, totalLen - 8, true); writeString(8, 'WAVE');
             writeString(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
@@ -1267,202 +1869,98 @@
             view.setUint32(28, byteRate, true); view.setUint16(32, blockAlign, true);
             view.setUint16(34, bitsPerSample, true); writeString(36, 'data'); view.setUint32(40, wavDataLen, true);
 
-            // انباشت داده‌های کانال دیجیتال صوتی روی هدر باینری
             let offset = 44;
             const dataChannels = [];
-            for (let i = 0; i < numOfChan; i++) dataChannels.push(voiceAudioBuffer.getChannelData(i));
+            for (let i = 0; i < numOfChan; i++) dataChannels.push(finalBuffer.getChannelData(i));
 
             for (let i = 0; i < bufferLen; i++) {
                 for (let channel = 0; channel < numOfChan; channel++) {
                     let sample = dataChannels[channel][i];
                     sample = Math.max(-1, Math.min(1, sample));
-                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-                    offset += 2;
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true); offset += 2;
                 }
             }
 
             const blob = new Blob([view], { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.download = 'edited-voice.wav'; a.href = url; a.click();
+            const a = document.createElement('a'); 
+            a.download = `edited-voice-${Date.now()}.wav`; 
+            a.href = url; 
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            displayToastNotification("🎉 فایل WAV دانلود شد!");
         });
 
-        // ================= رویدادها و شنودگرهای پلتفرم =================
+        // ================= رویدادهای مشترک =================
         const premiumTimeSlider = document.getElementById('premium-time-slider');
-        
         premiumTimeSlider.addEventListener('input', () => {
-            isUserDraggingSlider = true;
-            document.getElementById('label-time-current').textContent = renderTimeStringLayout(parseInt(premiumTimeSlider.value));
+            isUserDraggingSlider = true; document.getElementById('label-time-current').textContent = renderTimeStringLayout(parseInt(premiumTimeSlider.value));
         });
 
         premiumTimeSlider.addEventListener('change', () => {
-            isUserDraggingSlider = false;
-            currentTimeSec = parseInt(premiumTimeSlider.value);
-            virtualPlaybackAccumulator = currentTimeSec;
-            virtualTimeTrackerBase = performance.now();
-            
-            if (isNativeStreamingActive) {
-                try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(err) {}
-            }
-            
-            if (isPlaying) {
-                executeTrackPlaybackCore();
-            } else {
-                executeLyricsHighlightSync();
-            }
+            isUserDraggingSlider = false; currentTimeSec = parseInt(premiumTimeSlider.value); virtualPlaybackAccumulator = currentTimeSec; virtualTimeTrackerBase = performance.now();
+            if (isNativeStreamingActive) { try { document.getElementById('real-audio-element').currentTime = currentTimeSec; } catch(err) {} }
+            if (isPlaying) { executeTrackPlaybackCore(); } else { executeLyricsHighlightSync(); }
         });
 
-        // شنودگر بهبودیافته فایل لوکال گربول پلیر اولترا برای دیکد و بافرینگ امن
         document.getElementById('input-local-file').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            bootstrapStudioAudioNodes();
-            displayToastNotification("⏳ در حال پردازش فایل لوکال...");
-
+            const file = e.target.files[0]; if (!file) return;
+            bootstrapStudioAudioNodes(); displayToastNotification("⏳ در حال پردازش...");
             const reader = new FileReader();
             reader.onload = (event) => {
                 audioContextInstance.decodeAudioData(event.target.result, (buf) => {
-                    // افزودن ترک جدید به دیتابیس بومی به صورت لوکال بافر
                     coreTrackDatabase.push({
-                        title: file.name.replace(/\.[^/.]+$/, ""),
-                        artist: "فایل صوتی محلی کاربر",
-                        duration: buf.duration,
-                        cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                        audioBuffer: buf,
-                        lyrics: { 0: "🐾 قطعه لوکال با موفقیت رمزگشایی شد." }
+                        title: file.name.replace(/\.[^/.]+$/, ""), artist: "فایل صوتی محلی کاربر", duration: buf.duration,
+                        cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", audioBuffer: buf, lyrics: { 0: "🐾 قطعه لوکال بارگذاری شد." }
                     });
-                    
-                    displayToastNotification("🎉 فایل صوتی با موفقیت بارگذاری شد!");
-                    triggerSelectTrackNode(coreTrackDatabase.length - 1);
-                }, (err) => {
-                    displayToastNotification("❌ خطا در رمزگشایی فایل صوتی.");
-                    console.error(err);
-                });
+                    displayToastNotification("🎉 فایل بارگذاری شد!"); triggerSelectTrackNode(coreTrackDatabase.length - 1);
+                }, (err) => { displayToastNotification("❌ خطا در رمزگشایی"); });
             };
             reader.readAsArrayBuffer(file);
+            e.target.value = '';
         });
 
-        // ثبت لینک مستقیم صوتی
         document.getElementById('btn-inject-link').addEventListener('click', () => {
-            const urlInput = document.getElementById('input-audio-url').value.trim();
-            if (!urlInput) return;
+            const urlInput = document.getElementById('input-audio-url').value.trim(); if (!urlInput) return;
             coreTrackDatabase.push({
-                title: "قطعه تزریق شده وب",
-                artist: "سیگنال مستقیم URL",
-                duration: 180, 
-                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop",
-                url: urlInput,
-                lyrics: { 0: "🐾 در حال استریم آنلاین سیگنال وب..." }
+                title: "قطعه تزریق شده وب", artist: "سیگنال مستقیم URL", duration: 180, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", url: urlInput, lyrics: { 0: "🐾 در حال استریم آنلاین..." }
             });
-            displayToastNotification("🔗 لینک مستقیم ثبت شد.");
-            triggerSelectTrackNode(coreTrackDatabase.length - 1);
+            displayToastNotification("🔗 لینک ثبت شد."); triggerSelectTrackNode(coreTrackDatabase.length - 1);
         });
 
-        // رویداد کنترل سرعت پخش
         document.getElementById('playback-speed').addEventListener('change', () => {
-            if (isPlaying) {
-                virtualPlaybackAccumulator = currentTimeSec;
-                executeTrackPlaybackCore();
-            }
+            if (isPlaying) { virtualPlaybackAccumulator = currentTimeSec; executeTrackPlaybackCore(); }
         });
 
-        // دکمه لایک
         document.getElementById('btn-favorite-heart').addEventListener('click', function() {
-            const track = coreTrackDatabase[currentTrackIndex];
-            track.liked = !track.liked;
-            this.textContent = track.liked ? "❤️" : "🤍";
-            this.style.color = track.liked ? "#ff6b6b" : "#64748b";
+            const track = coreTrackDatabase[currentTrackIndex]; track.liked = !track.liked; this.textContent = track.liked ? "❤️" : "🤍"; this.style.color = track.liked ? "#ff6b6b" : "#64748b";
         });
 
-        // مدیریت میوت و صدا
         document.getElementById('btn-mute-switch').addEventListener('click', () => {
-            isMutedState = !isMutedState;
-            document.getElementById('btn-mute-switch').textContent = isMutedState ? "🔇" : "🔊";
-            synchronizeVolumeGainLevel();
+            isMutedState = !isMutedState; document.getElementById('btn-mute-switch').textContent = isMutedState ? "🔇" : "🔊"; synchronizeVolumeGainLevel();
         });
         document.getElementById('slider-volume-node').addEventListener('input', synchronizeVolumeGainLevel);
-
-        // ناوبری ترک‌ها
         document.getElementById('btn-master-trigger-play').addEventListener('click', handlePlayPauseMasterToggle);
         document.getElementById('btn-prev-node').addEventListener('click', () => {
-            let prev = currentTrackIndex - 1;
-            if (prev < 0) prev = coreTrackDatabase.length - 1;
-            triggerSelectTrackNode(prev);
+            let prev = currentTrackIndex - 1; if (prev < 0) prev = coreTrackDatabase.length - 1; triggerSelectTrackNode(prev);
         });
         document.getElementById('btn-next-node').addEventListener('click', () => {
-            let next = currentTrackIndex + 1;
-            if (next >= coreTrackDatabase.length) next = 0;
-            triggerSelectTrackNode(next);
+            let next = currentTrackIndex + 1; if (next >= coreTrackDatabase.length) next = 0; triggerSelectTrackNode(next);
         });
 
-        // شنودگر درگ و کلیک لایه‌های روی بوم استیکر
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            const activeFrame = frames[activeFrameIndex];
-            let target = null;
-            if (activeFrame) {
-                for(let i=activeFrame.layers.length-1; i>=0; i--) {
-                    let l = activeFrame.layers[i];
-                    if (Math.sqrt(Math.pow(pos.x - l.x, 2) + Math.pow(pos.y - l.y, 2)) < 40) { target = l; break; }
-                }
-            }
-            if (target) { isDragging = true; selectedLayerId = target.id; startX = pos.x - target.x; startY = pos.y - target.y; }
-            else { selectedLayerId = null; }
-            updateStickerUI(); drawCanvas();
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDragging && selectedLayerId) {
-                const rect = canvas.getBoundingClientRect();
-                const l = frames[activeFrameIndex].layers.find(l => l.id === selectedLayerId);
-                if (l) { l.x = (e.clientX - rect.left) - startX; l.y = (e.clientY - rect.top) - startY; drawCanvas(); }
-            }
-        });
-        canvas.addEventListener('mouseup', () => isDragging = false);
-
-        document.getElementById('btn-add-text').addEventListener('click', () => {
-            const val = document.getElementById('text-input').value.trim(); if(!val) return;
-            frames[activeFrameIndex].layers.push({ id: generateId(), type: 'text', content: val, x: 200, y: 200, scale: 100, rotate: 0, color: '#ffffff' });
-            document.getElementById('text-input').value = ''; updateStickerUI(); drawCanvas();
-        });
-
-        window.addShapeLayer = function(type) {
-            frames[activeFrameIndex].layers.push({ id: generateId(), type: 'shape', shapeType: type, x: 200, y: 200, scale: 100, rotate: 0, fillColor: document.getElementById('shape-fill-color').value });
-            updateStickerUI(); drawCanvas();
-        };
-
-        // هندلر خروجی متحرک GIF کلاینت‌ساید استیکرها
-        document.getElementById('btn-export-gif').addEventListener('click', () => {
-            if (typeof gifshot === 'undefined') {
-                showToast('خطا: کتابخانه پردازش انیمیشن بارگذاری نشده است.');
-                return;
-            }
-            showToast('در حال رندر و پردازش فریم‌های متحرک استیکر GIF...');
-            const compiled = [];
-            const tempCnv = document.createElement('canvas'); tempCnv.width = 400; tempCnv.height = 400;
-            const tempCtx = tempCnv.getContext('2d');
-            for (let i = 0; i < frames.length; i++) {
-                tempCtx.clearRect(0,0,400,400);
-                frames[i].layers.forEach(l => {
-                    tempCtx.save(); tempCtx.translate(l.x, l.y);
-                    if(l.type==='text') { tempCtx.font="bold 28px Vazirmatn"; tempCtx.fillStyle=l.color; tempCtx.fillText(l.content, 0,0); }
-                    else if(l.type==='shape') { tempCtx.fillStyle=l.fillColor; tempCtx.fillRect(-30,-30,60,60); }
-                    tempCtx.restore();
-                });
-                compiled.push(tempCnv.toDataURL('image/png'));
-            }
-            gifshot.createGIF({ images: compiled, gifWidth: 400, gifHeight: 400, interval: 0.15 }, function(obj) {
-                if(!obj.error) { const a = document.createElement('a'); a.download='animated-sticker.gif'; a.href=obj.image; a.click(); showToast('فایل GIF شفاف استیکر با موفقیت رندر شد! 🎉'); }
-            });
-        });
-
-        // لود بارگذاری ساختار اولیه پلتفرم
         window.onload = function() {
-            frames[0].layers.push({ id: generateId(), type: 'text', content: 'استودیو گربول 🐾', x: 200, y: 180, scale: 100, rotate: 0, color: '#6366f1' });
-            buildSpectrumVisualizerLayoutNodes();
-            triggerSelectTrackNode(0);
-            updateStickerUI();
-            drawCanvas();
+            frames[0].layers.push({ id: generateId(), type: 'text', content: 'استودیو گربول 🐾', x: 200, y: 180, scale: 100, rotate: 0, rotateX: 0, rotateY: 0, opacity: 100, filter: 'none', color: '#6366f1', strokeColor: '#ffffff', strokeWidth: 2 });
+            buildSpectrumVisualizerLayoutNodes(); triggerSelectTrackNode(0); updateStickerUI();
+            setInterval(() => { if(!isPlayingGif) drawCanvas(); }, 30);
+            
+            // بررسی اولیه gifshot در پس‌زمینه
+            ensureGifshotLoaded().then(() => {
+                console.log('✅ gifshot آماده است');
+            }).catch((err) => {
+                console.warn('⚠️ gifshot هنوز لود نشده:', err);
+            });
         };
     </script>
 </body>
