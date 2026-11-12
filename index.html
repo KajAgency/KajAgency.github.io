@@ -108,6 +108,92 @@
             50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
         }
         .rendering-active { animation: pulseBorder 1.5s infinite; }
+
+        /* استایل‌های بخش دانشنامه ممل‌پدیا */
+        .wiki-frame-wrapper {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+        .wiki-frame-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .wiki-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fdf6ec, #ffe4cc);
+            transition: opacity 0.4s;
+            font-weight: 700;
+            color: #e56b2c;
+            z-index: 10;
+        }
+        .wiki-loader .spin {
+            font-size: 3.5rem;
+            animation: rot 1.2s linear infinite;
+        }
+        @keyframes rot { to { transform: rotate(360deg); } }
+        .wiki-search-input {
+            background: #0f172a;
+            border: 2px solid #f97316;
+            border-radius: 999px;
+            padding: 12px 20px;
+            color: #f1f5f9;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .wiki-search-input:focus {
+            border-color: #fb923c;
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2);
+        }
+        .wiki-search-input::placeholder { color: #64748b; }
+        .wiki-btn-primary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+            white-space: nowrap;
+        }
+        .wiki-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 26px rgba(249, 115, 22, 0.55);
+        }
+        .wiki-btn-outline {
+            background: transparent;
+            color: #fb923c;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 999px;
+            border: 2px solid #f97316;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .wiki-btn-outline:hover {
+            background: #f97316;
+            color: white;
+        }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen p-4 md:p-8 flex flex-col gap-8 overflow-x-hidden selection:bg-indigo-500/30">
@@ -548,6 +634,45 @@
     </section>
 
     <!-- ========================================================================= -->
+    <!-- 📚 بخش جدید: دانشنامه ممل‌پدیا (فقط ویکی‌پدیا امبد شده) -->
+    <!-- ========================================================================= -->
+    <section class="max-w-[1500px] w-full mx-auto mt-8 mb-4">
+        <div class="glass-panel rounded-[30px] p-4 md:p-6 border-2 border-orange-500/40 shadow-2xl">
+            <div class="flex items-center justify-between gap-3 border-b border-orange-500/20 pb-3 mb-4 flex-wrap">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🐱</span>
+                    <div>
+                        <h2 class="text-xl font-black bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">دانشنامه ممل‌پدیا</h2>
+                        <p class="text-xs text-slate-400 mt-1">ویکی‌پدیا مستقیم داخل سایت — بدون ترک صفحه!</p>
+                    </div>
+                </div>
+                <span class="text-[10px] bg-orange-950 text-orange-300 border border-orange-900 px-3 py-1 rounded-full font-bold">🐾 دانشنامهٔ آزاد با تم گربه‌ای</span>
+            </div>
+
+            <div class="bg-slate-950/60 rounded-2xl p-4 border border-slate-800 mb-4">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <input type="text" id="wiki-search-input" placeholder="🔎 مثلاً: گربه ایرانی..." class="wiki-search-input flex-1 min-w-[200px]" autocomplete="off">
+                    <button id="wiki-search-btn" class="wiki-btn-primary">جستجو</button>
+                    <button id="wiki-random-btn" class="wiki-btn-outline">🎲 شانس</button>
+                </div>
+            </div>
+
+            <div class="wiki-frame-wrapper" style="height: 75vh; min-height: 600px;">
+                <iframe id="wiki-iframe" 
+                        src="https://fa.wikipedia.org/wiki/%DA%AF%D8%B1%D8%A8%D9%87"
+                        title="ویکی‌پدیا - دانشنامه ممل‌پدیا"
+                        referrerpolicy="no-referrer"
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals">
+                </iframe>
+                <div class="wiki-loader" id="wiki-loader">
+                    <span class="spin">🐾</span>
+                    <span>داریم برایت می‌یازیم...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
     <!-- 🎬 بخش چهارم: استودیوی ویدئو UltraEdit (iframe ایزوله) -->
     <!-- ========================================================================= -->
     <section class="max-w-[1500px] w-full mx-auto mt-8 mb-12">
@@ -968,6 +1093,58 @@
         document.getElementById('btn-next-node').onclick = () => triggerSelectTrackNode((currentTrackIndex + 1) % coreTrackDatabase.length);
         document.getElementById('input-local-file').onchange = (e) => { const f = e.target.files[0]; if (!f) return; bootstrapStudioAudioNodes(); displayToastNotification("⏳ پردازش..."); const r = new FileReader(); r.onload = (ev) => { audioContextInstance.decodeAudioData(ev.target.result, (buf) => { coreTrackDatabase.push({ title: f.name.replace(/\.[^/.]+$/, ""), artist: "فایل صوتی محلی", duration: buf.duration, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", audioBuffer: buf, lyrics: { 0: "🐾 قطعه لوکال بارگذاری شد." } }); displayToastNotification("🎉 بارگذاری شد!"); triggerSelectTrackNode(coreTrackDatabase.length - 1); }, () => displayToastNotification("❌ خطا")); }; r.readAsArrayBuffer(f); e.target.value = ''; };
         document.getElementById('btn-inject-link').onclick = () => { const u = document.getElementById('input-audio-url').value.trim(); if (!u) return; coreTrackDatabase.push({ title: "قطعه تزریق شده وب", artist: "سیگنال URL", duration: 180, cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?fm=jpg&q=60&w=3000&auto=format&fit=crop", url: u, lyrics: { 0: "🐾 در حال استریم آنلاین..." } }); displayToastNotification("🔗 لینک ثبت شد"); triggerSelectTrackNode(coreTrackDatabase.length - 1); };
+
+        // ═══════════════════════════════════════════════════════════
+        //   📚 دانشنامه ممل‌پدیا - جستجو و مقاله تصادفی
+        // ═══════════════════════════════════════════════════════════
+        (function initMamelPedia() {
+            const wikiIframe = document.getElementById('wiki-iframe');
+            const wikiLoader = document.getElementById('wiki-loader');
+            const wikiSearchInput = document.getElementById('wiki-search-input');
+            const wikiSearchBtn = document.getElementById('wiki-search-btn');
+            const wikiRandomBtn = document.getElementById('wiki-random-btn');
+
+            if (!wikiIframe) return;
+
+            // مخفی کردن لودر بعد از لود شدن iframe
+            wikiIframe.addEventListener('load', () => {
+                if (wikiLoader) {
+                    wikiLoader.style.opacity = '0';
+                    setTimeout(() => { wikiLoader.style.display = 'none'; }, 400);
+                }
+            });
+
+            // جستجو در ویکی‌پدیا
+            function doWikiSearch() {
+                const q = wikiSearchInput.value.trim();
+                if (!q) return;
+                wikiIframe.src = 'https://fa.wikipedia.org/w/index.php?search=' + encodeURIComponent(q);
+                if (wikiLoader) {
+                    wikiLoader.style.display = 'flex';
+                    wikiLoader.style.opacity = '1';
+                }
+                wikiIframe.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // مقاله تصادفی
+            function doWikiRandom() {
+                wikiIframe.src = 'https://fa.wikipedia.org/wiki/Special:Random';
+                if (wikiLoader) {
+                    wikiLoader.style.display = 'flex';
+                    wikiLoader.style.opacity = '1';
+                }
+                wikiIframe.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            wikiSearchBtn.addEventListener('click', doWikiSearch);
+            wikiRandomBtn.addEventListener('click', doWikiRandom);
+            wikiSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    doWikiSearch();
+                }
+            });
+        })();
 
         // ═══════════════════════════════════════════════════════════
         //   بارگذاری استودیوی ویدئو در iframe
