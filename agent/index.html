@@ -13,7 +13,7 @@
     --orange: #f59e0b; --pink: #ec4899; --purple: #8b5cf6; --emerald: #10b981;
     --bg: #fffbf5; --glass: rgba(255,251,245,0.7);
   }
-  * { box-sizing: border-box; } 
+  * { box-sizing: border-box; }
   body {
     font-family: 'Vazirmatn', sans-serif; margin: 0; height: 100vh; overflow: hidden;
     background: var(--bg);
@@ -290,6 +290,9 @@
   .ag-chip { background:rgba(139,92,246,0.15); color:#ddd6fe; border:1px solid rgba(139,92,246,0.4); border-radius:20px; font-size:10.5px; padding:3px 9px; cursor:pointer; font-family:inherit; }
   .ag-chip:hover { background:rgba(139,92,246,0.35); }
   .ag-h { display:flex; gap:6px; align-items:center; font-size:10.5px; color:#d6d3d1; padding:4px 0; border-bottom:1px solid rgba(87,83,78,0.4); }
+
+  .top-bar .xb, .sidebar .xb, #panel-log .xb { background:#fffbeb; color:#78350f; border-color:#fcd34d; }
+  .cb-tools { display:flex; gap:4px; margin-top:8px; } .cb-tools .xb { background:#292524; color:#fef3c7; }
 </style>
 </head>
 <body>
@@ -2455,6 +2458,7 @@ function renderPalette() {
       .slice(0, 50).map(p => ({ label: p, icon: getFileIcon(p.split('/').pop()), action: () => openFileInEditor(p) }));
   } else {
     const commands = [
+      ...(window.EXTRA_CMDS || []),
       { label: 'فایل جدید', icon: '➕', action: openNewFileDialog },
       { label: 'پوشه جدید', icon: '📁', action: openNewFolderDialog },
       { label: 'دانلود پروژه (ZIP)', icon: '📦', action: downloadProject },
@@ -2995,6 +2999,230 @@ async function ideAI(kind) {
     }
   });
 })();
+
+// ═══════════════════════════════════════════════════════════
+// PRO EXTENSIONS: CHAT / SIDEBAR / TERMINAL / TEAM / IDE / LOG / BACKUP
+// ═══════════════════════════════════════════════════════════
+function dlText(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+function execJS(name, code) {
+  const out = $i('terminal-output'), f = document.createElement('iframe'); f.sandbox = 'allow-scripts'; f.style.display = 'none';
+  const h = e => { if (e.source === f.contentWindow) out.insertAdjacentHTML('beforeend', `<div style="color:${e.data.e ? '#fca5a5' : '#d6d3d1'}">${escapeHtml(e.data.m)}</div>`); };
+  addEventListener('message', h);
+  f.srcdoc = '<script>const p=(m,e)=>parent.postMessage({m:m,e:e},"*");console.log=console.info=(...a)=>p(a.map(x=>typeof x==="object"?JSON.stringify(x):String(x)).join(" "));console.error=(...a)=>p(a.join(" "),1);onerror=m=>p(String(m),1);<\/script><script>' + code.replace(/<\/script>/gi, '<\\/script>') + '<\/script>';
+  document.body.appendChild(f); out.insertAdjacentHTML('beforeend', `<div style="color:#fbbf24">▶ ${escapeHtml(name)}</div>`);
+  setTimeout(() => { f.remove(); removeEventListener('message', h); }, 5000);
+}
+const textOf = m => typeof m.content === 'string' ? m.content : (m.display || (m.content || []).map(p => p.text || '').join(''));
+
+// ---- Chat tools ----
+const PERSONAS = [['🐱 عمومی', 'You are Mamal — a helpful cat assistant.'], ['👨‍💻 برنامه‌نویس ارشد', 'You are a senior software engineer. Give correct, idiomatic, well-explained code. Answer in Persian unless asked otherwise.'], ['🔎 ریویوکننده کد', 'You are a strict code reviewer. List bugs, security issues and improvements with fixes. Answer in Persian.'], ['🏗️ معمار نرم‌افزار', 'You are a software architect. Compare options, trade-offs and propose clear architectures. Answer in Persian.'], ['🌐 مترجم', 'You are a professional translator between Persian and English. Output only the translation.'], ['🎓 مربی', 'You are a patient programming tutor. Explain step by step with small examples, in Persian.']];
+$i('status-btn').insertAdjacentHTML('afterend', `
+  <select id="persona" class="xb" onchange="setPersona(this.value)">${PERSONAS.map((p, i) => `<option value="${i}">${p[0]}</option>`).join('')}</select>
+  <button class="xb" onclick="chatRegen()" title="تولید دوباره">🔄</button><button class="xb" onclick="chatCopyLast()" title="کپی آخرین پاسخ">📋</button>
+  <button class="xb" onclick="chatExportMd()" title="خروجی Markdown">⬇ MD</button><button class="xb" onclick="chatClear()" title="پاک کردن چت">🧹</button><span id="tok-badge" class="tb-stat"></span>`);
+function setPersona(i) { const t = $i('system-prompt-input'); if (t) { t.value = PERSONAS[i][1]; showToast('🎭 ' + PERSONAS[i][0]); } }
+function chatCopyLast() { const s = getActiveSession(), m = s && [...s.messages].reverse().find(x => x.role === 'assistant'); if (m) { navigator.clipboard.writeText(m.content); showToast('📋 کپی شد'); } }
+function chatRegen() {
+  const s = getActiveSession(); if (!s || isGenerating) return;
+  if (s.messages.at(-1)?.role === 'assistant') s.messages.pop();
+  const u = s.messages.at(-1); if (!u || u.role !== 'user' || typeof u.content !== 'string') { showToast('🐾 فقط پیام متنی قابل تولید دوباره است'); return; }
+  s.messages.pop(); $i('chat-input').value = u.content; saveSessions(); renderActiveSession(); sendTask();
+}
+function chatExportMd() { const s = getActiveSession(); if (!s) return; dlText((s.title || 'chat') + '.md', `# ${s.title}\n\n` + s.messages.map(m => `## ${m.role === 'user' ? '🧑 کاربر' : '🐱 مامال'}\n\n${textOf(m)}\n`).join('\n'), 'text/markdown'); }
+function chatClear() { const s = getActiveSession(); if (!s || !s.messages.length || !confirm('🐾 همه‌ی پیام‌های این چت پاک شود؟')) return; s.messages = []; saveSessions(); renderActiveSession(); }
+setInterval(() => { const s = getActiveSession(); if (s) $i('tok-badge').textContent = '~' + Math.round(s.messages.reduce((a, m) => a + textOf(m).length, 0) / 3.5) + ' توکن'; }, 2000);
+new MutationObserver(() => document.querySelectorAll('#chat-window pre').forEach(pre => {
+  if (pre.previousElementSibling?.classList.contains('cb-tools')) return;
+  const d = document.createElement('div'); d.className = 'cb-tools'; d.innerHTML = '<button class="xb" data-a="c">📋 کپی</button><button class="xb" data-a="s">💾 ذخیره در پروژه</button><button class="xb" data-a="r">▶ اجرا (JS)</button>';
+  d.onclick = ev => { const a = ev.target.dataset.a, code = pre.textContent; if (!a) return;
+    if (a === 'c') { navigator.clipboard.writeText(code); showToast('📋 کپی شد'); }
+    else if (a === 's') { const n = (prompt('نام فایل:', 'snippet.js') || '').trim(); if (n && !validateToolArgs('write_file', { path: n, content: code })) { projectFiles[n] = code; saveProject(); renderFileTree(); showToast('💾 ذخیره شد: ' + n); } }
+    else execJS('snippet.js', code); };
+  pre.before(d);
+})).observe($i('chat-window'), { childList: true, subtree: true });
+async function slash(v) {
+  const [c, ...a] = v.split(/\s+/), rest = a.join(' ');
+  if (c === '/clear') { chatClear(); return true; }
+  if (c === '/new') { newSession('normal'); return true; }
+  if (c === '/export') { chatExportMd(); return true; }
+  if (c === '/sys') { if ($i('system-prompt-input')) $i('system-prompt-input').value = rest; showToast('🎭 System prompt تنظیم شد'); return true; }
+  if (c === '/model') { const m = models.find(x => (x.id + x.name).toLowerCase().includes(rest.toLowerCase())); if (m) { $i('model-select').value = m.id; updateModelCapabilities(); showToast('🤖 ' + m.name); } else showToast('😿 مدلی پیدا نشد'); return true; }
+  if (c === '/files') { addBubble('assistant', Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep')).join('\n') || '(پروژه خالی است)'); return true; }
+  if (c === '/file') { if (!(a[0] in projectFiles)) { addBubble('assistant', '😿 فایل پیدا نشد: ' + a[0]); return true; } attachedFiles.push({ name: a[0], type: 'text', data: projectFiles[a[0]] }); renderAttachedFiles(); showToast('📎 ' + a[0]); return true; }
+  if (c === '/help') { addBubble('assistant', 'دستورها: /clear /new /export /sys <متن> /model <نام> /files /file <مسیر> /help'); return true; }
+  return false;
+}
+{ const st = sendTask; sendTask = async function () { const inp = $i('chat-input'), v = inp.value.trim(); if (v.startsWith('/') && !isGenerating && await slash(v)) { inp.value = ''; return; } return st(); }; }
+
+// ---- Sidebar: search / rename / backup ----
+$i('sessions-list').insertAdjacentHTML('beforebegin', `<div style="display:flex;gap:4px;padding:0 8px 6px;"><input id="sess-q" class="tb-input" style="background:#fffbeb;color:#78350f;border-color:#fcd34d" placeholder="🔎 جستجو در چت‌ها"><button class="xb" onclick="backupAll()" title="پشتیبان کامل">💾</button><button class="xb" onclick="$i('restore-file').click()" title="بازیابی">📂</button><input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreAll(this)"></div>`);
+function filterSessions() {
+  const q = ($i('sess-q').value || '').toLowerCase();
+  document.querySelectorAll('#sessions-list .session-item').forEach(it => { const ss = sessions.find(x => x.id === it.dataset.sid);
+    it.style.display = !q || (ss && (ss.title.toLowerCase().includes(q) || ss.messages.some(m => textOf(m).toLowerCase().includes(q)))) ? '' : 'none'; });
+}
+$i('sess-q').addEventListener('input', filterSessions);
+{ const r = renderSessionsList; renderSessionsList = function () { r(); filterSessions(); }; }
+$i('sessions-list').addEventListener('dblclick', e => { const it = e.target.closest('.session-item'), ss = it && sessions.find(x => x.id === it.dataset.sid); if (!ss) return; const n = (prompt('نام جدید چت:', ss.title) || '').trim(); if (n) { ss.title = n; saveSessions(); renderSessionsList(); renderActiveSession(); } });
+function backupAll() { const o = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('mamal_')) o[k] = localStorage.getItem(k); } dlText('mamal-backup-' + Date.now() + '.json', JSON.stringify(o), 'application/json'); }
+function restoreAll(inp) {
+  const f = inp.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = () => { try { const o = JSON.parse(r.result); if (!confirm('🐾 همه‌ی داده‌ها با پشتیبان جایگزین شوند؟')) return; Object.entries(o).forEach(([k, v]) => k.startsWith('mamal_') && localStorage.setItem(k, v)); location.reload(); } catch (e) { showToast('❌ فایل نامعتبر'); } };
+  r.readAsText(f); inp.value = '';
+}
+
+// ---- Terminal ----
+const termHist = []; let termIdx = 0;
+{ const rt = runTerminalCommand; runTerminalCommand = function (cmd) {
+  const p = (cmd || '').trim().split(/\s+/), c = p[0], a = p.slice(1), sv = () => { saveProject(); renderFileTree(); }, ok = n => n in projectFiles;
+  if (cmd && cmd.trim()) { termHist.push(cmd.trim()); termIdx = termHist.length; }
+  switch (c) {
+    case 'help': return 'ls cat rm echo tree clear run [html|js] | mkdir touch mv cp grep head wc find pwd date history ai <سوال>';
+    case 'pwd': return '/project';
+    case 'date': return new Date().toLocaleString('fa-IR');
+    case 'history': return termHist.map((h, i) => (i + 1) + '  ' + h).join('\n');
+    case 'touch': if (!a[0]) return 'touch <file>'; if (!ok(a[0])) projectFiles[a[0]] = ''; sv(); return '✓ ' + a[0];
+    case 'mkdir': if (!a[0]) return 'mkdir <dir>'; projectFiles[a[0].replace(/\/$/, '') + '/.gitkeep'] = ''; sv(); return '✓ ' + a[0];
+    case 'mv': case 'cp': if (!ok(a[0]) || !a[1]) return 'استفاده: ' + c + ' <مبدا> <مقصد>'; projectFiles[a[1]] = projectFiles[a[0]]; if (c === 'mv') delete projectFiles[a[0]]; sv(); return '✓';
+    case 'grep': { if (!a[0]) return 'grep <متن> [فایل]'; const q = a[0].toLowerCase(), r = []; for (const [n, t] of Object.entries(projectFiles)) { if (a[1] && n !== a[1]) continue; String(t).split('\n').forEach((l, i) => l.toLowerCase().includes(q) && r.push(`${n}:${i + 1}: ${l.trim().slice(0, 100)}`)); } return r.slice(0, 60).join('\n') || 'نتیجه‌ای نیست'; }
+    case 'head': return ok(a[0]) ? projectFiles[a[0]].split('\n').slice(0, +a[1] || 10).join('\n') : 'یافت نشد';
+    case 'wc': return ok(a[0]) ? `${projectFiles[a[0]].split('\n').length} خط  ${projectFiles[a[0]].split(/\s+/).filter(Boolean).length} کلمه  ${projectFiles[a[0]].length} کاراکتر` : 'یافت نشد';
+    case 'find': return Object.keys(projectFiles).filter(n => n.toLowerCase().includes((a[0] || '').toLowerCase())).join('\n') || 'نتیجه‌ای نیست';
+    case 'run': if (ok(a[0]) && a[0].endsWith('.js')) { execJS(a[0], projectFiles[a[0]]); return ''; } break;
+    case 'ai': { const q = a.join(' '); if (!q) return 'ai <سوال>'; (async () => { try { const k = await fetchOpenRouterKey(); const r = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Terminal' }, body: JSON.stringify({ model: $i('model-select').value, messages: [{ role: 'system', content: 'Answer briefly in Persian. Project files: ' + Object.keys(projectFiles).join(', ') }, { role: 'user', content: q }], max_tokens: 800 }) }, 1, 60000); const t = (await r.json()).choices?.[0]?.message?.content || '(بدون پاسخ)'; $i('terminal-output').insertAdjacentHTML('beforeend', `<div style="color:#c4b5fd;white-space:pre-wrap">🐱 ${escapeHtml(t)}</div>`); } catch (e) { $i('terminal-output').insertAdjacentHTML('beforeend', `<div style="color:#fca5a5">${escapeHtml(e.message)}</div>`); } })(); return 'در حال پرسش از مدل...'; }
+  }
+  return rt(cmd);
+}; }
+document.querySelector('[onkeydown*="handleTerminalKey"]')?.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); termIdx = Math.max(0, Math.min(termHist.length, termIdx + (e.key === 'ArrowUp' ? -1 : 1))); e.target.value = termHist[termIdx] || ''; }
+});
+
+// ---- Team: AI planner + report ----
+document.querySelector('.tb-head > div:last-child').insertAdjacentHTML('afterbegin', '<button class="team-btn" onclick="aiPlanTasks()" title="تولید خودکار تسک از روی هدف تیم">🧠 AI</button><button class="team-btn" onclick="teamReport()" title="گزارش Markdown">📄</button>');
+async function aiPlanTasks() {
+  const goal = $i('team-task').value.trim(); if (!goal) { alert('اول «تسک اصلی تیم» را بنویسید'); return; }
+  showToast('🧠 در حال برنامه‌ریزی...');
+  try {
+    const k = await fetchOpenRouterKey(), names = teamAgents.map(a => a.name).join(', ');
+    const r = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Planner' },
+      body: JSON.stringify({ model: $i('agent-model-select')?.value || $i('model-select').value, temperature: 0.3, max_tokens: 1500, messages: [{ role: 'system', content: 'Break the goal into 4-8 concrete tasks. Reply ONLY with a JSON array: [{"title":"","desc":"","pri":"high|mid|low","agent":"one of: ' + names + ' or empty"}]. Persian text.' }, { role: 'user', content: goal }] }) }, 2, 90000);
+    if (!r.ok) throw new Error('API ' + r.status);
+    const m = ((await r.json()).choices?.[0]?.message?.content || '').match(/\[[\s\S]*\]/); const arr = JSON.parse(m ? m[0] : '[]');
+    arr.slice(0, 10).forEach((t, i) => t && t.title && teamTasks.push({ id: 't' + Date.now() + i, title: String(t.title).slice(0, 120), desc: String(t.desc || '').slice(0, 400), pri: PRI[t.pri] !== undefined ? t.pri : 'mid', agent: teamAgents.some(a => a.name === t.agent) ? t.agent : '', status: 'todo', output: '' }));
+    saveTasks(); renderTasks(); showToast('✅ ' + arr.length + ' تسک اضافه شد');
+  } catch (e) { showToast('❌ ' + e.message); }
+}
+function teamReport() {
+  const p = curProj(); const L = ['# گزارش تیم: ' + (p?.name || ''), '', '**هدف:** ' + ($i('team-task').value || '-'), '', '## ایجنت‌ها', ...teamAgents.map(a => `- ${a.emoji || ''} **${a.name}** (${a.role}): ${a.task}`), '', '## تسک‌ها', ...teamTasks.map(t => `### ${TASK_STATUS[t.status] || ''} ${t.title} [${t.pri}] — ${t.agent || 'خودکار'}\n${t.desc || ''}\n\n${t.output ? '> ' + t.output.replace(/\n/g, '\n> ') : ''}\n`)];
+  dlText('team-report.md', L.join('\n'), 'text/markdown');
+}
+
+// ---- IDE: transforms / outline / check / md preview / move line ----
+document.querySelector('.ide-xbar').insertAdjacentHTML('beforeend', `
+  <button class="xb" onclick="ideOutline()">☰ Outline</button><button class="xb" onclick="ideCheck()">✔ Check</button>
+  <select class="xb" onchange="ideFx(this.value);this.value=''"><option value="">⚙️ تبدیل...</option><option value="trim">حذف فاصله‌ی انتهای خط</option><option value="tabs">Tab → فاصله</option><option value="sort">مرتب‌سازی خطوط</option><option value="uniq">حذف خطوط تکراری</option><option value="up">UPPERCASE</option><option value="low">lowercase</option><option value="min">JSON فشرده</option></select>`);
+function ideFx(k) {
+  if (!k) return; const ta = $i('code-editor'), a = ta.selectionStart, b = ta.selectionEnd, all = a === b, t = all ? ta.value : ta.value.slice(a, b);
+  const F = { trim: x => x.replace(/[ \t]+$/gm, ''), tabs: x => x.replace(/\t/g, '  '), sort: x => x.split('\n').sort().join('\n'), uniq: x => [...new Set(x.split('\n'))].join('\n'), up: x => x.toUpperCase(), low: x => x.toLowerCase(), min: x => JSON.stringify(JSON.parse(x)) };
+  try { const r = F[k](t); ta.focus(); if (all) ta.select(); document.execCommand('insertText', false, r); } catch (e) { showToast('❌ ' + e.message); }
+}
+function ideOutline() {
+  const box = $i('ide-results'), re = /^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?(?:function\*?\s+(\w+)|class\s+(\w+)|def\s+(\w+)|(?:const|let)\s+(\w+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>|(#{1,3}\s+.+)|([.#][\w-]+)\s*\{)/;
+  const hits = []; $i('code-editor').value.split('\n').forEach((l, i) => { const m = l.match(re); if (m) hits.push([i + 1, (m[1] || m[2] || m[3] || m[4] || m[5] || m[6]).trim()]); });
+  box.style.display = 'block';
+  box.innerHTML = hits.length ? hits.map(h => `<div style="cursor:pointer;padding:2px 0;color:#d6d3d1" data-l="${h[0]}" onclick="ideJump(activeTabFile,+this.dataset.l)"><b style="color:#fbbf24">${h[0]}</b> ${escapeHtml(h[1])}</div>`).join('') : '<div style="color:#a8a29e">ساختاری پیدا نشد</div>';
+}
+function ideCheck() {
+  if (!activeTabFile) return; const v = $i('code-editor').value;
+  try { if (activeTabFile.endsWith('.json')) JSON.parse(v); else if (/\.js$/.test(activeTabFile)) new Function(v); else { showToast('🐾 فقط JS و JSON'); return; } showToast('✅ سینتکس سالم است'); }
+  catch (e) { showToast('❌ ' + e.message); }
+}
+{ const tp = togglePreview; togglePreview = function () {
+  const f = $i('preview-frame');
+  if (f.style.display !== 'block' && /\.md$/i.test(activeTabFile || '')) { f.srcdoc = '<body style="font-family:Vazirmatn,sans-serif;padding:16px;direction:rtl;line-height:1.8">' + formatMarkdown($i('code-editor').value) + '</body>'; f.style.display = 'block'; $i('code-editor').style.display = 'none'; return; }
+  return tp();
+}; }
+$i('code-editor').addEventListener('keydown', e => {
+  if (!e.altKey || !['ArrowUp', 'ArrowDown'].includes(e.key)) return; e.preventDefault();
+  const ta = e.target, v = ta.value, L = v.split('\n'), ls = v.slice(0, ta.selectionStart).split('\n').length - 1, d = e.key === 'ArrowUp' ? -1 : 1;
+  if (ls + d < 0 || ls + d >= L.length) return; const lo = Math.min(ls, ls + d), a = L.slice(0, lo).join('\n').length + (lo ? 1 : 0), b = a + L[lo].length + 1 + L[lo + 1].length;
+  ta.setSelectionRange(a, b); document.execCommand('insertText', false, L[lo + 1] + '\n' + L[lo]);
+  const na = L.slice(0, ls + d).join('\n').length + (ls + d ? 1 : 0); ta.setSelectionRange(na, na);
+});
+
+// ---- Log tools + command palette ----
+$i('panel-log').insertAdjacentHTML('afterbegin', '<div class="lg-tools" style="position:sticky;top:0;display:flex;gap:6px;margin-bottom:6px"><button class="xb" onclick="logOp(0)">📋 کپی</button><button class="xb" onclick="logOp(1)">⬇ ذخیره</button><button class="xb" onclick="logOp(2)">🧹 پاک</button></div>');
+function logOp(k) { const el = $i('panel-log'), rows = [...el.children].filter(c => !c.classList.contains('lg-tools')); if (k === 2) rows.forEach(r => r.remove()); else { const t = rows.map(r => r.textContent).join('\n'); if (k === 0) { navigator.clipboard.writeText(t); showToast('📋 کپی شد'); } else dlText('mamal-log.txt', t); } }
+window.EXTRA_CMDS = [
+  { label: 'پشتیبان‌گیری کامل', icon: '💾', action: backupAll }, { label: 'بازیابی از پشتیبان', icon: '📂', action: () => $i('restore-file').click() },
+  { label: 'خروجی چت (Markdown)', icon: '⬇', action: chatExportMd }, { label: 'تولید دوباره‌ی پاسخ', icon: '🔄', action: chatRegen }, { label: 'پاک کردن چت', icon: '🧹', action: chatClear },
+  { label: 'تولید تسک با AI', icon: '🧠', action: aiPlanTasks }, { label: 'گزارش تیم (MD)', icon: '📄', action: teamReport },
+  { label: 'Outline فایل', icon: '☰', action: ideOutline }, { label: 'بررسی سینتکس', icon: '✔', action: ideCheck }, { label: 'Find/Replace', icon: '🔎', action: ideFindToggle },
+  { label: 'میانبرها', icon: '⌨️', action: () => alert('Ctrl+S ذخیره\nCtrl+F جستجو\nCtrl+G رفتن به خط\nCtrl+/ کامنت\nCtrl+D تکثیر خط\nAlt+↑/↓ جابه‌جایی خط\nCtrl+P باز کردن فایل\nCtrl+Shift+P دستورها\nChat: /help') }
+];
+
+// ═══════════════════════════════════════════════════════════
+// IDE AI v2 — مدل مشخص، پیش‌نمایش نتیجه، خطاهای واضح، بررسی سلامت
+// ═══════════════════════════════════════════════════════════
+const AI_LABEL = { explain: '🧠 توضیح', fix: '🐞 رفع باگ', refactor: '♻️ ریفکتور', comment: '💬 کامنت', test: '🧪 ساخت تست', optimize: '⚡ بهینه‌سازی', custom: '✍️ دستور دلخواه' };
+const AI_SYS = { explain: 'Explain this code concisely in Persian.', fix: 'Find and fix bugs. Return ONLY the corrected code in one code block, no commentary.', refactor: 'Refactor for readability and best practices without changing behavior. Return ONLY the code in one code block.', comment: 'Add helpful comments. Return ONLY the code in one code block.', test: 'Write unit tests for this code. Return ONLY the test code in one code block.', optimize: 'Optimize performance without changing behavior. Return ONLY the code in one code block.' };
+let aiLast = null, aiCtl = null;
+document.querySelector('select[onchange^="ideAI"]')?.remove();
+document.querySelector('.ide-xbar').insertAdjacentHTML('beforeend', `<select class="xb" id="ide-model" title="مدل AI" style="max-width:180px" onchange="localStorage.setItem('mamal_ide_model',this.value)"></select><button class="xb" onclick="ideReloadModels()" title="بارگذاری دوباره‌ی مدل‌ها">🔄</button><select class="xb" onchange="ideAI(this.value);this.value=''"><option value="">✨ AI...</option>${Object.entries(AI_LABEL).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="xb" onclick="ideAIHealth()" title="بررسی سلامت AI">🩺</button>`);
+$i('ide-results').insertAdjacentHTML('beforebegin', '<div id="ide-ai" style="display:none;background:#1c1917;color:#e7e5e4;font-size:11px;padding:8px;max-height:230px;overflow:auto;border-bottom:1px solid #57534e"></div>');
+function showAi(html) { const p = $i('ide-ai'); p.style.display = 'block'; p.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><b style="color:#fbbf24">✨ AI</b><button class="xb" onclick="this.closest(\'#ide-ai\').style.display=\'none\'">✖</button></div>' + html; }
+function syncIdeModels() {
+  const sel = $i('ide-model'); if (!sel) return;
+  if (!models.length) { if (sel.options.length !== 1 || sel.options[0].value) sel.innerHTML = '<option value="">⏳ مدلی بارگذاری نشده (🔄)</option>'; return; }
+  if (sel.options.length === models.length && sel.options[0].value) return;
+  const saved = localStorage.getItem('mamal_ide_model');
+  sel.innerHTML = models.map(m => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
+  sel.value = models.some(m => m.id === saved) ? saved : (models.some(m => m.id === $i('model-select').value) ? $i('model-select').value : models[0].id);
+}
+setInterval(syncIdeModels, 1500); syncIdeModels();
+async function ideReloadModels() { showAi('<div style="color:#fbbf24">⏳ بارگذاری مدل‌ها...</div>'); await loadModels(); syncIdeModels(); showAi(models.length ? `<div style="color:#6ee7b7">✅ ${models.length} مدل بارگذاری شد</div>` : '<div style="color:#fca5a5">❌ مدل‌ها بارگذاری نشدند — اینترنت/VPN را بررسی کنید</div>'); }
+const orReq = (key, body, signal) => fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', signal, headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal IDE' }, body: JSON.stringify(body) });
+const API_HINT = { 401: 'کلید نامعتبر', 402: 'اعتبار کافی نیست', 404: 'این مدل در دسترس نیست — مدل دیگری انتخاب کنید', 429: 'محدودیت نرخ — کمی بعد یا مدل دیگر' };
+async function ideAI(kind) {
+  if (!kind) return; const ta = $i('code-editor');
+  if (!activeTabFile) { showAi('<div style="color:#fca5a5">❌ فایلی باز نیست</div>'); return; }
+  const model = $i('ide-model').value;
+  if (!model) { showAi('<div style="color:#fca5a5">❌ مدلی انتخاب نشده. با 🔄 مدل‌ها را بارگذاری کنید.</div>'); return; }
+  let sys = AI_SYS[kind]; const a = ta.selectionStart, b = ta.selectionEnd, hasSel = a !== b, code = hasSel ? ta.value.slice(a, b) : ta.value, file = activeTabFile;
+  if (kind === 'custom') { const q = (prompt('دستور AI برای ' + (hasSel ? 'متن انتخاب‌شده' : 'کل فایل') + ':') || '').trim(); if (!q) return; sys = q + '\nIf you modify code, return ONLY the full code in one code block; otherwise answer briefly in Persian.'; }
+  const mname = models.find(m => m.id === model)?.name || model;
+  aiCtl?.abort(); const ctl = aiCtl = new AbortController(), tm = setTimeout(() => ctl.abort(), 90000), t0 = Date.now();
+  const head = `<div style="color:#a8a29e;margin:4px 0">${AI_LABEL[kind]} · 🤖 <b style="color:#c4b5fd">${escapeHtml(mname)}</b> · ${hasSel ? 'متن انتخابی' : 'کل فایل'} · ${escapeHtml(file)}</div>`;
+  showAi(head + '<div>⏳ در حال پردازش... <button class="xb" onclick="aiCtl&&aiCtl.abort()">⏹ توقف</button></div>');
+  try {
+    const key = await fetchOpenRouterKey();
+    const r = await orReq(key, { model, temperature: 0.2, max_tokens: 3000, messages: [{ role: 'system', content: sys + ' File: ' + file }, { role: 'user', content: code }] }, ctl.signal);
+    if (!r.ok) throw new Error('API ' + r.status + (API_HINT[r.status] ? ' — ' + API_HINT[r.status] : ''));
+    const t = (await r.json()).choices?.[0]?.message?.content || ''; if (!t) throw new Error('پاسخ خالی از مدل — مدل دیگری امتحان کنید');
+    const sec = ((Date.now() - t0) / 1000).toFixed(1);
+    if (kind === 'explain' || (kind === 'custom' && !/```/.test(t))) { showAi(head + `<div style="white-space:pre-wrap">${escapeHtml(t)}</div><div style="color:#a8a29e">⏱ ${sec}s</div>`); return; }
+    const m = t.match(/```\w*\n?([\s\S]*?)```/), out = (m ? m[1] : t).replace(/\n$/, '');
+    aiLast = { kind, a, b, hasSel, file, text: out };
+    showAi(head + `<pre style="white-space:pre-wrap;max-height:130px;overflow:auto;background:#0c0a09;padding:6px;border-radius:6px;margin:4px 0">${escapeHtml(out)}</pre><div style="display:flex;gap:6px;align-items:center"><button class="xb" onclick="aiApply()">✅ ${kind === 'test' ? 'ساخت فایل تست' : 'اعمال'}</button><button class="xb" onclick="navigator.clipboard.writeText(aiLast.text);showToast('📋 کپی شد')">📋 کپی</button><span style="color:#a8a29e">⏱ ${sec}s</span></div>`);
+  } catch (e) { showAi(head + `<div style="color:#fca5a5">❌ ${escapeHtml(ctl.signal.aborted ? 'متوقف شد یا زمان پاسخ (۹۰ثانیه) تمام شد' : e.message)}</div>`); }
+  finally { clearTimeout(tm); }
+}
+function aiApply() {
+  const x = aiLast; if (!x) return; const ta = $i('code-editor');
+  if (x.kind === 'test') { const n = x.file.replace(/(\.[^.]+)?$/, '.test$1'); projectFiles[n] = x.text; saveProject(); renderFileTree(); openFileInEditor(n); showAi('<div style="color:#6ee7b7">✅ ' + escapeHtml(n) + ' ساخته شد</div>'); return; }
+  if (activeTabFile !== x.file) { showToast('🐾 فایل فعال تغییر کرده است'); return; }
+  closePreview(); const a = x.hasSel ? x.a : 0, b = x.hasSel ? x.b : ta.value.length; ta.focus(); ta.setSelectionRange(a, b);
+  if (!document.execCommand('insertText', false, x.text)) { ta.setRangeText(x.text, a, b, 'end'); ta.dispatchEvent(new Event('input')); }
+  showAi('<div style="color:#6ee7b7">✅ اعمال شد (Ctrl+Z برای بازگشت)</div>');
+}
+async function ideAIHealth() {
+  const L = [], add = (ok, t) => { L.push(`<div style="color:${ok ? '#6ee7b7' : '#fca5a5'}">${ok ? '✅' : '❌'} ${escapeHtml(t)}</div>`); showAi(L.join('')); };
+  showAi('<div>⏳ ...</div>'); let key;
+  try { key = await fetchOpenRouterKey(); add(true, 'کلید API دریافت شد'); } catch (e) { add(false, 'کلید: ' + e.message); return; }
+  add(models.length > 0, 'تعداد مدل‌ها: ' + models.length); const model = $i('ide-model').value; add(!!model, 'مدل انتخابی: ' + (model || '—')); if (!model) return;
+  const t0 = Date.now();
+  try { const r = await orReq(key, { model, max_tokens: 8, messages: [{ role: 'user', content: 'Reply with OK' }] }); add(r.ok, `پاسخ مدل: HTTP ${r.status} · ${Date.now() - t0}ms${r.ok ? '' : ' — ' + (API_HINT[r.status] || '')}`); } catch (e) { add(false, 'اتصال: ' + e.message); }
+}
 loadTasks();
 loadProjects(); renderAgQuick(); renderAgHist();
 </script>
