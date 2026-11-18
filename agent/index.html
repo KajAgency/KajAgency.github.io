@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐾 Mamal IDE — Multi-Agent Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --orange: #f59e0b; --pink: #ec4899; --purple: #8b5cf6; --emerald: #10b981;
+    --bg: #fffbf5; --glass: rgba(255,251,245,0.7);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Vazirmatn', sans-serif; margin: 0; height: 100vh; overflow: hidden;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(245,158,11,0.12) 0%, transparent 40%),
+      radial-gradient(ellipse at 90% 80%, rgba(236,72,153,0.1) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.06) 0%, transparent 60%);
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(245,158,11,0.4), transparent),
+      radial-gradient(1px 1px at 60% 70%, rgba(236,72,153,0.3), transparent),
+      radial-gradient(1px 1px at 40% 90%, rgba(139,92,246,0.3), transparent);
+    background-size: 200% 200%;
+    animation: stars 20s linear infinite; z-index: 0;
+  }
+  @keyframes stars { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #fbbf24, #f59e0b); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #f59e0b, #ea580c); }
+
+  .app-shell { display: flex; height: 100vh; position: relative; z-index: 1; }
+  .sidebar { width: 280px; min-width: 180px; max-width: 500px; background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,251,235,0.9)); backdrop-filter: blur(12px); border-left: 1px solid rgba(253,230,138,0.6); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: -4px 0 24px rgba(245,158,11,0.05); }
+  .chat-area { flex: 1; display: flex; flex-direction: column; background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); min-width: 0; }
+  .right-panel { width: 680px; min-width: 320px; max-width: 1200px; background: linear-gradient(180deg, rgba(255,251,235,0.95), rgba(254,243,199,0.85)); backdrop-filter: blur(14px); border-right: 1px solid rgba(253,230,138,0.6); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 4px 0 24px rgba(245,158,11,0.05); }
+
+  /* ═══ Resizer ═══ */
+  .resizer { width: 5px; cursor: col-resize; background: transparent; flex-shrink: 0; position: relative; z-index: 10; transition: background 0.15s; }
+  .resizer:hover, .resizer.dragging { background: linear-gradient(180deg, rgba(245,158,11,0.5), rgba(236,72,153,0.5)); }
+  .resizer::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 1px; height: 32px; background: rgba(245,158,11,0.4); border-radius: 1px; }
+  body.resizing { cursor: col-resize !important; user-select: none !important; }
+  body.resizing * { cursor: col-resize !important; }
+
+  .brand { display: flex; align-items: center; gap: 10px; padding: 18px; border-bottom: 1px solid rgba(253,230,138,0.5); }
+  .brand-logo { width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 6px 20px rgba(245,158,11,0.4); animation: brandFloat 4s ease-in-out infinite; }
+  @keyframes brandFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
+  .brand-title { font-size: 18px; font-weight: 900; background: linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradientShift 3s linear infinite; }
+  @keyframes gradientShift { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+  .brand-sub { font-size: 9px; color: #f59e0b; font-weight: 700; }
+
+  .btn-primary { background: linear-gradient(135deg, #f59e0b, #ec4899); color: white; font-weight: 800; padding: 10px 16px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(245,158,11,0.3); position: relative; overflow: hidden; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,158,11,0.5); }
+  .btn-agent { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; font-weight: 800; padding: 10px 16px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(139,92,246,0.3); }
+  .btn-agent:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(139,92,246,0.5); }
+
+  .session-item { padding: 8px 12px; border-radius: 10px; font-size: 12px; cursor: pointer; color: #78350f; margin-bottom: 3px; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+  .session-item:hover { background: linear-gradient(90deg, rgba(254,243,199,0.8), rgba(253,230,138,0.5)); border-color: rgba(245,158,11,0.4); }
+  .session-item.active { background: linear-gradient(90deg, #fed7aa, #fde68a); border-color: #f59e0b; font-weight: 700; box-shadow: 0 2px 8px rgba(245,158,11,0.25); }
+  .session-item .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-item .del-btn { opacity: 0; color: #dc2626; transition: opacity 0.2s; }
+  .session-item:hover .del-btn { opacity: 1; }
+
+  .top-bar { height: 60px; border-bottom: 1px solid rgba(253,230,138,0.5); background: rgba(255,255,255,0.75); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+  .mode-toggle { display: inline-flex; background: rgba(254,243,199,0.7); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 3px; gap: 2px; }
+  .mode-toggle button { padding: 5px 12px; border-radius: 9px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; transition: all 0.2s; background: transparent; color: #92400e; }
+  .mode-toggle button.active { background: linear-gradient(135deg, #f59e0b, #ec4899); color: white; box-shadow: 0 3px 10px rgba(245,158,11,0.4); }
+
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; transition: all 0.3s; }
+  .status-pill.idle { background: rgba(243,244,246,0.9); color: #6b7280; border: 1px solid rgba(229,231,235,0.8); }
+  .status-pill.processing { background: linear-gradient(135deg, #fef3c7, #fed7aa); color: #92400e; border: 1px solid rgba(245,158,11,0.5); box-shadow: 0 0 20px rgba(245,158,11,0.3); }
+  .status-pill.success { background: rgba(209,250,229,0.9); color: #065f46; border: 1px solid rgba(16,185,129,0.4); }
+  .status-pill.error { background: rgba(254,226,226,0.9); color: #991b1b; border: 1px solid rgba(239,68,68,0.4); }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .status-pill.idle .dot { background: #9ca3af; }
+  .status-pill.processing .dot { background: #f59e0b; animation: pulse-dot 1.2s infinite; box-shadow: 0 0 8px #f59e0b; }
+  .status-pill.success .dot { background: #10b981; }
+  .status-pill.error .dot { background: #ef4444; }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.4); } }
+
+  .chat-window { flex: 1; overflow-y: auto; padding: 24px; }
+  .msg-user { display: flex; justify-content: flex-start; max-width: 820px; margin: 0 auto 16px; }
+  .msg-user .bubble { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #78350f; border-radius: 18px 18px 18px 4px; padding: 12px 18px; max-width: 82%; font-size: 14px; line-height: 1.7; border: 1px solid rgba(245,158,11,0.25); box-shadow: 0 2px 12px rgba(245,158,11,0.08); white-space: pre-wrap; }
+  .msg-assistant { display: flex; gap: 14px; max-width: 820px; margin: 0 auto 16px; }
+  .avatar-agent { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(236,72,153,0.3); }
+  .msg-assistant .content { flex: 1; font-size: 14px; line-height: 1.85; color: #374151; padding-top: 2px; min-width: 0; }
+
+  .msg-content { line-height: 1.85; font-size: 14px; color: #374151; word-wrap: break-word; }
+  .msg-content p { margin: 0 0 10px 0; }
+  .msg-content ul, .msg-content ol { padding-right: 22px; margin: 0 0 10px 0; }
+  .msg-content ul { list-style-type: disc; } .msg-content ol { list-style-type: decimal; }
+  .msg-content li { margin-bottom: 4px; }
+  .msg-content strong { font-weight: 800; color: #0f172a; }
+  .msg-content pre { background: linear-gradient(135deg, #1c1917, #292524); color: #fef3c7; padding: 14px; border-radius: 10px; overflow-x: auto; direction: ltr; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; margin: 10px 0; line-height: 1.55; border: 1px solid #44403c; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+  .msg-content code { background: rgba(254,243,199,0.9); color: #be123c; padding: 2px 6px; border-radius: 5px; direction: ltr; display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; border: 1px solid rgba(253,230,138,0.5); }
+  .msg-content pre code { background: transparent; color: inherit; padding: 0; border: none; }
+
+  .input-area { padding: 16px 24px 20px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-top: 1px solid rgba(253,230,138,0.4); }
+  .input-wrapper { max-width: 820px; margin: 0 auto; position: relative; background: white; border: 2px solid rgba(245,158,11,0.25); border-radius: 20px; transition: all 0.2s; box-shadow: 0 4px 20px rgba(245,158,11,0.08); }
+  .input-wrapper:focus-within { border-color: #f59e0b; box-shadow: 0 4px 28px rgba(245,158,11,0.25), 0 0 0 4px rgba(245,158,11,0.08); }
+  .chat-input { width: 100%; background: transparent; border: none; outline: none; padding: 14px 18px 52px; font-size: 14px; resize: none; color: #78350f; max-height: 200px; min-height: 60px; font-family: 'Vazirmatn', sans-serif; }
+  .chat-input::placeholder { color: #fbbf24; }
+  .attached-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 3px 8px; font-size: 10px; color: #92400e; margin: 2px; }
+  .attached-chip button { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 11px; padding: 0; }
+
+  .tab-bar { display: flex; background: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(253,230,138,0.5); backdrop-filter: blur(10px); flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 12px 8px; font-size: 11px; font-weight: 800; color: #92400e; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .tab-btn:hover { background: rgba(254,243,199,0.5); }
+  .tab-btn.active { color: #ea580c; border-bottom-color: #f59e0b; background: linear-gradient(180deg, rgba(254,243,199,0.5), transparent); }
+
+  /* ═══ Agent & Team Full-Space Fix ═══ */
+  #panel-agent, #panel-team, #panel-code { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
+  .agent-container, .ide-container { display: flex; flex-direction: column; height: 100%; width: 100%; background: linear-gradient(180deg, #0f0d0a, #1c1917); color: #fef3c7; overflow: hidden; }
+  .agent-header { padding: 14px 18px; background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.1)); border-bottom: 1px solid rgba(139,92,246,0.3); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .agent-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 900; color: #c4b5fd; }
+  .agent-title .icon { width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #ec4899); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 14px rgba(139,92,246,0.4); animation: agentPulse 2s ease-in-out infinite; }
+  @keyframes agentPulse { 0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(139,92,246,0.4); } 50% { transform: scale(1.08); box-shadow: 0 6px 20px rgba(139,92,246,0.6); } }
+
+  .agent-body { flex: 1; display: flex; flex-direction: column; min-height: 0; width: 100%; }
+  .agent-task-input { padding: 14px; border-bottom: 1px solid rgba(139,92,246,0.2); flex-shrink: 0; background: rgba(15,13,10,0.6); width: 100%; }
+  .task-textarea { width: 100%; background: #1c1917; border: 1px solid rgba(139,92,246,0.3); border-radius: 10px; padding: 10px; color: #fef3c7; font-size: 12px; outline: none; resize: none; min-height: 60px; max-height: 120px; font-family: 'Vazirmatn', sans-serif; transition: all 0.2s; }
+  .task-textarea:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .task-textarea::placeholder { color: rgba(196,181,253,0.4); }
+
+  .agent-options { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+  .agent-option { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #c4b5fd; cursor: pointer; }
+  .agent-option input { accent-color: #8b5cf6; }
+
+  .agent-run-btn { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; font-weight: 800; padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; font-size: 12px; box-shadow: 0 4px 16px rgba(139,92,246,0.35); display: flex; align-items: center; gap: 6px; }
+  .agent-run-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(139,92,246,0.5); }
+  .agent-run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .agent-run-btn.running { background: linear-gradient(135deg, #ef4444, #dc2626); animation: runPulse 1.5s ease-in-out infinite; }
+  @keyframes runPulse { 0%, 100% { box-shadow: 0 4px 16px rgba(239,68,68,0.35); } 50% { box-shadow: 0 4px 24px rgba(239,68,68,0.7); } }
+
+  .agent-log { flex: 1; overflow-y: auto; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.6; width: 100%; }
+  .agent-log-item { padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; border-right: 3px solid; background: rgba(28,25,23,0.6); animation: logSlide 0.3s ease-out; }
+  @keyframes logSlide { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+  .agent-log-item.thought { border-color: #fbbf24; background: rgba(251,191,36,0.08); }
+  .agent-log-item.action { border-color: #60a5fa; background: rgba(96,165,250,0.08); }
+  .agent-log-item.observation { border-color: #10b981; background: rgba(16,185,129,0.08); }
+  .agent-log-item.result { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
+  .agent-log-item.error { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+  .log-label { font-size: 9px; font-weight: 900; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px; }
+  .log-content { color: #d6d3d1; white-space: pre-wrap; word-break: break-word; }
+
+  .agent-progress { height: 6px; background: #1c1917; border-radius: 3px; overflow: hidden; margin: 10px 14px 0; width: calc(100% - 28px); }
+  .agent-progress-bar { height: 100%; background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b); background-size: 200% 100%; animation: progressGlow 2s linear infinite; transition: width 0.3s; }
+  @keyframes progressGlow { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+
+  /* ═══ Multi-Agent Panel ═══ */
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; padding: 12px; width: 100%; }
+  .agent-card { background: linear-gradient(135deg, rgba(28,25,23,0.95), rgba(41,37,36,0.9)); border: 1px solid rgba(139,92,246,0.25); border-radius: 12px; padding: 12px; position: relative; transition: all 0.2s; overflow: hidden; }
+  .agent-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--agent-color, linear-gradient(90deg, #8b5cf6, #ec4899)); }
+  .agent-card.working { border-color: rgba(251,191,36,0.6); box-shadow: 0 0 20px rgba(251,191,36,0.2); }
+  .agent-card.done { border-color: rgba(16,185,129,0.6); }
+  .agent-card.error { border-color: rgba(239,68,68,0.6); }
+  .agent-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--agent-color, linear-gradient(135deg, #8b5cf6, #ec4899)); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 3px 10px rgba(139,92,246,0.3); flex-shrink: 0; }
+  .agent-info { flex: 1; min-width: 0; margin-right: 8px; }
+  .agent-name { font-size: 12px; font-weight: 800; color: #fef3c7; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent-role { font-size: 9.5px; color: #a78bfa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent-badge { font-size: 8.5px; padding: 2px 7px; border-radius: 6px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+  .agent-badge.idle { background: rgba(120,113,108,0.3); color: #a8a29e; }
+  .agent-badge.thinking { background: rgba(251,191,36,0.2); color: #fbbf24; animation: pulse-dot 1.2s infinite; }
+  .agent-badge.working { background: rgba(96,165,250,0.2); color: #60a5fa; animation: pulse-dot 1.2s infinite; }
+  .agent-badge.done { background: rgba(16,185,129,0.2); color: #10b981; }
+  .agent-badge.error { background: rgba(239,68,68,0.2); color: #ef4444; }
+  .agent-task-preview { font-size: 10px; color: #a8a29e; margin-top: 6px; line-height: 1.5; max-height: 30px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .agent-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(139,92,246,0.15); }
+  .agent-model { font-size: 9px; color: #78716c; font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
+
+  .team-toolbar { display: flex; gap: 6px; padding: 10px 12px; background: rgba(15,13,10,0.8); border-bottom: 1px solid rgba(139,92,246,0.2); flex-wrap: wrap; flex-shrink: 0; width: 100%; }
+  .team-btn { padding: 5px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; background: rgba(68,64,60,0.6); color: #fef3c7; border: 1px solid #57534e; cursor: pointer; transition: all 0.15s; }
+  .team-btn:hover { background: #57534e; border-color: #8b5cf6; }
+  .team-btn.primary { background: linear-gradient(135deg, #8b5cf6, #ec4899); border: none; }
+
+  .add-agent-btn { background: rgba(139,92,246,0.1); border: 2px dashed rgba(139,92,246,0.4); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; color: #a78bfa; font-size: 11px; font-weight: 700; transition: all 0.2s; }
+  .add-agent-btn:hover { background: rgba(139,92,246,0.2); border-color: #8b5cf6; color: #c4b5fd; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(6px); }
+  .modal-box { background: white; border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); width: 100%; max-width: 500px; padding: 24px; border: 2px solid rgba(253,230,138,0.6); animation: modalSlide 0.2s ease-out; }
+  @keyframes modalSlide { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 11px; font-weight: 800; color: #92400e; margin-bottom: 5px; }
+  .form-input, .form-textarea, .form-select { width: 100%; border: 1.5px solid rgba(253,230,138,0.8); border-radius: 9px; padding: 8px 12px; font-size: 12.5px; outline: none; background: white; color: #78350f; font-family: 'Vazirmatn', sans-serif; transition: all 0.15s; }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+  .form-textarea { resize: vertical; min-height: 60px; font-family: 'Vazirmatn', sans-serif; }
+
+  .color-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-option { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; }
+  .color-option.selected { border-color: #1f2937; transform: scale(1.1); }
+
+  /* Quick styles */
+  .stream-cursor::after { content: '▊'; animation: blink 0.8s infinite; color: #f59e0b; }
+  @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+  .settings-panel { max-height: 0; overflow-y: auto; transition: max-height 0.4s ease-in-out; }
+  .settings-panel.open { max-height: 400px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Presets & Agent Tabs */
+  .preset-btn { font-size: 10.5px; font-weight: 800; padding: 5px 10px; background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid rgba(245,158,11,0.4); color: #92400e; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+  .preset-btn:hover { background: linear-gradient(135deg, #fde68a, #fcd34d); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(245,158,11,0.25); }
+  .agent-mode-tab { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; color: #a78bfa; background: transparent; border: 1px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .agent-mode-tab:hover { background: rgba(139,92,246,0.1); }
+  .agent-mode-tab.active { background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2)); color: #fef3c7; border-color: rgba(139,92,246,0.5); box-shadow: 0 2px 8px rgba(139,92,246,0.3); }
+  .agent-image-thumb { max-width: 100px; max-height: 100px; border-radius: 8px; border: 2px solid rgba(139,92,246,0.4); margin: 4px; }
+
+  /* IDE */
+  .ide-toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 10px; background: linear-gradient(90deg, #1c1917, #292524); border-bottom: 1px solid #44403c; flex-wrap: wrap; flex-shrink: 0; width: 100%; }
+  .toolbar-btn { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; background: rgba(68,64,60,0.6); color: #fef3c7; border: 1px solid #57534e; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .toolbar-btn:hover { background: #57534e; border-color: #f59e0b; transform: translateY(-1px); }
+  .toolbar-btn.primary { background: linear-gradient(135deg, #f59e0b, #ec4899); color: white; border: none; }
+  .toolbar-btn.success { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; }
+  .toolbar-btn.danger { color: #fca5a5; border-color: #7f1d1d; }
+  .toolbar-btn.danger:hover { background: #7f1d1d; }
+  .ide-body { display: flex; flex: 1; min-height: 0; width: 100%; }
+  .ide-explorer { width: 220px; background: linear-gradient(180deg, #1c1917, #292524); border-left: 1px solid #44403c; display: flex; flex-direction: column; flex-shrink: 0; }
+  .explorer-header { padding: 8px 10px; font-size: 10px; font-weight: 900; color: #a8a29e; text-transform: uppercase; background: #0f0d0a; border-bottom: 1px solid #44403c; display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.5px; }
+  .explorer-search { padding: 6px 8px; border-bottom: 1px solid #44403c; }
+  .explorer-search input { width: 100%; background: #0f0d0a; border: 1px solid #44403c; color: #fef3c7; padding: 5px 8px; font-size: 11px; border-radius: 5px; outline: none; transition: all 0.15s; }
+  .explorer-search input:focus { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.15); }
+  .explorer-tree { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .file-tree-item { display: flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #d6d3d1; user-select: none; transition: all 0.12s; border: 1px solid transparent; }
+  .file-tree-item:hover { background: rgba(68,64,60,0.6); }
+  .file-tree-item.active { background: linear-gradient(90deg, rgba(245,158,11,0.25), rgba(236,72,153,0.15)); color: #fef3c7; border-color: #f59e0b; }
+  .file-tree-item .chevron { transition: transform 0.15s; font-size: 9px; color: #78716c; width: 10px; display: inline-block; text-align: center; }
+  .file-tree-item.open .chevron { transform: rotate(90deg); }
+  .ide-main { flex: 1; display: flex; flex-direction: column; min-width: 0; width: 100%; }
+  .ide-tabs { display: flex; background: #0f0d0a; border-bottom: 1px solid #44403c; overflow-x: auto; flex-shrink: 0; height: 34px; }
+  .ide-tabs::-webkit-scrollbar { height: 0; }
+  .tab-item { display: flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 11.5px; color: #78716c; cursor: pointer; border-left: 1px solid #44403c; border-top: 2px solid transparent; white-space: nowrap; min-width: 110px; transition: all 0.15s; }
+  .tab-item:hover { background: #292524; }
+  .tab-item.active { background: #1c1917; color: #fef3c7; border-top-color: #f59e0b; box-shadow: inset 0 1px 0 rgba(245,158,11,0.3); }
+  .tab-close { font-size: 11px; color: #78716c; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 3px; transition: all 0.15s; }
+  .tab-close:hover { background: #44403c; color: #fca5a5; }
+  .ide-breadcrumb { display: flex; align-items: center; gap: 4px; padding: 5px 12px; background: #1c1917; border-bottom: 1px solid #292524; font-size: 10.5px; color: #78716c; flex-shrink: 0; overflow-x: auto; white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
+  .crumb { color: #a8a29e; } .crumb.active { color: #f59e0b; font-weight: 700; }
+  .editor-wrapper { flex: 1; display: flex; position: relative; min-height: 0; overflow: hidden; background: #1c1917; width: 100%; }
+  .line-numbers { background: linear-gradient(90deg, #0f0d0a, #1c1917); color: #44403c; padding: 14px 8px 14px 6px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7; user-select: none; border-left: 1px solid #292524; overflow: hidden; flex-shrink: 0; min-width: 45px; }
+  .code-editor { flex: 1; width: 100%; background: #1c1917; color: #fef3c7; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; line-height: 1.7; padding: 14px; border: none; outline: none; resize: none; direction: ltr; text-align: left; tab-size: 2; overflow: auto; caret-color: #f59e0b; }
+  .code-editor::selection { background: rgba(245,158,11,0.3); }
+  .ide-statusbar { display: flex; align-items: center; justify-content: space-between; padding: 5px 12px; background: linear-gradient(90deg, #1c1917, #292524); border-top: 1px solid #44403c; font-size: 10px; color: #a8a29e; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; }
+  .ide-bottom { height: 140px; background: #0f0d0a; border-top: 1px solid #44403c; display: flex; flex-direction: column; flex-shrink: 0; }
+  .bottom-tabs { display: flex; background: #1c1917; border-bottom: 1px solid #44403c; flex-shrink: 0; }
+  .bottom-tab { padding: 7px 14px; font-size: 10.5px; font-weight: 800; color: #78716c; cursor: pointer; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .bottom-tab:hover { color: #fef3c7; }
+  .bottom-tab.active { color: #f59e0b; border-bottom-color: #f59e0b; background: rgba(245,158,11,0.05); }
+  .bottom-content { flex: 1; overflow: auto; padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #d6d3d1; line-height: 1.6; }
+  .terminal-prompt { color: #f59e0b; font-weight: 700; }
+  .terminal-input { flex: 1; background: transparent; border: none; outline: none; color: #fef3c7; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* Command palette */
+  .palette-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 60; display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; backdrop-filter: blur(4px); }
+  .palette-box { background: #1c1917; border: 1px solid #44403c; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 24px 64px rgba(0,0,0,0.5); overflow: hidden; }
+  .palette-input { width: 100%; background: transparent; border: none; outline: none; padding: 14px 16px; color: #fef3c7; font-size: 14px; font-family: 'Vazirmatn', sans-serif; border-bottom: 1px solid #44403c; }
+  .palette-list { max-height: 300px; overflow-y: auto; }
+  .palette-item { padding: 10px 16px; font-size: 12px; color: #d6d3d1; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .palette-item:hover, .palette-item.selected { background: rgba(139,92,246,0.2); color: #fef3c7; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar" id="sidebar-panel">
+  <div class="brand">
+    <div class="brand-logo">🐱</div>
+    <div>
+      <div class="brand-title">Mamal AI</div>
+      <div class="brand-sub">Multi-Agent Pro</div>
+    </div>
+  </div>
+
+  <div style="padding: 16px 16px 8px;">
+    <button onclick="newSession('normal')" class="btn-primary" style="width:100%; margin-bottom:8px; font-size:12px;">💬 چت جدید</button>
+    <button onclick="newSession('code')" class="btn-agent" style="width:100%; font-size:12px;">💻 چت با کد</button>
+  </div>
+
+  <div style="flex:1; overflow-y:auto; padding:0 12px;">
+    <div style="font-size:10px; color:#f59e0b; font-weight:800; padding:8px; margin-top:4px; display:flex; justify-content:space-between; letter-spacing:0.5px;">
+      <span>جلسات</span>
+      <button onclick="exportAllSessions()" style="font-size:10px; color:#d97706; background:none; border:none; cursor:pointer; text-decoration:underline;">📤</button>
+    </div>
+    <div id="sessions-list"></div>
+  </div>
+
+  <div style="padding:12px; border-top:1px solid rgba(253,230,138,0.5); background:rgba(255,255,255,0.5);">
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; font-size:10px;">
+      <div style="background:linear-gradient(135deg,rgba(254,243,199,0.9),rgba(253,230,138,0.6)); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:6px; text-align:center;">
+        <div id="stat-sessions" style="color:#ea580c; font-weight:900; font-size:14px;">0</div>
+        <div style="color:#d97706; font-size:9px;">جلسات</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(252,231,243,0.9),rgba(251,207,232,0.6)); border:1px solid rgba(236,72,153,0.3); border-radius:10px; padding:6px; text-align:center;">
+        <div id="stat-files" style="color:#db2777; font-weight:900; font-size:14px;">0</div>
+        <div style="color:#ec4899; font-size:9px;">فایل</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(237,233,254,0.9),rgba(221,214,254,0.6)); border:1px solid rgba(139,92,246,0.3); border-radius:10px; padding:6px; text-align:center;">
+        <div id="stat-agents" style="color:#7c3aed; font-weight:900; font-size:14px;">0</div>
+        <div style="color:#8b5cf6; font-size:9px;">ایجنت</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:12px; border-top:1px solid rgba(253,230,138,0.5); background:rgba(255,255,255,0.8);">
+    <div style="font-size:11px; color:#92400e; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+      <span id="key-status" style="width:8px; height:8px; border-radius:50%; background:#fbbf24; animation:pulse-dot 1.5s infinite;"></span>
+      <span id="key-status-text" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">🐾 دریافت کلید...</span>
+    </div>
+    <div id="model-count" style="font-size:10.5px; color:#d97706;">در حال بارگذاری...</div>
+  </div>
+</aside>
+
+<!-- ═══════════════ RESIZER 1 ═══════════════ -->
+<div class="resizer" data-target="sidebar-panel" data-side="left"></div>
+
+<!-- ═══════════════ CHAT ═══════════════ -->
+<main class="chat-area">
+  <div class="top-bar">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <h1 style="font-weight:800; color:#78350f; font-size:15px; display:flex; align-items:center; gap:8px; margin:0;">
+        <span>🐾</span>
+        <span id="chat-title-text">Mamal IDE</span>
+      </h1>
+      <div class="mode-toggle" id="mode-toggle">
+        <button onclick="switchMode('normal')" data-mode="normal" class="active">💬 معمولی</button>
+        <button onclick="switchMode('code')" data-mode="code">💻 کد</button>
+      </div>
+      <div id="status-btn" class="status-pill idle"><span class="dot"></span><span id="status-text">آماده</span></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <select id="model-select" onchange="updateModelCapabilities()" style="background:rgba(254,243,199,0.9); border:1px solid rgba(245,158,11,0.3); color:#78350f; font-size:12px; border-radius:10px; padding:6px 10px; outline:none; max-width:260px; font-weight:600;">
+        <option>در حال بارگذاری...</option>
+      </select>
+      <button onclick="toggleSettings()" style="padding:6px; color:#d97706; background:none; border:none; cursor:pointer; border-radius:8px;" title="تنظیمات (Ctrl+K)">
+        <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS PANEL (Extended with System Prompt) ═══ -->
+  <div id="settings-panel" class="settings-panel" style="border-bottom:1px solid rgba(253,230,138,0.5); background:rgba(254,243,199,0.5);">
+    <div style="padding:12px; max-width:820px; margin:0 auto;">
+      
+      <!-- System Prompt -->
+      <div style="margin-bottom:12px;">
+        <label style="display:block; color:#92400e; font-weight:800; margin-bottom:4px; font-size:11px;">📝 پرامپت پیش‌فرض سیستم (System Prompt)</label>
+        <textarea id="system-prompt-input" class="form-textarea" style="min-height:80px; font-size:12px; background:white;" placeholder="شما یک دستیار هوشمند هستید که به زبان فارسی پاسخ می‌دهید...">شما یک دستیار هوشمند هستید که به زبان فارسی پاسخ می‌دهید.</textarea>
+      </div>
+
+      <!-- Presets -->
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <span style="font-size:11px; font-weight:800; color:#92400e;">⚡ پریست‌ها:</span>
+        <button onclick="applyPreset('precise')" class="preset-btn">🎯 دقیق</button>
+        <button onclick="applyPreset('balanced')" class="preset-btn">⚖️ متعادل</button>
+        <button onclick="applyPreset('creative')" class="preset-btn">🎨 خلاق</button>
+        <button onclick="applyPreset('code')" class="preset-btn">💻 کد</button>
+        <button onclick="applyPreset('long')" class="preset-btn">📚 طولانی</button>
+        <button onclick="resetSettings()" style="font-size:10px; color:#dc2626; background:none; border:1px solid rgba(220,38,38,0.4); border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:700;">↺ ریست</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:12px;">
+        <div>
+          <label style="display:block; color:#92400e; font-weight:800; margin-bottom:4px;">🎛️ Temperature</label>
+          <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" style="width:100%; accent-color:#f59e0b;" oninput="document.getElementById('temp-val').textContent = this.value">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:#d97706; margin-top:2px;"><span>دقیق</span><span id="temp-val" style="font-weight:800; color:#ea580c;">0.7</span><span>خلاق</span></div>
+        </div>
+        <div>
+          <label style="display:block; color:#92400e; font-weight:800; margin-bottom:4px;">📏 Max Tokens</label>
+          <input type="number" id="max-tokens" value="4096" min="256" max="32000" step="256" style="width:100%; border:1px solid rgba(253,230,138,0.8); border-radius:8px; padding:6px 8px; font-size:12px;" dir="ltr">
+        </div>
+        <div>
+          <label style="display:block; color:#92400e; font-weight:800; margin-bottom:4px;">🔝 Top P</label>
+          <input type="range" id="top-p" min="0" max="1" step="0.05" value="1" style="width:100%; accent-color:#f59e0b;" oninput="document.getElementById('topp-val').textContent = this.value">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:#d97706; margin-top:2px;"><span>متمرکز</span><span id="topp-val" style="font-weight:800; color:#ea580c;">1</span><span>گسترده</span></div>
+        </div>
+        <div>
+          <label style="display:block; color:#92400e; font-weight:800; margin-bottom:4px;">🔁 Frequency Penalty</label>
+          <input type="range" id="freq-penalty" min="-2" max="2" step="0.1" value="0" style="width:100%; accent-color:#f59e0b;" oninput="document.getElementById('freq-val').textContent = this.value">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:#d97706; margin-top:2px;"><span>تکرار</span><span id="freq-val" style="font-weight:800; color:#ea580c;">0</span><span>تنوع</span></div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; font-size:11px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:white; border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:8px 10px;">
+          <input type="checkbox" id="stream-toggle" checked style="accent-color:#f59e0b;">
+          <span style="color:#92400e; font-weight:800;">🌊 Streaming</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; background:white; border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:8px 10px;">
+          <input type="checkbox" id="json-mode" style="accent-color:#f59e0b;">
+          <span style="color:#92400e; font-weight:800;">📦 JSON Mode</span>
+        </label>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:white; border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:8px 10px; grid-column:span 2;">
+          <span style="color:#92400e; font-weight:800; font-size:11px;">🎫 Tokens Used</span>
+          <span id="token-counter" style="font-weight:900; color:#ea580c; font-size:12px;">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-window" class="chat-window"></div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <div id="attached-files" style="padding: 0 12px;"></div>
+      <textarea id="chat-input" class="chat-input" rows="1" placeholder="پیام خود را بنویسید... (Enter = ارسال)"></textarea>
+      <div style="position:absolute; bottom:8px; left:8px; right:8px; display:flex; justify-content:space-between; align-items:center;">
+        <button onclick="document.getElementById('file-upload').click()" style="padding:8px; color:#d97706; background:none; border:none; cursor:pointer; border-radius:8px;">
+          <svg style="width:18px; height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+        </button>
+        <input type="file" id="file-upload" style="display:none;" accept=".txt,.md,.js,.html,.css,.json,.py,.java,.cpp,.c,.csv,.pdf,image/*" multiple onchange="handleFileUpload(event)">
+        <div style="display:flex; gap:4px;">
+          <button id="stop-btn" onclick="stopGeneration()" style="display:none; padding:8px 14px; background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:10px; cursor:pointer; font-size:12px; font-weight:800;">⏹ توقف</button>
+          <button id="send-btn" onclick="sendTask()" style="padding:8px 16px; background:linear-gradient(135deg,#f59e0b,#ec4899); color:white; border:none; border-radius:10px; cursor:pointer; font-size:12px; font-weight:800; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(245,158,11,0.35);">
+            <svg id="send-spinner" style="width:14px; height:14px; display:none; animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle><path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <span>ارسال</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════════ RESIZER 2 ═══════════════ -->
+<div class="resizer" data-target="right-panel" data-side="right"></div>
+
+<!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+<aside class="right-panel" id="right-panel">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-btn-trace" onclick="switchPanelTab('trace')">💭 TRACE</button>
+    <button class="tab-btn" id="tab-btn-agent" onclick="switchPanelTab('agent')">🤖 AGENT</button>
+    <button class="tab-btn" id="tab-btn-team" onclick="switchPanelTab('team')">👥 TEAM</button>
+    <button class="tab-btn" id="tab-btn-code" onclick="switchPanelTab('code')">💻 IDE</button>
+    <button class="tab-btn" id="tab-btn-log" onclick="switchPanelTab('log')">📋 LOG</button>
+  </div>
+
+  <div id="panel-trace" style="flex:1; overflow-y:auto; padding:16px;">
+    <div style="text-align:center; color:#d97706; font-size:11px; margin-top:40px;">🐾 مراحل تفکر ایجنت.</div>
+  </div>
+
+  <!-- ═══════ SINGLE AGENT (Extended) ═══════ -->
+  <div id="panel-agent" style="display:none;">
+    <div class="agent-container">
+      <div class="agent-header">
+        <div class="agent-title">
+          <div class="icon">🤖</div>
+          <div>
+            <div>AGENT STUDIO <span style="font-size:9px; color:#6ee7b7; margin-right:6px;">Pro</span></div>
+            <div style="font-size:9px; color:#a78bfa; font-weight:600;">Autonomous Multi-Modal Agent</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:10px; color:#c4b5fd; font-weight:700;">مدل ایجنت:</span>
+          <select id="agent-model-select" style="background:#1c1917; border:1px solid rgba(139,92,246,0.4); color:#fef3c7; font-size:10px; border-radius:6px; padding:4px 8px; outline:none; max-width:150px;">
+            <option>در حال بارگذاری...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Agent Mode Tabs -->
+      <div style="display:flex; gap:2px; padding:8px 10px; background:rgba(15,13,10,0.8); border-bottom:1px solid rgba(139,92,246,0.2);">
+        <button class="agent-mode-tab active" data-amode="build" onclick="switchAgentMode('build')">🛠️ ساخت کد</button>
+        <button class="agent-mode-tab" data-amode="vision" onclick="switchAgentMode('vision')">👁️ تحلیل عکس</button>
+        <button class="agent-mode-tab" data-amode="search" onclick="switchAgentMode('search')">🔍 جستجوی وب</button>
+        <button class="agent-mode-tab" data-amode="file" onclick="switchAgentMode('file')">📁 ساخت فایل</button>
+      </div>
+
+      <div class="agent-body">
+        <div class="agent-task-input">
+          <div id="agent-mode-hint" style="font-size:11px; color:#a78bfa; margin-bottom:8px;">🛠️ حالت ساخت: کد، HTML/CSS، فایل و ... می‌سازد</div>
+
+          <!-- Vision upload -->
+          <div id="agent-vision-box" style="display:none; margin-bottom:10px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button onclick="document.getElementById('agent-image-upload').click()" class="agent-run-btn" style="background:linear-gradient(135deg, #10b981, #06b6d4); padding:8px 14px; font-size:11px;">📷 آپلود عکس</button>
+              <input type="file" id="agent-image-upload" style="display:none;" accept="image/*" onchange="handleAgentImageUpload(event)">
+              <span id="agent-image-status" style="font-size:11px; color:#a78bfa;">عکسی انتخاب نشده</span>
+            </div>
+            <div id="agent-image-preview" style="margin-top:8px;"></div>
+          </div>
+
+          <!-- Search -->
+          <div id="agent-search-box" style="display:none; margin-bottom:10px;">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span style="font-size:11px; color:#6ee7b7;">🌐 موتور جستجو:</span>
+              <select id="search-engine" style="background:#1c1917; border:1px solid #57534e; color:#fef3c7; font-size:11px; border-radius:6px; padding:4px 8px; outline:none;">
+                <option value="duckduckgo">DuckDuckGo</option>
+                <option value="wikipedia">Wikipedia</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- File generation options -->
+          <div id="agent-file-box" style="display:none; margin-bottom:10px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <label style="font-size:11px; color:#fbbf24;">📄 نوع فایل:</label>
+              <select id="file-type" style="background:#1c1917; border:1px solid #57534e; color:#fef3c7; font-size:11px; border-radius:6px; padding:4px 8px; outline:none;">
+                <option value="auto">تشخیص خودکار</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="js">JavaScript</option>
+                <option value="json">JSON</option>
+                <option value="md">Markdown</option>
+                <option value="py">Python</option>
+                <option value="csv">CSV</option>
+                <option value="svg">SVG</option>
+                <option value="xml">XML</option>
+              </select>
+              <label style="font-size:11px; color:#fbbf24;">📂 مسیر:</label>
+              <input id="file-path" type="text" placeholder="auto" value="auto" dir="ltr" style="flex:1; background:#1c1917; border:1px solid #57534e; color:#fef3c7; font-size:11px; border-radius:6px; padding:4px 8px; outline:none; min-width:100px;">
+            </div>
+          </div>
+
+          <textarea id="agent-task" class="task-textarea" placeholder="تسک خود را بنویسید..."></textarea>
+
+          <div class="agent-options" style="margin-top:10px;">
+            <label class="agent-option"><input type="checkbox" id="agent-autorun" checked> اجرای خودکار</label>
+            <label class="agent-option"><input type="checkbox" id="agent-verify" checked> بررسی خروجی</label>
+            <label class="agent-option"><input type="checkbox" id="agent-open"> باز کردن خودکار</label>
+            <div style="display:flex; gap:4px; align-items:center; font-size:10.5px; color:#c4b5fd;">
+              <span>🧠 حداکثر مراحل:</span>
+              <input type="number" id="agent-max-iter" value="10" min="3" max="30" style="width:50px; background:#1c1917; border:1px solid rgba(139,92,246,0.3); border-radius:6px; color:#fef3c7; font-size:11px; padding:3px 6px; outline:none;" dir="ltr">
+            </div>
+            <div style="flex-grow:1;"></div>
+            <button id="agent-run-btn" class="agent-run-btn" onclick="runSingleAgent()">
+              <span id="agent-run-icon">▶</span>
+              <span id="agent-run-text">اجرای ایجنت</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="agent-progress">
+          <div class="agent-progress-bar" id="agent-progress-bar" style="width:0%"></div>
+        </div>
+
+        <div class="agent-log" id="agent-log">
+          <div style="text-align:center; color:#78716c; font-size:11px; margin-top:20px;">🐾 ایجنت آماده است. یک تسک بنویسید.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MULTI-AGENT TEAM ═══════ -->
+  <div id="panel-team" style="display:none;">
+    <div class="agent-container">
+      <div class="agent-header">
+        <div class="agent-title">
+          <div class="icon" style="background: linear-gradient(135deg, #10b981, #3b82f6);">👥</div>
+          <div>
+            <div>MULTI-AGENT TEAM</div>
+            <div style="font-size:9px; color:#6ee7b7; font-weight:600;">Collaborative Orchestration</div>
+          </div>
+        </div>
+        <div style="font-size:10px; color:#6ee7b7; font-weight:700;" id="team-status">آماده</div>
+      </div>
+
+      <div class="team-toolbar">
+        <button onclick="openAddAgentModal()" class="team-btn primary">➕ افزودن ایجنت</button>
+        <button onclick="loadTemplate('web')" class="team-btn">🌐 Web Team</button>
+        <button onclick="loadTemplate('fullstack')" class="team-btn">⚡ Fullstack</button>
+        <button onclick="loadTemplate('debug')" class="team-btn">🐛 Debug</button>
+        <button onclick="clearTeam()" class="team-btn" style="color:#fca5a5;">🗑️ پاک</button>
+        <div style="flex-grow:1;"></div>
+        <select id="execution-mode" style="background:#1c1917; border:1px solid #57534e; color:#fef3c7; font-size:10.5px; border-radius:6px; padding:5px 8px; outline:none; font-weight:700;">
+          <option value="parallel">⚡ موازی</option>
+          <option value="sequential">➡️ ترتیبی</option>
+          <option value="pipeline">🔗 زنجیره‌ای</option>
+        </select>
+      </div>
+
+      <div style="padding:12px; border-bottom:1px solid rgba(139,92,246,0.2); flex-shrink:0; background:rgba(15,13,10,0.6);">
+        <textarea id="team-task" class="task-textarea" placeholder="تسک اصلی تیم... (مثلاً: یک اپلیکیشن Todo List کامل بسازید)" style="min-height:50px;"></textarea>
+        <div style="display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+          <label class="agent-option"><input type="checkbox" id="team-open" checked> باز کردن فایل‌ها</label>
+          <label class="agent-option"><input type="checkbox" id="team-review"> ایجنت بررسی‌کننده</label>
+          <div style="flex-grow:1;"></div>
+          <button id="team-run-btn" class="agent-run-btn" onclick="runTeam()" style="background:linear-gradient(135deg, #10b981, #3b82f6);">
+            <span id="team-run-icon">🚀</span>
+            <span id="team-run-text">اجرای تیم</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="agent-progress">
+        <div class="agent-progress-bar" id="team-progress-bar" style="width:0%; background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);"></div>
+      </div>
+
+      <div style="flex:1; overflow-y:auto;">
+        <div class="agents-grid" id="agents-grid"></div>
+        <div id="team-summary" style="padding: 0 12px 12px; display:none;">
+          <div style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.05)); border: 1px solid rgba(16,185,129,0.3); border-radius: 10px; padding: 10px;">
+            <div style="font-size: 11px; font-weight: 800; color: #6ee7b7; margin-bottom: 6px;">📊 خلاصه اجرا</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #d6d3d1; white-space: pre-wrap;" id="team-summary-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ IDE ═══════ -->
+  <div id="panel-code" style="display:none;">
+    <div class="ide-container">
+      <div class="ide-toolbar">
+        <button onclick="openNewFileDialog()" class="toolbar-btn primary">➕ فایل</button>
+        <button onclick="openNewFolderDialog()" class="toolbar-btn">📁 پوشه</button>
+        <button onclick="document.getElementById('project-upload').click()" class="toolbar-btn">📥 آپلود</button>
+        <input type="file" id="project-upload" style="display:none;" multiple onchange="handleProjectUpload(event)">
+        <button onclick="openQuickOpen()" class="toolbar-btn">🔍 Go to</button>
+        <button onclick="openCommandPalette()" class="toolbar-btn">⌘ Commands</button>
+        <div style="flex-grow:1;"></div>
+        <button onclick="saveCurrentFile()" class="toolbar-btn success">💾</button>
+        <button onclick="downloadProject()" class="toolbar-btn">📦</button>
+        <button onclick="clearProject()" class="toolbar-btn danger">🗑️</button>
+      </div>
+
+      <div class="ide-body">
+        <div class="ide-explorer">
+          <div class="explorer-header"><span>EXPLORER</span><span id="explorer-count" style="font-size:9px;">0</span></div>
+          <div class="explorer-search">
+            <input id="file-search" type="text" placeholder="🔍 جستجو..." oninput="renderFileTree()">
+          </div>
+          <div id="file-tree" class="explorer-tree"></div>
+        </div>
+
+        <div class="ide-main">
+          <div id="editor-tabs" class="ide-tabs"></div>
+          <div id="editor-breadcrumb" class="ide-breadcrumb"><span class="crumb">پروژه</span></div>
+          <div class="editor-wrapper">
+            <div id="line-numbers" class="line-numbers">1</div>
+            <textarea id="code-editor" class="code-editor" placeholder="// فایلی انتخاب کنید..." spellcheck="false"></textarea>
+            <iframe id="preview-frame" style="display:none; width:100%; height:100%; border:none; background:white;" sandbox="allow-scripts"></iframe>
+          </div>
+          <div class="ide-statusbar">
+            <div style="display:flex; gap:12px;">
+              <span id="status-cursor">Ln 1, Col 1</span>
+              <span id="status-lines">0 خط</span>
+              <span id="status-size">0 B</span>
+              <span id="status-filetype">TXT</span>
+            </div>
+            <div style="display:flex; gap:12px;">
+              <span id="status-saved">✅ ذخیره</span>
+              <span>UTF-8</span>
+            </div>
+          </div>
+          <div class="ide-bottom" id="ide-bottom">
+            <div class="bottom-tabs">
+              <button class="bottom-tab active" onclick="switchBottomTab('terminal')" data-tab="terminal">⌨️ TERMINAL</button>
+              <button onclick="document.getElementById('ide-bottom').style.display='none'" style="margin-right:auto; color:#57534e; background:none; border:none; cursor:pointer; padding:0 8px;">✖</button>
+            </div>
+            <div id="bottom-terminal" class="bottom-content" style="display:block;">
+              <div style="color:#78716c;">🐾 Mamal Terminal — ls, cat, echo, rm, tree, clear</div>
+              <div id="terminal-output"></div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <span class="terminal-prompt">mamal$</span>
+                <input type="text" id="terminal-input" class="terminal-input" placeholder="دستور..." onkeydown="handleTerminalKey(event)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-log" style="display:none; flex:1; overflow-y:auto; padding:16px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#a16207;">
+    <div style="color:#d97706;">[system] 🐾 Multi-Agent Pro initializing...</div>
+  </div>
+</aside>
+
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3 id="modal-title" style="font-weight:900; color:#78350f; margin:0 0 12px;"></h3>
+    <input id="modal-input" type="text" class="form-input" placeholder="نام..." dir="ltr">
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+      <button onclick="closeModal()" style="padding:9px 18px; font-size:13px; color:#92400e; background:rgba(254,243,199,0.5); border:none; border-radius:10px; cursor:pointer; font-weight:600;">لغو</button>
+      <button onclick="confirmModal()" class="btn-primary">تایید</button>
+    </div>
+  </div>
+</div>
+
+<div id="add-agent-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3 style="font-weight:900; color:#78350f; margin:0 0 16px; display:flex; align-items:center; gap:8px;">➕ افزودن ایجنت جدید</h3>
+    <div class="form-group">
+      <label class="form-label">نام ایجنت</label>
+      <input id="agent-form-name" type="text" class="form-input" placeholder="مثلاً: Frontend Developer">
+    </div>
+    <div class="form-group">
+      <label class="form-label">نقش (Role)</label>
+      <input id="agent-form-role" type="text" class="form-input" placeholder="مثلاً: HTML/CSS/JS Expert">
+    </div>
+    <div class="form-group">
+      <label class="form-label">وظیفه (Task)</label>
+      <textarea id="agent-form-task" class="form-textarea" placeholder="مثلاً: صفحه HTML با استایل زیبا و اسکریپت تعاملی بساز..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">مدل اختصاصی ایجنت</label>
+      <select id="agent-form-model" class="form-select"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">رنگ</label>
+      <div class="color-options" id="color-options">
+        <div class="color-option" data-color="linear-gradient(135deg, #f59e0b, #ec4899)" style="background: linear-gradient(135deg, #f59e0b, #ec4899);"></div>
+        <div class="color-option" data-color="linear-gradient(135deg, #8b5cf6, #ec4899)" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);"></div>
+        <div class="color-option" data-color="linear-gradient(135deg, #10b981, #3b82f6)" style="background: linear-gradient(135deg, #10b981, #3b82f6);"></div>
+        <div class="color-option" data-color="linear-gradient(135deg, #ef4444, #f59e0b)" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"></div>
+        <div class="color-option" data-color="linear-gradient(135deg, #06b6d4, #8b5cf6)" style="background: linear-gradient(135deg, #06b6d4, #8b5cf6);"></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+      <button onclick="document.getElementById('add-agent-modal').style.display='none'" style="padding:9px 18px; font-size:13px; color:#92400e; background:rgba(254,243,199,0.5); border:none; border-radius:10px; cursor:pointer; font-weight:600;">لغو</button>
+      <button onclick="saveNewAgent()" class="btn-primary">افزودن</button>
+    </div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="palette-overlay" class="palette-overlay" style="display:none;">
+  <div class="palette-box">
+    <input id="palette-input" class="palette-input" placeholder="جستجو..." oninput="renderPalette()" onkeydown="handlePaletteKey(event)">
+    <div id="palette-list" class="palette-list"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// KEY + NETWORK (improved)
+// ═══════════════════════════════════════════════════════════
+const JSONBIN_BIN_ID = "6af4ec3bac6210605a80ce6c";
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
+let cachedOpenRouterKey = null;
+
+async function fetchWithRetry(url, options = {}, retries = 2, timeoutMs = 60000) {
+  let lastErr;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const merged = { ...options, signal: controller.signal };
+      const res = await fetch(url, merged);
+      clearTimeout(timeout);
+      if (res.status === 429 && i < retries) {
+        log('info', `Rate limit — retry ${i+1} in 2s`);
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
+      }
+      if (res.status >= 500 && i < retries) {
+        log('info', `Server ${res.status} — retry ${i+1}`);
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (err.name === 'AbortError' && i >= retries) throw new Error('زمان پاسخ به پایان رسید (timeout)');
+      if (i < retries) {
+        log('info', `Network retry ${i+1}/${retries}: ${err.message}`);
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
+async function fetchOpenRouterKey(forceRetry = false) {
+  if (cachedOpenRouterKey && !forceRetry) return cachedOpenRouterKey;
+  if (forceRetry) cachedOpenRouterKey = null;
+
+  const updateKeyStatus = (color, text, spin = false) => {
+    const dot = document.getElementById('key-status');
+    const txt = document.getElementById('key-status-text');
+    if (dot) { dot.style.background = color; dot.style.animation = spin ? 'pulse-dot 1.2s infinite' : 'none'; }
+    if (txt) txt.textContent = text;
+  };
+
+  updateKeyStatus('#fbbf24', '🐾 دریافت کلید...', true);
+
+  const MAX_RETRIES = 2;
+  let lastErr = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const res = await fetch(JSONBIN_URL + '?t=' + Date.now(), {
+        headers: { 'Accept': 'application/json', 'X-Bin-Meta': 'false' },
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        if (res.status === 429) throw new Error('محدودیت نرخ (429) — چند ثانیه صبر کنید');
+        if (res.status >= 500) throw new Error(`خطای سرور (${res.status})`);
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      let key = null;
+      if (typeof data === 'string') key = data.trim();
+      else if (data && typeof data === 'object') {
+        const record = data.record || data;
+        if (typeof record === 'string') key = record.trim();
+        else if (record && typeof record === 'object') {
+          const fields = ['apiKey','api_key','key','openrouterKey','openrouter_key','OPENROUTER_API_KEY','token','value','secret'];
+          for (const f of fields) if (record[f] && typeof record[f] === 'string') { key = record[f].trim(); break; }
+          if (!key) for (const v of Object.values(record)) if (typeof v === 'string' && v.startsWith('sk-')) { key = v.trim(); break; }
+        }
+      }
+      if (!key || !key.startsWith('sk-')) throw new Error('کلید نامعتبر یا خالی');
+
+      cachedOpenRouterKey = key;
+      updateKeyStatus('#10b981', '🐾 کلید آماده');
+      log('success', 'API key fetched');
+      return key;
+    } catch (err) {
+      lastErr = err;
+      log('error', `Key fetch attempt ${attempt + 1}/${MAX_RETRIES + 1}: ${err.message}`);
+      if (attempt < MAX_RETRIES) {
+        updateKeyStatus('#fbbf24', `🐾 تلاش ${attempt + 2}/${MAX_RETRIES + 1}...`, true);
+        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+      } else {
+        updateKeyStatus('#ef4444', '😿 اتصال برقرار نشد');
+      }
+    }
+  }
+  throw new Error(`خطای اتصال به jsonbin: ${lastErr?.message || 'نامشخص'}. اینترنت یا VPN را بررسی کنید.`);
+}
+
+function setStatus(state, text) {
+  document.getElementById('status-btn').className = `status-pill ${state}`;
+  document.getElementById('status-text').textContent = text;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODELS
+// ═══════════════════════════════════════════════════════════
+let models = [];
+let currentModelCapabilities = { vision: false, file: false };
+
+async function loadModels() {
+  const sel = document.getElementById('model-select');
+  const cnt = document.getElementById('model-count');
+  cnt.textContent = '🐾 در حال بارگذاری...';
+  try {
+    const res = await fetchWithRetry('https://openrouter.ai/api/v1/models', {}, 2, 30000);
+    const data = await res.json();
+    const freeModels = (data.data || []).filter(m => {
+      const p = parseFloat(m.pricing?.prompt || '1');
+      const c = parseFloat(m.pricing?.completion || '1');
+      return p === 0 && c === 0;
+    });
+    models = freeModels.map(m => {
+      const parts = m.id.split('/');
+      const prov = parts[0];
+      const mods = m.architecture?.modality || '';
+      const inputMods = m.architecture?.input_modalities || [];
+      const hasVision = inputMods.includes('image') || mods.includes('image') || m.id.includes('vision') || m.id.includes('vl');
+      const emojis = { 'meta-llama':'🦙','google':'🌟','deepseek':'🎯','qwen':'🧠','mistralai':'🌪️','microsoft':'💡','nousresearch':'🚀','anthropic':'🎭','openai':'🤖','x-ai':'❌','perplexity':'🔍','nvidia':'💚','bytedance':'🎬','liquid':'💧' };
+      return { id: m.id, name: `${emojis[prov]||'🔹'} ${m.name || parts[1]}${hasVision ? ' 👁️' : ''}`, vision: hasVision, file: true };
+    });
+    
+    const options = models.map(m=>`<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
+    sel.innerHTML = options;
+    
+    // Agent Model Select
+    const agentSel = document.getElementById('agent-model-select');
+    if (agentSel) agentSel.innerHTML = options;
+    
+    cnt.textContent = `🐾 ${models.length} مدل آماده`;
+    updateModelCapabilities();
+    updateAgentModelSelect();
+  } catch (err) {
+    cnt.textContent = '😿 خطا';
+    log('error', 'loadModels: ' + err.message);
+    const fallback = '<option value="deepseek/deepseek-r1:free">🎯 DeepSeek R1</option>';
+    sel.innerHTML = fallback;
+    const agentSel = document.getElementById('agent-model-select');
+    if (agentSel) agentSel.innerHTML = fallback;
+  }
+}
+
+function updateModelCapabilities() {
+  const sel = document.getElementById('model-select');
+  const s = models.find(m => m.id === sel.value);
+  if (!s) return;
+  currentModelCapabilities = { vision: s.vision, file: s.file };
+}
+
+function updateAgentModelSelect() {
+  const sel = document.getElementById('agent-form-model');
+  if (!sel) return;
+  sel.innerHTML = models.map(m=>`<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SESSIONS
+// ═══════════════════════════════════════════════════════════
+let sessions = [];
+let activeSessionId = null;
+const SESSIONS_KEY = 'mamal_sessions_v5';
+
+function loadSessions() {
+  try { const s = localStorage.getItem(SESSIONS_KEY); if (s) sessions = JSON.parse(s); } catch (e) {}
+  if (!sessions.length) createSession('normal', 'چت جدید');
+  else activeSessionId = sessions[0].id;
+  renderSessionsList();
+  renderActiveSession();
+}
+
+function saveSessions() { try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions)); } catch (e) {} }
+
+function createSession(mode, title) {
+  const id = 'sess-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+  const session = { id, title: title || (mode === 'code' ? 'چت با کد' : 'چت جدید'), mode, messages: [], createdAt: Date.now() };
+  sessions.unshift(session);
+  activeSessionId = id;
+  saveSessions();
+  return session;
+}
+
+function getActiveSession() { return sessions.find(s => s.id === activeSessionId); }
+
+function newSession(mode) {
+  const cur = getActiveSession();
+  if (cur && cur.messages.length === 0) {
+    if (cur.mode !== mode) { cur.mode = mode; cur.title = mode === 'code' ? 'چت با کد' : 'چت جدید'; saveSessions(); renderSessionsList(); renderActiveSession(); }
+    return;
+  }
+  createSession(mode);
+  renderSessionsList(); renderActiveSession(); updateSidebarStats();
+}
+
+function switchSession(id) { activeSessionId = id; renderSessionsList(); renderActiveSession(); }
+
+function deleteSession(id) {
+  if (!confirm('🐾 این جلسه حذف شود؟')) return;
+  sessions = sessions.filter(s => s.id !== id);
+  if (sessions.length === 0) createSession('normal', 'چت جدید');
+  else if (activeSessionId === id) activeSessionId = sessions[0].id;
+  saveSessions(); renderSessionsList(); renderActiveSession(); updateSidebarStats();
+}
+
+function switchMode(mode) {
+  const s = getActiveSession();
+  if (!s) return;
+  if (s.messages.length > 0 && !confirm('🐾 تغییر حالت؟')) return;
+  s.mode = mode;
+  saveSessions(); renderSessionsList(); renderActiveSession();
+}
+
+function renderSessionsList() {
+  document.getElementById('sessions-list').innerHTML = sessions.map(s => `
+    <div class="session-item ${s.id === activeSessionId ? 'active' : ''}" data-sid="${escapeHtml(s.id)}" onclick="switchSession(this.dataset.sid)">
+      <span>${s.mode === 'code' ? '💻' : '💬'}</span>
+      <span class="title" title="${escapeHtml(s.title)}">${escapeHtml(s.title)}</span>
+      <button class="del-btn" data-sid="${escapeHtml(s.id)}" onclick="event.stopPropagation();deleteSession(this.dataset.sid)">🗑️</button>
+    </div>`).join('');
+  updateSidebarStats();
+}
+
+function renderActiveSession() {
+  const s = getActiveSession();
+  if (!s) return;
+  document.querySelectorAll('#mode-toggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === s.mode));
+  document.getElementById('chat-title-text').textContent = s.title;
+  const w = document.getElementById('chat-window');
+  w.innerHTML = '';
+  if (s.messages.length === 0) {
+    w.innerHTML = `<div id="chat-empty" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; margin-top:60px;"><div style="font-size:72px; margin-bottom:16px;">🐱</div><h2 style="font-size:20px; font-weight:900; color:#78350f; margin-bottom:8px;">سلام! گربه کدبازت هستم</h2><p style="font-size:13px; color:#92400e;">یک تسک تعریف کن یا از تب TEAM برای Multi-Agent استفاده کن.</p></div>`;
+  } else {
+    s.messages.forEach(m => {
+      if (m.role === 'user') addBubble('user', m.display ?? (typeof m.content === 'string' ? m.content : '(پیام با فایل)'));
+      else if (m.role === 'assistant') addBubble('assistant', typeof m.content === 'string' ? m.content : '');
+    });
+  }
+}
+
+function updateSidebarStats() {
+  document.getElementById('stat-files').textContent = Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep')).length;
+  document.getElementById('stat-sessions').textContent = sessions.length;
+  document.getElementById('stat-agents').textContent = teamAgents.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let attachedFiles = [];
+let isGenerating = false;
+let currentAbortController = null;
+let currentPanelTab = 'trace';
+
+function switchPanelTab(tab) {
+  currentPanelTab = tab;
+  ['trace', 'agent', 'team', 'code', 'log'].forEach(t => {
+    const panel = document.getElementById(`panel-${t}`);
+    if (panel) panel.style.display = t === tab ? 'flex' : 'none';
+    const btn = document.getElementById(`tab-btn-${t}`);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+}
+
+function log(type, msg) {
+  const el = document.getElementById('panel-log');
+  if (!el) return;
+  const colors = { system:'#a16207', info:'#2563eb', success:'#10b981', error:'#ef4444', tool:'#f59e0b' };
+  const div = document.createElement('div');
+  div.style.color = colors[type] || '#a16207';
+  div.style.marginBottom = '2px';
+  div.textContent = `[${type}] ${msg}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function toggleSettings() { document.getElementById('settings-panel').classList.toggle('open'); }
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS PRESETS & SAVE/LOAD
+// ═══════════════════════════════════════════════════════════
+const SETTINGS_KEY = 'mamal_settings_v2';
+
+const PRESETS = {
+  precise:    { temperature: 0.1, top_p: 0.5,  freq: 0,   maxTokens: 2048, stream: true },
+  balanced:   { temperature: 0.7, top_p: 0.9,  freq: 0,   maxTokens: 4096, stream: true },
+  creative:   { temperature: 1.3, top_p: 1,    freq: 0.3, maxTokens: 4096, stream: true },
+  code:       { temperature: 0.2, top_p: 0.95, freq: 0,   maxTokens: 8192, stream: true },
+  long:       { temperature: 0.8, top_p: 0.9,  freq: 0.1, maxTokens: 16000, stream: true }
+};
+
+function applyPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  setVal('temperature', p.temperature); setVal('top-p', p.top_p);
+  setVal('freq-penalty', p.freq); setVal('max-tokens', p.maxTokens);
+  document.getElementById('stream-toggle').checked = p.stream;
+  saveSettings();
+  showToast(`✅ پریست "${name}" اعمال شد`);
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = val;
+  el.dispatchEvent(new Event('input'));
+}
+
+function resetSettings() {
+  if (!confirm('به تنظیمات پیش‌فرض بازگردانده شود؟')) return;
+  localStorage.removeItem(SETTINGS_KEY);
+  applyPreset('balanced');
+}
+
+function saveSettings() {
+  const settings = {
+    systemPrompt: document.getElementById('system-prompt-input')?.value,
+    temperature: document.getElementById('temperature')?.value,
+    topP: document.getElementById('top-p')?.value,
+    freq: document.getElementById('freq-penalty')?.value,
+    maxTokens: document.getElementById('max-tokens')?.value,
+    stream: document.getElementById('stream-toggle')?.checked,
+    jsonMode: document.getElementById('json-mode')?.checked
+  };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (s.systemPrompt !== undefined) document.getElementById('system-prompt-input').value = s.systemPrompt;
+    if (s.temperature) setVal('temperature', s.temperature);
+    if (s.topP) setVal('top-p', s.topP);
+    if (s.freq) setVal('freq-penalty', s.freq);
+    if (s.maxTokens) setVal('max-tokens', s.maxTokens);
+    if (typeof s.stream === 'boolean') document.getElementById('stream-toggle').checked = s.stream;
+    if (typeof s.jsonMode === 'boolean') document.getElementById('json-mode').checked = s.jsonMode;
+  } catch (e) {}
+}
+
+['system-prompt-input', 'temperature','top-p','freq-penalty','max-tokens','stream-toggle','json-mode'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) { el.addEventListener('input', saveSettings); el.addEventListener('change', saveSettings); }
+});
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#f59e0b,#ec4899); color:white; padding:10px 20px; border-radius:12px; font-weight:800; font-size:13px; box-shadow:0 6px 24px rgba(245,158,11,0.5); z-index:9999; animation:modalSlide 0.2s;';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT FILES
+// ═══════════════════════════════════════════════════════════
+let projectFiles = {};
+let openFolders = new Set();
+let openTabs = [];
+let activeTabFile = null;
+let unsavedChanges = {};
+const STORAGE_KEY = 'mamal_project_files_v5';
+
+function loadProjectFromStorage() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if (s) projectFiles = JSON.parse(s); } catch (e) {}
+}
+function saveProject() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(projectFiles)); } catch (e) {}
+  updateSidebarStats();
+}
+
+function buildFileTree(paths) {
+  const root = { name: '', type: 'folder', children: {}, path: '' };
+  for (const path of paths) {
+    const parts = path.split('/'); let node = root; let curPath = '';
+    for (let i = 0; i < parts.length; i++) {
+      curPath = curPath ? curPath + '/' + parts[i] : parts[i];
+      const isLast = i === parts.length - 1;
+      if (!node.children[parts[i]]) node.children[parts[i]] = { name: parts[i], type: isLast ? 'file' : 'folder', path: curPath, children: {} };
+      node = node.children[parts[i]];
+    }
+  }
+  return root;
+}
+
+function renderFileTree() {
+  const searchTerm = (document.getElementById('file-search')?.value || '').toLowerCase();
+  const allPaths = Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep'));
+  document.getElementById('explorer-count').textContent = allPaths.length;
+  let paths = searchTerm ? allPaths.filter(p => p.toLowerCase().includes(searchTerm)) : allPaths;
+  const root = buildFileTree(paths);
+  const items = Object.values(root.children).sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+  if (!items.length) {
+    document.getElementById('file-tree').innerHTML = `<div style="text-align:center; color:#57534e; font-size:11px; padding:16px;">🐾 ${searchTerm ? 'نتیجه‌ای نیست' : 'پروژه خالی'}</div>`;
+    return;
+  }
+  const renderNode = (node, depth = 0) => {
+    const isFolder = node.type === 'folder';
+    const isOpen = openFolders.has(node.path) || searchTerm;
+    const isActive = activeTabFile === node.path;
+    const isModified = unsavedChanges[node.path];
+    const icon = isFolder ? (isOpen ? '📂' : '📁') : getFileIcon(node.name);
+    const paddingRight = 6 + depth * 12;
+    let html = `<div class="file-tree-item ${isOpen ? 'open' : ''} ${isActive ? 'active' : ''}" style="padding-right:${paddingRight}px" data-path="${escapeHtml(node.path)}" data-type="${node.type}" onclick="handleTreeClick(event, this.dataset.path, this.dataset.type)">`;
+    if (isFolder) html += `<span class="chevron">▶</span>`;
+    html += `<span>${icon}</span><span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(node.name)}${isModified ? ' ●' : ''}</span></div>`;
+    if (isFolder && isOpen) {
+      const children = Object.values(node.children).sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+      for (const c of children) html += renderNode(c, depth + 1);
+    }
+    return html;
+  };
+  document.getElementById('file-tree').innerHTML = items.map(n => renderNode(n)).join('');
+}
+
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const icons = { js:'🟨', jsx:'⚛️', ts:'🔷', tsx:'⚛️', html:'🌐', css:'🎨', json:'📋', md:'📝', txt:'📄', py:'🐍', java:'☕', cpp:'⚙️', go:'🐹', rs:'🦀', php:'🐘', sh:'📜', yml:'⚙️' };
+  return icons[ext] || '📄';
+}
+
+function handleTreeClick(e, path, type) {
+  e.stopPropagation();
+  if (type === 'folder') {
+    if (openFolders.has(path)) openFolders.delete(path);
+    else openFolders.add(path);
+    renderFileTree();
+  } else openFileInEditor(path);
+}
+
+function openFileInEditor(path) {
+  if (!(path in projectFiles)) return;
+  if (!openTabs.includes(path)) openTabs.push(path);
+  activeTabFile = path;
+  document.getElementById('code-editor').value = projectFiles[path];
+  updateLineNumbers();
+  updateStatusBar();
+  renderEditorTabs();
+  renderFileTree();
+  updateBreadcrumb(path);
+}
+
+function updateBreadcrumb(path) {
+  const crumbs = path.split('/');
+  document.getElementById('editor-breadcrumb').innerHTML = crumbs.map((c, i) =>
+    `<span class="crumb ${i === crumbs.length - 1 ? 'active' : ''}">${escapeHtml(c)}</span>${i < crumbs.length - 1 ? ' <span style="color:#57534e;">/</span> ' : ''}`
+  ).join('');
+}
+
+function updateStatusBar() {
+  const ta = document.getElementById('code-editor');
+  const val = ta.value;
+  document.getElementById('status-lines').textContent = val.split('\n').length + ' خط';
+  document.getElementById('status-size').textContent = new Blob([val]).size + ' B';
+  const ext = activeTabFile ? activeTabFile.split('.').pop().toUpperCase() : 'TXT';
+  document.getElementById('status-filetype').textContent = ext;
+}
+
+function renderEditorTabs() {
+  const tabs = document.getElementById('editor-tabs');
+  if (!openTabs.length) { tabs.innerHTML = `<div class="tab-item" style="color:#57534e;">📁 فایلی باز نیست</div>`; return; }
+  tabs.innerHTML = openTabs.map(p => {
+    const name = p.split('/').pop();
+    const isModified = unsavedChanges[p];
+    return `<div class="tab-item ${p === activeTabFile ? 'active' : ''}" data-path="${escapeHtml(p)}" onclick="openFileInEditor(this.dataset.path)">
+      <span>${getFileIcon(name)}</span>
+      <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(name)}${isModified ? ' ●' : ''}</span>
+      <span class="tab-close" data-path="${escapeHtml(p)}" onclick="event.stopPropagation();closeTab(this.dataset.path)">✖</span>
+    </div>`;
+  }).join('');
+}
+
+function closeTab(path) {
+  openTabs = openTabs.filter(p => p !== path);
+  if (activeTabFile === path) {
+    activeTabFile = openTabs[openTabs.length - 1] || null;
+    if (activeTabFile) openFileInEditor(activeTabFile);
+    else { document.getElementById('code-editor').value = ''; document.getElementById('line-numbers').textContent = '1'; }
+  }
+  renderEditorTabs();
+  renderFileTree();
+}
+
+function updateLineNumbers() {
+  const ta = document.getElementById('code-editor');
+  const lines = ta.value.split('\n').length;
+  let html = '';
+  for (let i = 1; i <= Math.max(lines, 1); i++) html += i + '<br>';
+  document.getElementById('line-numbers').innerHTML = html;
+}
+
+document.getElementById('code-editor').addEventListener('input', e => {
+  if (!activeTabFile) return;
+  projectFiles[activeTabFile] = e.target.value;
+  unsavedChanges[activeTabFile] = true;
+  updateLineNumbers();
+  updateStatusBar();
+  renderEditorTabs();
+  renderFileTree();
+});
+
+document.getElementById('code-editor').addEventListener('scroll', e => {
+  document.getElementById('line-numbers').scrollTop = e.target.scrollTop;
+});
+
+function saveCurrentFile() {
+  if (!activeTabFile) return;
+  projectFiles[activeTabFile] = document.getElementById('code-editor').value;
+  delete unsavedChanges[activeTabFile];
+  saveProject();
+  renderEditorTabs();
+  renderFileTree();
+  const el = document.getElementById('status-saved');
+  el.textContent = '✅ ذخیره شد';
+  setTimeout(() => el.textContent = '✅ ذخیره', 1500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MULTI-AGENT TEAM
+// ═══════════════════════════════════════════════════════════
+let teamAgents = [];
+let teamRunning = false;
+let teamAbortController = null;
+let selectedColor = 'linear-gradient(135deg, #f59e0b, #ec4899)';
+const TEAM_KEY = 'mamal_team_v1';
+
+function loadTeam() {
+  try {
+    const s = localStorage.getItem(TEAM_KEY);
+    if (s) teamAgents = JSON.parse(s);
+  } catch (e) {}
+  renderAgentsGrid();
+}
+
+function saveTeam() {
+  try { localStorage.setItem(TEAM_KEY, JSON.stringify(teamAgents)); } catch (e) {}
+  updateSidebarStats();
+}
+
+function renderAgentsGrid() {
+  const grid = document.getElementById('agents-grid');
+  if (!grid) return;
+
+  const cards = teamAgents.map((a, i) => `
+    <div class="agent-card ${a.status || 'idle'}" style="--agent-color: ${a.color};">
+      <div class="agent-card-header">
+        <div class="agent-avatar" style="background: ${a.color};">${a.emoji || '🤖'}</div>
+        <div class="agent-info">
+          <div class="agent-name">${escapeHtml(a.name)}</div>
+          <div class="agent-role">${escapeHtml(a.role)}</div>
+        </div>
+        <span class="agent-badge ${a.status || 'idle'}">${getStatusLabel(a.status)}</span>
+      </div>
+      <div class="agent-task-preview">${escapeHtml(a.task)}</div>
+      <div class="agent-card-footer">
+        <span class="agent-model">${a.model ? escapeHtml(a.model.split('/').pop()) : '-'}</span>
+        <div style="display:flex; gap:4px;">
+          <button onclick="editAgent(${i})" style="background:none; border:none; cursor:pointer; color:#a78bfa; font-size:12px;" title="ویرایش">✏️</button>
+          <button onclick="removeAgent(${i})" style="background:none; border:none; cursor:pointer; color:#fca5a5; font-size:12px;" title="حذف">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const addBtn = `<div class="add-agent-btn" onclick="openAddAgentModal()">
+    <div style="font-size: 24px;">➕</div>
+    <div>افزودن ایجنت جدید</div>
+  </div>`;
+
+  grid.innerHTML = cards + addBtn;
+}
+
+function getStatusLabel(status) {
+  const labels = { idle: 'آماده', thinking: 'فکر...', working: 'در حال کار', done: '✅ تمام', error: '❌ خطا' };
+  return labels[status] || 'آماده';
+}
+
+function openAddAgentModal() {
+  document.getElementById('agent-form-name').value = '';
+  document.getElementById('agent-form-role').value = '';
+  document.getElementById('agent-form-task').value = '';
+  updateAgentModelSelect();
+  document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.color-option')[0]?.classList.add('selected');
+  selectedColor = 'linear-gradient(135deg, #f59e0b, #ec4899)';
+  editingAgentIndex = -1;
+  document.getElementById('add-agent-modal').style.display = 'flex';
+}
+
+document.querySelectorAll('.color-option').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.color-option').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    selectedColor = c.dataset.color;
+  });
+});
+
+let editingAgentIndex = -1;
+
+function saveNewAgent() {
+  const name = document.getElementById('agent-form-name').value.trim();
+  const role = document.getElementById('agent-form-role').value.trim();
+  const task = document.getElementById('agent-form-task').value.trim();
+  const model = document.getElementById('agent-form-model').value;
+  if (!name || !task) { alert('نام و وظیفه الزامی است'); return; }
+
+  const emojiMap = { 'frontend': '🎨', 'backend': '⚙️', 'css': '💅', 'html': '📄', 'js': '🟨', 'test': '🧪', 'review': '👁️', 'design': '🎭', 'api': '🔌', 'db': '💾' };
+  let emoji = '🤖';
+  for (const [key, e] of Object.entries(emojiMap)) if (role.toLowerCase().includes(key) || name.toLowerCase().includes(key)) { emoji = e; break; }
+
+  if (editingAgentIndex >= 0) {
+    teamAgents[editingAgentIndex] = { ...teamAgents[editingAgentIndex], name, role, task, model, color: selectedColor, emoji };
+    editingAgentIndex = -1;
+  } else {
+    teamAgents.push({ id: 'agent-' + Date.now(), name, role, task, model, color: selectedColor, emoji, status: 'idle' });
+  }
+  saveTeam();
+  renderAgentsGrid();
+  document.getElementById('add-agent-modal').style.display = 'none';
+}
+
+function editAgent(i) {
+  const a = teamAgents[i];
+  editingAgentIndex = i;
+  document.getElementById('agent-form-name').value = a.name;
+  document.getElementById('agent-form-role').value = a.role;
+  document.getElementById('agent-form-task').value = a.task;
+  updateAgentModelSelect();
+  document.getElementById('agent-form-model').value = a.model || '';
+  document.querySelectorAll('.color-option').forEach(c => {
+    c.classList.toggle('selected', c.dataset.color === a.color);
+  });
+  selectedColor = a.color;
+  document.getElementById('add-agent-modal').style.display = 'flex';
+}
+
+function removeAgent(i) {
+  if (!confirm(`حذف ${teamAgents[i].name}؟`)) return;
+  teamAgents.splice(i, 1);
+  saveTeam();
+  renderAgentsGrid();
+}
+
+function clearTeam() {
+  if (!confirm('کل تیم حذف شود؟')) return;
+  teamAgents = [];
+  saveTeam();
+  renderAgentsGrid();
+}
+
+function loadTemplate(type) {
+  const templates = {
+    web: [
+      { name: 'HTML Developer', role: 'HTML Expert', task: 'فایل index.html با ساختار کامل، semantic tags، و لینک به CSS/JS بساز', color: 'linear-gradient(135deg, #f59e0b, #ec4899)', emoji: '📄' },
+      { name: 'CSS Designer', role: 'CSS/Styling', task: 'فایل style.css با طراحی مدرن، responsive، گرادیانت‌ها و انیمیشن‌ها بساز', color: 'linear-gradient(135deg, #8b5cf6, #ec4899)', emoji: '🎨' },
+      { name: 'JS Developer', role: 'JavaScript', task: 'فایل script.js با تمام منطق برنامه، event handlers و DOM manipulation بساز', color: 'linear-gradient(135deg, #10b981, #3b82f6)', emoji: '🟨' }
+    ],
+    fullstack: [
+      { name: 'Frontend', role: 'UI Developer', task: 'UI کامل با HTML/CSS/JS بساز', color: 'linear-gradient(135deg, #f59e0b, #ec4899)', emoji: '🎨' },
+      { name: 'Backend', role: 'API Developer', task: 'API endpoints با Node.js/Express بساز', color: 'linear-gradient(135deg, #10b981, #3b82f6)', emoji: '⚙️' },
+      { name: 'Database', role: 'Data Layer', task: 'Schema و data models رو بساز', color: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', emoji: '💾' },
+      { name: 'DevOps', role: 'Config', task: 'package.json، README، و تنظیمات deployment', color: 'linear-gradient(135deg, #ef4444, #f59e0b)', emoji: '🚀' }
+    ],
+    debug: [
+      { name: 'Bug Hunter', role: 'Analyzer', task: 'کد رو تحلیل کن و باگ‌ها رو پیدا کن', color: 'linear-gradient(135deg, #ef4444, #f59e0b)', emoji: '🐛' },
+      { name: 'Fixer', role: 'Code Fixer', task: 'باگ‌های پیدا شده رو اصلاح کن', color: 'linear-gradient(135deg, #10b981, #3b82f6)', emoji: '🔧' },
+      { name: 'Tester', role: 'QA', task: 'کد اصلاح شده رو تست کن', color: 'linear-gradient(135deg, #8b5cf6, #ec4899)', emoji: '🧪' }
+    ]
+  };
+
+  if (!templates[type]) return;
+  teamAgents = templates[type].map((t, i) => ({
+    id: 'agent-' + Date.now() + '-' + i,
+    ...t,
+    model: models[0]?.id || '',
+    status: 'idle'
+  }));
+  saveTeam();
+  renderAgentsGrid();
+  log('success', `Template loaded: ${type}`);
+}
+
+async function runTeam() {
+  if (teamRunning) {
+    if (teamAbortController) teamAbortController.abort();
+    return;
+  }
+  if (!teamAgents.length) { alert('ابتدا ایجنت اضافه کنید'); return; }
+  const task = document.getElementById('team-task').value.trim();
+  if (!task) { alert('تسک تیم را بنویسید'); return; }
+
+  teamRunning = true;
+  teamAbortController = new AbortController();
+  const runBtn = document.getElementById('team-run-btn');
+  runBtn.classList.add('running');
+  document.getElementById('team-run-text').textContent = 'توقف';
+  document.getElementById('team-run-icon').textContent = '⏹';
+  document.getElementById('team-status').textContent = 'در حال اجرا...';
+  document.getElementById('team-summary').style.display = 'none';
+
+  teamAgents.forEach(a => { a.status = 'idle'; a.output = ''; a.error = ''; });
+  renderAgentsGrid();
+  document.getElementById('team-progress-bar').style.width = '0%';
+
+  const executionMode = document.getElementById('execution-mode').value;
+  const autoOpen = document.getElementById('team-open').checked;
+  const withReviewer = document.getElementById('team-review').checked;
+
+  const startTime = Date.now();
+  let reviewerAdded = false;
+
+  try {
+    const apiKey = await fetchOpenRouterKey();
+
+    if (executionMode === 'parallel') {
+      await runParallel(teamAgents, task, apiKey, autoOpen);
+    } else if (executionMode === 'sequential') {
+      await runSequential(teamAgents, task, apiKey, autoOpen);
+    } else if (executionMode === 'pipeline') {
+      await runPipeline(teamAgents, task, apiKey, autoOpen);
+    }
+
+    if (withReviewer && !teamAbortController.signal.aborted) {
+      reviewerAdded = true;
+      await runReviewer(apiKey);
+    }
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    showTeamSummary(elapsed);
+
+    document.getElementById('team-status').textContent = '✅ تمام شد';
+    log('success', `Team completed in ${elapsed}s`);
+  } catch (err) {
+    if (err.name === 'AbortError' || teamAbortController?.signal.aborted) {
+      document.getElementById('team-status').textContent = '⏹ متوقف';
+    } else {
+      document.getElementById('team-status').textContent = '❌ خطا';
+      log('error', err.message);
+    }
+  } finally {
+    if (reviewerAdded) {
+      const last = teamAgents[teamAgents.length - 1];
+      if (last && last.name === 'Reviewer') teamAgents.pop();
+    }
+    teamRunning = false;
+    teamAbortController = null;
+    runBtn.classList.remove('running');
+    document.getElementById('team-run-text').textContent = 'اجرای تیم';
+    document.getElementById('team-run-icon').textContent = '🚀';
+    renderAgentsGrid();
+    setTimeout(() => { document.getElementById('team-status').textContent = 'آماده'; }, 3000);
+  }
+}
+
+async function runAgentTask(agent, task, apiKey, context = '', autoOpen = false) {
+  agent.status = 'thinking';
+  renderAgentsGrid();
+  updateTeamProgress();
+
+  const systemPrompt = `You are ${agent.name} — a ${agent.role}.
+Your specific responsibility: ${agent.task}
+
+You are part of a team. Focus ONLY on your assigned task and don't do other agents' work.
+
+Response format (strict):
+Thought: [your reasoning]
+Action: [tool_name]
+Action Input: [JSON]
+
+Available tools:
+- write_file(path, content) — Args: {"path": "...", "content": "..."}
+- read_file(path) — Args: {"path": "..."}
+- list_files() — Args: {}
+- delete_file(path) — Args: {"path": "..."}
+
+When done, use:
+Final Answer: [summary of what you accomplished]`;
+
+  const userPrompt = `Team Task: ${task}
+
+Your specific job: ${agent.task}
+${context ? `\nContext from previous work:\n${context}` : ''}
+
+Current project files: ${Object.keys(projectFiles).join(', ') || '(empty)'}
+
+Start now. Follow the format strictly.`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ];
+
+  let iteration = 0;
+  const MAX_ITER = 8;
+  let finalAnswer = null;
+
+  while (iteration < MAX_ITER && !finalAnswer) {
+    if (teamAbortController?.signal.aborted) throw new Error('متوقف شد');
+    iteration++;
+
+    agent.status = 'working';
+    renderAgentsGrid();
+
+    const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': `Mamal Team: ${agent.name}` },
+      body: JSON.stringify({ model: agent.model || models[0]?.id, messages, temperature: 0.3, max_tokens: 2500 })
+    }, 2, 90000);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`API ${res.status}: ${errText.substring(0, 150)}`);
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || '';
+    messages.push({ role: 'assistant', content: reply });
+
+    const finalMatch = reply.match(/Final Answer:\s*([\s\S]+)$/);
+    if (finalMatch) {
+      finalAnswer = finalMatch[1].trim();
+      break;
+    }
+
+    const actionMatch = reply.match(/Action:\s*(\w+)\s*\n\s*Action Input:\s*([\s\S]+?)(?=\n(?:Thought|Observation|Final)|$)/);
+    if (actionMatch) {
+      const toolName = actionMatch[1];
+      let toolArgs;
+      try { toolArgs = JSON.parse(actionMatch[2].trim()); }
+      catch (e) {
+        const codeBlock = actionMatch[2].match(/```[\w]*\n?([\s\S]*?)```/);
+        if (codeBlock && toolName === 'write_file') {
+          const pathMatch = actionMatch[2].match(/"path"\s*:\s*"([^"]+)"/);
+          if (pathMatch) toolArgs = { path: pathMatch[1], content: codeBlock[1] };
+        }
+      }
+
+      let observation = '';
+      if (toolArgs) {
+        try {
+          if (toolName === 'write_file') {
+            projectFiles[toolArgs.path] = toolArgs.content || '';
+            saveProject();
+            renderFileTree();
+            observation = `✓ نوشته شد: ${toolArgs.path} (${(toolArgs.content || '').length}b)`;
+            if (autoOpen) {
+              const parts = toolArgs.path.split('/').slice(0, -1).join('/');
+              if (parts) openFolders.add(parts);
+              setTimeout(() => openFileInEditor(toolArgs.path), 100);
+            }
+          } else if (toolName === 'read_file') {
+            observation = projectFiles[toolArgs.path] || `ERROR: یافت نشد`;
+          } else if (toolName === 'list_files') {
+            observation = Object.keys(projectFiles).join('\n') || '(empty)';
+          } else if (toolName === 'delete_file') {
+            if (projectFiles[toolArgs.path]) { delete projectFiles[toolArgs.path]; saveProject(); renderFileTree(); observation = '✓ حذف شد'; }
+          }
+        } catch (e) { observation = `ERROR: ${e.message}`; }
+      } else {
+        observation = 'ERROR: Invalid JSON in Action Input';
+      }
+      messages.push({ role: 'user', content: `Observation: ${observation}` });
+    }
+  }
+
+  agent.status = 'done';
+  agent.output = finalAnswer || '(بدون پاسخ نهایی)';
+  renderAgentsGrid();
+  updateTeamProgress();
+  return agent.output;
+}
+
+async function runParallel(agents, task, apiKey, autoOpen) {
+  const promises = agents.map(a => runAgentTask(a, task, apiKey, '', autoOpen).catch(err => {
+    a.status = 'error';
+    a.error = err.message;
+    renderAgentsGrid();
+    updateTeamProgress();
+    return null;
+  }));
+  await Promise.all(promises);
+}
+
+async function runSequential(agents, task, apiKey, autoOpen) {
+  let context = '';
+  for (const agent of agents) {
+    if (teamAbortController.signal.aborted) throw new Error('متوقف شد');
+    try {
+      await runAgentTask(agent, task, apiKey, context, autoOpen);
+      context += `\n\n[${agent.name} - ${agent.role}]:\n${agent.output}\n`;
+    } catch (err) {
+      agent.status = 'error';
+      agent.error = err.message;
+      renderAgentsGrid();
+      updateTeamProgress();
+    }
+  }
+}
+
+async function runPipeline(agents, task, apiKey, autoOpen) {
+  let context = '';
+  for (const agent of agents) {
+    if (teamAbortController.signal.aborted) throw new Error('متوقف شد');
+    try {
+      await runAgentTask(agent, task, apiKey, context, autoOpen);
+      context += `\n\n[Pipeline Stage: ${agent.name}]:\n${agent.output}\n\nFiles so far: ${Object.keys(projectFiles).join(', ')}`;
+    } catch (err) {
+      agent.status = 'error';
+      agent.error = err.message;
+      renderAgentsGrid();
+      updateTeamProgress();
+    }
+  }
+}
+
+async function runReviewer(apiKey) {
+  const reviewer = {
+    name: 'Reviewer',
+    role: 'Quality Assurance',
+    emoji: '👁️',
+    color: 'linear-gradient(135deg, #a78bfa, #f59e0b)',
+    status: 'working'
+  };
+
+  teamAgents.push(reviewer);
+  renderAgentsGrid();
+
+  const filesSummary = Object.entries(projectFiles)
+    .filter(([p]) => !p.endsWith('/.gitkeep'))
+    .map(([p, c]) => `--- ${p} ---\n${c.substring(0, 500)}`)
+    .join('\n\n');
+
+  const messages = [
+    { role: 'system', content: 'You are a code reviewer. Analyze the project files and give feedback in Persian (فارسی).' },
+    { role: 'user', content: `Review these files and give quality feedback:\n\n${filesSummary || '(no files)'}` }
+  ];
+
+  try {
+    const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Reviewer' },
+      body: JSON.stringify({ model: models[0]?.id, messages, temperature: 0.3, max_tokens: 1500 })
+    }, 2, 60000);
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    reviewer.output = data.choices?.[0]?.message?.content || 'نظری داده نشد';
+    reviewer.status = 'done';
+  } catch (e) {
+    reviewer.status = 'error';
+    reviewer.error = e.message;
+  }
+  renderAgentsGrid();
+}
+
+function updateTeamProgress() {
+  const done = teamAgents.filter(a => a.status === 'done' || a.status === 'error').length;
+  const pct = teamAgents.length ? (done / teamAgents.length) * 100 : 0;
+  document.getElementById('team-progress-bar').style.width = pct + '%';
+}
+
+function showTeamSummary(elapsed) {
+  const summary = document.getElementById('team-summary');
+  const content = document.getElementById('team-summary-content');
+  summary.style.display = 'block';
+
+  let text = `⏱ زمان: ${elapsed}s\n\n`;
+  text += `📁 فایل‌های ساخته شده: ${Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep')).length}\n\n`;
+  teamAgents.forEach(a => {
+    const status = a.status === 'done' ? '✅' : a.status === 'error' ? '❌' : '⏳';
+    text += `${status} ${a.name} (${a.role}): ${a.status}\n`;
+    if (a.output) text += `   ${a.output.substring(0, 100)}...\n`;
+  });
+
+  content.textContent = text;
+}
+
+// ═══════════════════════════════════════════════════════════
+// AGENT EXTENSIONS (Modes, Vision, Search, File)
+// ═══════════════════════════════════════════════════════════
+let agentMode = 'build';
+let agentImageData = null;
+
+const MODE_HINTS = {
+  build: '🛠️ حالت ساخت: کد، HTML/CSS، فایل و ... می‌سازد',
+  vision: '👁️ حالت تحلیل عکس: عکس را آپلود کن و درباره‌اش بپرس',
+  search: '🔍 حالت جستجو: اطلاعات از وب می‌گیرد (DuckDuckGo/Wikipedia)',
+  file: '📁 حالت ساخت فایل: فایل با فرمت مشخص می‌سازد'
+};
+
+function switchAgentMode(mode) {
+  agentMode = mode;
+  document.querySelectorAll('.agent-mode-tab').forEach(b => b.classList.toggle('active', b.dataset.amode === mode));
+  document.getElementById('agent-mode-hint').textContent = MODE_HINTS[mode];
+  document.getElementById('agent-vision-box').style.display = mode === 'vision' ? 'block' : 'none';
+  document.getElementById('agent-search-box').style.display = mode === 'search' ? 'block' : 'none';
+  document.getElementById('agent-file-box').style.display = mode === 'file' ? 'block' : 'none';
+
+  const ta = document.getElementById('agent-task');
+  const ph = {
+    build: 'مثلاً: یک وب‌سایت Todo List با HTML/CSS/JS بساز',
+    vision: 'مثلاً: این عکس چیه؟ چه رنگ‌هایی داره؟',
+    search: 'مثلاً: آخرین نسخه React چیه؟ (سرچ می‌کنه)',
+    file: 'مثلاً: یک فایل JSON با ۵ کاربر نمونه بساز'
+  };
+  ta.placeholder = ph[mode] || ta.placeholder;
+}
+
+async function handleAgentImageUpload(event) {
+  const f = event.target.files[0];
+  if (!f) return;
+  if (!currentModelCapabilities.vision) {
+    if (!confirm('⚠️ مدل فعلی از vision پشتیبانی نمی‌کند. ادامه؟')) return;
+  }
+  const dataUrl = await readFileAsDataURL(f);
+  agentImageData = { name: f.name, dataUrl };
+  document.getElementById('agent-image-status').textContent = `✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+  document.getElementById('agent-image-preview').innerHTML = `<img src="${dataUrl}" class="agent-image-thumb">`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SINGLE AGENT
+// ═══════════════════════════════════════════════════════════
+let agentRunning = false;
+let agentAbortController = null;
+
+function agentLog(type, label, content) {
+  const log = document.getElementById('agent-log');
+  const empty = log.querySelector('div[style*="text-align:center"]');
+  if (empty) empty.remove();
+  const colors = { thought: '#fbbf24', action: '#60a5fa', observation: '#10b981', result: '#a78bfa', error: '#ef4444' };
+  const emojis = { thought: '💭', action: '⚡', observation: '👁️', result: '✅', error: '❌' };
+  const div = document.createElement('div');
+  div.className = `agent-log-item ${type}`;
+  div.innerHTML = `<div class="log-label" style="color:${colors[type]};">${emojis[type]} ${label}</div><div class="log-content">${escapeHtml(content)}</div>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setAgentProgress(pct) {
+  document.getElementById('agent-progress-bar').style.width = pct + '%';
+}
+
+async function runSingleAgent() {
+  if (agentRunning) { if (agentAbortController) agentAbortController.abort(); return; }
+  const task = document.getElementById('agent-task').value.trim();
+  if (!task) { alert('تسک را بنویسید'); return; }
+  
+  const model = document.getElementById('agent-model-select').value; // استفاده از مدل اختصاصی ایجنت
+  if (!model) return;
+
+  if (agentMode === 'vision' && !agentImageData) {
+    alert('لطفاً اول یک عکس آپلود کن');
+    return;
+  }
+
+  agentRunning = true;
+  agentAbortController = new AbortController();
+  const runBtn = document.getElementById('agent-run-btn');
+  runBtn.classList.add('running');
+  document.getElementById('agent-run-text').textContent = 'توقف';
+  document.getElementById('agent-run-icon').textContent = '⏹';
+  document.getElementById('agent-status').textContent = 'در حال اجرا...';
+  document.getElementById('agent-log').innerHTML = '';
+  setAgentProgress(0);
+
+  const maxIter = parseInt(document.getElementById('agent-max-iter').value) || 10;
+
+  try {
+    const apiKey = await fetchOpenRouterKey();
+
+    if (agentMode === 'vision' && agentImageData) {
+      agentLog('thought', 'INIT', `تحلیل عکس: ${agentImageData.name}`);
+      const messages = [
+        { role: 'system', content: 'You are a vision assistant. Analyze images carefully and answer in Persian.' },
+        { role: 'user', content: [
+          { type: 'text', text: task },
+          { type: 'image_url', image_url: { url: agentImageData.dataUrl } }
+        ]}
+      ];
+      const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Vision' },
+        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 2000 })
+      }, 2, 60000);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || '';
+      agentLog('result', 'VISION ANALYSIS', reply);
+      setAgentProgress(100);
+      document.getElementById('agent-status').textContent = '✅ تکمیل شد';
+      return;
+    }
+
+    if (agentMode === 'search') {
+      agentLog('thought', 'INIT', `جستجو: ${task}`);
+      const engine = document.getElementById('search-engine').value;
+      let searchContext = '';
+      try {
+        if (engine === 'wikipedia') {
+          const q = encodeURIComponent(task.substring(0, 100));
+          const sr = await fetchWithRetry(`https://fa.wikipedia.org/api/rest_v1/page/summary/${q}`, {}, 1, 10000);
+          if (sr.ok) {
+            const sj = await sr.json();
+            searchContext = sj.extract || 'نتیجه‌ای نیست';
+          }
+        } else {
+          const q = encodeURIComponent(task.substring(0, 100));
+          const sr = await fetchWithRetry(`https://api.duckduckgo.com/?q=${q}&format=json&no_html=1&skip_disambig=1`, {}, 1, 10000);
+          if (sr.ok) {
+            const sj = await sr.json();
+            searchContext = sj.AbstractText || sj.Abstract || '(نتیجه‌ای یافت نشد)';
+          }
+        }
+      } catch (e) {
+        searchContext = `جستجو با خطا مواجه شد: ${e.message}`;
+      }
+      agentLog('observation', 'SEARCH RESULT', searchContext.substring(0, 500));
+
+      const messages = [
+        { role: 'system', content: 'You are a research assistant. Use web context to answer in Persian.' },
+        { role: 'user', content: `Question: ${task}\n\nWeb context:\n${searchContext}\n\nAnswer based on this context.` }
+      ];
+      const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Search' },
+        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 2000 })
+      }, 2, 60000);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || '';
+      agentLog('result', 'ANSWER', reply);
+      setAgentProgress(100);
+      document.getElementById('agent-status').textContent = '✅ تکمیل شد';
+      return;
+    }
+
+    let fileHint = '';
+    if (agentMode === 'file') {
+      const fileType = document.getElementById('file-type').value;
+      const filePath = document.getElementById('file-path').value.trim();
+      fileHint = `\n\nIMPORTANT: Save the output as a file. File type: ${fileType === 'auto' ? 'detect from task' : fileType}. Path: ${filePath === 'auto' ? 'choose appropriate path' : filePath}.`;
+    }
+
+    const systemPrompt = `You are an autonomous coding agent. Follow EXACT format:
+Thought: [reasoning]
+Action: [tool_name]
+Action Input: [JSON]
+
+Tools: write_file, read_file, list_files, delete_file
+When done: Final Answer: [summary]${fileHint}`;
+
+    const userPrompt = `Task: ${task}\nFiles: ${Object.keys(projectFiles).join(', ') || '(empty)'}`;
+    agentLog('thought', 'INIT', `تسک: ${task}`);
+
+    const messages = [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
+    let iteration = 0;
+    let finalAnswer = null;
+    const autoOpen = document.getElementById('agent-open').checked;
+
+    while (iteration < maxIter && !finalAnswer) {
+      if (agentAbortController.signal.aborted) throw new Error('متوقف شد');
+      iteration++;
+      setAgentProgress(Math.min(90, (iteration / maxIter) * 100));
+      document.getElementById('agent-status').textContent = `مرحله ${iteration}/${maxIter}`;
+
+      const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal Agent' },
+        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 3000 })
+      }, 2, 90000);
+
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || '';
+      messages.push({ role: 'assistant', content: reply });
+
+      const thoughtMatch = reply.match(/Thought:\s*(.+?)(?=\n(?:Action|Final Answer)|$)/s);
+      if (thoughtMatch) agentLog('thought', 'THOUGHT', thoughtMatch[1].trim());
+
+      const finalMatch = reply.match(/Final Answer:\s*([\s\S]+)$/);
+      if (finalMatch) {
+        finalAnswer = finalMatch[1].trim();
+        agentLog('result', 'FINAL', finalAnswer);
+        setAgentProgress(100);
+        break;
+      }
+
+      const actionMatch = reply.match(/Action:\s*(\w+)\s*\n\s*Action Input:\s*([\s\S]+?)(?=\n(?:Thought|Observation|Final)|$)/);
+      if (actionMatch) {
+        const toolName = actionMatch[1];
+        let toolArgs;
+        try { toolArgs = JSON.parse(actionMatch[2].trim()); }
+        catch (e) {
+          const cb = actionMatch[2].match(/```[\w]*\n?([\s\S]*?)```/);
+          if (cb && toolName === 'write_file') {
+            const pm = actionMatch[2].match(/"path"\s*:\s*"([^"]+)"/);
+            if (pm) toolArgs = { path: pm[1], content: cb[1] };
+          }
+        }
+
+        if (toolArgs) {
+          agentLog('action', `TOOL: ${toolName}`, JSON.stringify(toolArgs).substring(0, 300));
+          let obs = '';
+          try {
+            if (toolName === 'write_file') {
+              projectFiles[toolArgs.path] = toolArgs.content || '';
+              saveProject(); renderFileTree();
+              obs = `✓ نوشته شد: ${toolArgs.path}`;
+              if (autoOpen) { const parts = toolArgs.path.split('/').slice(0, -1).join('/'); if (parts) openFolders.add(parts); setTimeout(() => openFileInEditor(toolArgs.path), 100); }
+            } else if (toolName === 'read_file') {
+              obs = projectFiles[toolArgs.path] ? projectFiles[toolArgs.path].substring(0, 2000) : 'ERROR';
+            } else if (toolName === 'list_files') {
+              obs = Object.keys(projectFiles).join('\n') || '(empty)';
+            } else if (toolName === 'delete_file') {
+              if (projectFiles[toolArgs.path]) { delete projectFiles[toolArgs.path]; saveProject(); renderFileTree(); obs = '✓ حذف'; }
+            }
+          } catch (e) { obs = `ERROR: ${e.message}`; }
+          agentLog('observation', 'OBSERVATION', obs.substring(0, 300));
+          messages.push({ role: 'user', content: `Observation: ${obs}` });
+        }
+      }
+    }
+
+    document.getElementById('agent-status').textContent = '✅ تکمیل شد';
+    setAgentProgress(100);
+  } catch (err) {
+    if (err.name === 'AbortError' || agentAbortController?.signal.aborted) {
+      agentLog('error', 'STOPPED', 'متوقف شد');
+      document.getElementById('agent-status').textContent = '⏹ متوقف';
+    } else {
+      agentLog('error', 'ERROR', err.message);
+      document.getElementById('agent-status').textContent = '❌ خطا';
+    }
+  } finally {
+    agentRunning = false;
+    agentAbortController = null;
+    runBtn.classList.remove('running');
+    document.getElementById('agent-run-text').textContent = 'اجرای ایجنت';
+    document.getElementById('agent-run-icon').textContent = '▶';
+    setTimeout(() => { document.getElementById('agent-status').textContent = 'آماده'; }, 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT / SEND
+// ═══════════════════════════════════════════════════════════
+function stopGeneration() { if (currentAbortController) currentAbortController.abort(); }
+
+async function sendTask() {
+  const s = getActiveSession();
+  if (!s) return;
+  if (isGenerating) { stopGeneration(); return; }
+  const input = document.getElementById('chat-input');
+  const task = input.value.trim();
+  if (!task && !attachedFiles.length) return;
+  const model = document.getElementById('model-select').value;
+  if (!model) return;
+
+  const sendBtn = document.getElementById('send-btn');
+  const sendSpinner = document.getElementById('send-spinner');
+  const stopBtn = document.getElementById('stop-btn');
+
+  const contentParts = [];
+  if (task) contentParts.push({ type: 'text', text: task });
+  for (const f of attachedFiles) {
+    if (f.type === 'image') contentParts.push({ type: 'image_url', image_url: { url: f.data } });
+    else contentParts.push({ type: 'text', text: `\n--- ${f.name} ---\n${f.data}\n---\n` });
+  }
+
+  input.value = ''; input.style.height = '';
+  const attachedBox = document.getElementById('attached-files');
+  if (attachedBox) attachedBox.innerHTML = '';
+  s.messages.push({ role: 'user', content: contentParts.length === 1 && contentParts[0].type === 'text' ? contentParts[0].text : contentParts, display: task || '(پیام با فایل)' });
+  if (s.messages.length === 1 && task) s.title = task.substring(0, 30);
+  saveSessions(); renderSessionsList();
+  addBubble('user', task || '(پیام با فایل)');
+  attachedFiles = [];
+
+  const temperature = parseFloat(document.getElementById('temperature')?.value || '0.7');
+  const maxTokens = parseInt(document.getElementById('max-tokens')?.value || '4096', 10);
+  const streamEnabled = document.getElementById('stream-toggle')?.checked;
+
+  isGenerating = true;
+  sendBtn.disabled = true; sendSpinner.style.display = 'block'; stopBtn.style.display = 'block';
+  setStatus('processing', '⏳ پردازش...');
+
+  currentAbortController = new AbortController();
+
+  try {
+    const apiKey = await fetchOpenRouterKey();
+    
+    const sysPrompt = document.getElementById('system-prompt-input')?.value || 'You are Mamal — a helpful cat assistant.';
+    const messages = [{ role: 'system', content: sysPrompt }];
+    
+    for (const m of s.messages.slice(0, -1)) messages.push({ role: m.role, content: m.content });
+    messages.push({ role: 'user', content: s.messages[s.messages.length - 1].content });
+
+    const topP = parseFloat(document.getElementById('top-p')?.value || '1');
+    const freq = parseFloat(document.getElementById('freq-penalty')?.value || '0');
+    const jsonMode = document.getElementById('json-mode')?.checked;
+    
+    const body = {
+      model, messages, temperature, max_tokens: maxTokens,
+      top_p: topP, frequency_penalty: freq
+    };
+    if (jsonMode) body.response_format = { type: 'json_object' };
+    if (streamEnabled) body.stream = true;
+
+    const res = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal' },
+      body: JSON.stringify(body)
+    }, 2, 120000);
+
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      let msg = `API ${res.status}`;
+      if (res.status === 401) msg = 'کلید API نامعتبر است (401)';
+      else if (res.status === 402) msg = 'اعتبار کافی نیست (402)';
+      else if (res.status === 429) msg = 'محدودیت نرخ (429) — کمی صبر کنید';
+      else if (res.status >= 500) msg = `خطای سرور OpenRouter (${res.status})`;
+      else if (errBody) msg += `: ${errBody.substring(0, 200)}`;
+      throw new Error(msg);
+    }
+
+    let reply = '';
+    if (streamEnabled && res.body) {
+      const w = document.getElementById('chat-window');
+      const empty = document.getElementById('chat-empty');
+      if (empty) empty.style.display = 'none';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'msg-assistant';
+      wrapper.innerHTML = `<div class="avatar-agent">🐱</div><div class="content"><div class="msg-content stream-cursor"></div></div>`;
+      w.appendChild(wrapper);
+      const target = wrapper.querySelector('.msg-content');
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payload = trimmed.slice(5).trim();
+          if (payload === '[DONE]') continue;
+          try {
+            const json = JSON.parse(payload);
+            const delta = json.choices?.[0]?.delta?.content || '';
+            if (delta) {
+              reply += delta;
+              target.innerHTML = formatMarkdown(reply);
+              w.scrollTop = w.scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+      target.classList.remove('stream-cursor');
+    } else {
+      const data = await res.json();
+      reply = data.choices?.[0]?.message?.content || '...';
+    }
+
+    s.messages.push({ role: 'assistant', content: reply });
+    saveSessions();
+    if (!streamEnabled) renderActiveSession();
+    setStatus('success', '✅ تکمیل');
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      addBubble('assistant', `😿 خطا: ${err.message}`);
+      setStatus('error', '❌ خطا');
+      log('error', 'sendTask: ' + err.message);
+    }
+  } finally {
+    isGenerating = false;
+    sendBtn.disabled = false; sendSpinner.style.display = 'none'; stopBtn.style.display = 'none';
+    currentAbortController = null;
+    setTimeout(() => setStatus('idle', 'آماده'), 2000);
+  }
+}
+
+function addBubble(role, text) {
+  const w = document.getElementById('chat-window');
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.style.display = 'none';
+  if (role === 'user') {
+    w.insertAdjacentHTML('beforeend', `<div class="msg-user"><div class="bubble">${escapeHtml(text)}</div></div>`);
+  } else {
+    w.insertAdjacentHTML('beforeend', `<div class="msg-assistant"><div class="avatar-agent">🐱</div><div class="content"><div class="msg-content">${formatMarkdown(text)}</div></div></div>`);
+  }
+  w.scrollTop = w.scrollHeight;
+}
+
+function escapeHtml(t) { if (t == null) return ''; const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
+
+function formatMarkdown(text) {
+  if (text == null) return '';
+  let src = String(text);
+  const cbs = [];
+  src = src.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => { const i = cbs.length; cbs.push(`<pre><code>${escapeHtml(code)}</code></pre>`); return `\u0000C${i}\u0000`; });
+  src = escapeHtml(src);
+  src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  src = src.replace(/\n/g, '<br>');
+  src = src.replace(/\u0000C(\d+)\u0000/g, (m, i) => cbs[i]);
+  return src;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODALS & MISC
+// ═══════════════════════════════════════════════════════════
+let modalAction = null;
+function openNewFileDialog() {
+  modalAction = 'new-file';
+  document.getElementById('modal-title').textContent = '📄 فایل جدید';
+  document.getElementById('modal-input').value = '';
+  document.getElementById('modal-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-input').focus(), 50);
+}
+function openNewFolderDialog() {
+  modalAction = 'new-folder';
+  document.getElementById('modal-title').textContent = '📁 پوشه جدید';
+  document.getElementById('modal-input').value = '';
+  document.getElementById('modal-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-input').focus(), 50);
+}
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; modalAction = null; }
+function confirmModal() {
+  const val = document.getElementById('modal-input').value.trim();
+  if (!val) return;
+  if (modalAction === 'new-file') {
+    projectFiles[val] = ''; saveProject(); renderFileTree(); openFileInEditor(val);
+  } else if (modalAction === 'new-folder') {
+    projectFiles[val + '/.gitkeep'] = ''; saveProject(); renderFileTree(); openFolders.add(val);
+  }
+  closeModal();
+}
+document.getElementById('modal-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmModal();
+});
+
+async function handleProjectUpload(event) {
+  for (const f of event.target.files) {
+    try { const c = await readFileAsText(f); projectFiles[f.name] = c; } catch (err) {}
+  }
+  saveProject(); renderFileTree(); event.target.value = '';
+}
+
+async function downloadProject() {
+  if (!Object.keys(projectFiles).length) return;
+  const zip = new JSZip();
+  for (const [p, c] of Object.entries(projectFiles)) {
+    if (p.endsWith('/.gitkeep') && c === '') continue;
+    zip.file(p, c);
+  }
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `mamal-${Date.now()}.zip`; a.click();
+}
+
+function clearProject() {
+  if (!confirm('پاک شود؟')) return;
+  projectFiles = {}; saveProject(); renderFileTree();
+  document.getElementById('code-editor').value = '';
+  document.getElementById('line-numbers').textContent = '1';
+  openTabs = []; activeTabFile = null; renderEditorTabs();
+}
+
+function handleTerminalKey(e) {
+  if (e.key !== 'Enter') return;
+  const cmd = e.target.value.trim();
+  e.target.value = '';
+  const output = document.getElementById('terminal-output');
+  const result = runTerminalCommand(cmd);
+  if (output) {
+    output.insertAdjacentHTML('beforeend',
+      `<div style="color:#fbbf24;">mamal$ ${escapeHtml(cmd)}</div>` +
+      (result ? `<div style="color:#d6d3d1;">${escapeHtml(result)}</div>` : '')
+    );
+    const container = document.getElementById('bottom-terminal');
+    if (container) container.scrollTop = container.scrollHeight;
+  }
+}
+
+function runTerminalCommand(cmd) {
+  if (!cmd) return '';
+  const parts = cmd.split(/\s+/);
+  const c = parts[0];
+  if (c === 'ls') return Object.keys(projectFiles).join('\n') || '(empty)';
+  if (c === 'cat') return projectFiles[parts[1]] || 'یافت نشد';
+  if (c === 'rm') {
+    if (projectFiles[parts[1]]) { delete projectFiles[parts[1]]; saveProject(); renderFileTree(); return 'حذف شد'; }
+    return 'یافت نشد';
+  }
+  if (c === 'echo') return parts.slice(1).join(' ');
+  if (c === 'tree') {
+    const root = buildFileTree(Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep')));
+    const lines = [];
+    const walk = (node, depth) => {
+      for (const child of Object.values(node.children)) {
+        lines.push('  '.repeat(depth) + (child.type === 'folder' ? '📁 ' : '📄 ') + child.name);
+        if (child.type === 'folder') walk(child, depth + 1);
+      }
+    };
+    walk(root, 0);
+    return lines.join('\n') || '(empty)';
+  }
+  if (c === 'clear') {
+    const out = document.getElementById('terminal-output');
+    if (out) out.innerHTML = '';
+    return '';
+  }
+  if (c === 'run') { // ویژگی جدید: اجرای کدهای HTML/JS
+    const p = parts[1];
+    if (projectFiles[p]) {
+      const frame = document.getElementById('preview-frame');
+      const editor = document.getElementById('code-editor');
+      if (frame && p.endsWith('.html')) {
+        frame.style.display = 'block';
+        editor.style.display = 'none';
+        frame.srcdoc = projectFiles[p];
+        return 'در حال اجرا در پیش‌نمایش...';
+      }
+      return 'فقط فایل‌های HTML در این محیط قابل اجرا هستند.';
+    }
+    return 'فایل یافت نشد.';
+  }
+  return 'دستورها: ls, cat, echo, rm, tree, clear, run [file]';
+}
+
+async function handleFileUpload(event) {
+  for (const f of event.target.files) {
+    try {
+      if (f.type.startsWith('image/')) {
+        const dataUrl = await readFileAsDataURL(f);
+        attachedFiles.push({ name: f.name, type: 'image', data: dataUrl });
+      } else {
+        const c = await readFileAsText(f);
+        attachedFiles.push({ name: f.name, type: 'text', data: c });
+      }
+    } catch (e) {}
+  }
+  event.target.value = '';
+  renderAttachedFiles();
+}
+
+function renderAttachedFiles() {
+  const box = document.getElementById('attached-files');
+  if (!box) return;
+  box.innerHTML = attachedFiles.map((f, i) =>
+    `<span class="attached-chip">📎 ${escapeHtml(f.name)} <button onclick="removeAttached(${i})">✖</button></span>`
+  ).join('');
+}
+
+function removeAttached(i) {
+  attachedFiles.splice(i, 1);
+  renderAttachedFiles();
+}
+
+function readFileAsText(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsText(f); }); }
+function readFileAsDataURL(f) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(f); }); }
+
+function exportAllSessions() {
+  const data = JSON.stringify({ sessions, teamAgents, exportedAt: new Date().toISOString() }, null, 2);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = `mamal-export-${Date.now()}.json`; a.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUICK OPEN + COMMAND PALETTE
+// ═══════════════════════════════════════════════════════════
+let paletteMode = 'quick';
+let paletteSelected = 0;
+let paletteItems = [];
+
+function openQuickOpen() {
+  paletteMode = 'quick';
+  paletteSelected = 0;
+  document.getElementById('palette-input').value = '';
+  document.getElementById('palette-input').placeholder = '🔍 Go to file...';
+  document.getElementById('palette-overlay').style.display = 'flex';
+  renderPalette();
+  setTimeout(() => document.getElementById('palette-input').focus(), 50);
+}
+
+function openCommandPalette() {
+  paletteMode = 'command';
+  paletteSelected = 0;
+  document.getElementById('palette-input').value = '';
+  document.getElementById('palette-input').placeholder = '⌘ Command...';
+  document.getElementById('palette-overlay').style.display = 'flex';
+  renderPalette();
+  setTimeout(() => document.getElementById('palette-input').focus(), 50);
+}
+
+function closePalette() {
+  document.getElementById('palette-overlay').style.display = 'none';
+}
+
+function renderPalette() {
+  const q = (document.getElementById('palette-input').value || '').toLowerCase();
+  const list = document.getElementById('palette-list');
+  if (paletteMode === 'quick') {
+    paletteItems = Object.keys(projectFiles).filter(p => !p.endsWith('/.gitkeep') && p.toLowerCase().includes(q))
+      .slice(0, 50).map(p => ({ label: p, icon: getFileIcon(p.split('/').pop()), action: () => openFileInEditor(p) }));
+  } else {
+    const commands = [
+      { label: 'فایل جدید', icon: '➕', action: openNewFileDialog },
+      { label: 'پوشه جدید', icon: '📁', action: openNewFolderDialog },
+      { label: 'دانلود پروژه (ZIP)', icon: '📦', action: downloadProject },
+      { label: 'پاک کردن پروژه', icon: '🗑️', action: clearProject },
+      { label: 'ذخیره فایل', icon: '💾', action: saveCurrentFile },
+      { label: 'چت جدید', icon: '💬', action: () => newSession('normal') },
+      { label: 'چت با کد', icon: '💻', action: () => newSession('code') },
+      { label: 'خروجی جلسات', icon: '📤', action: exportAllSessions },
+      { label: 'پنل ایجنت', icon: '🤖', action: () => switchPanelTab('agent') },
+      { label: 'پنل تیم', icon: '👥', action: () => switchPanelTab('team') },
+      { label: 'پنل IDE', icon: '💻', action: () => switchPanelTab('code') },
+      { label: 'پنل لاگ', icon: '📋', action: () => switchPanelTab('log') }
+    ];
+    paletteItems = commands.filter(c => c.label.toLowerCase().includes(q));
+  }
+  list.innerHTML = paletteItems.map((it, i) =>
+    `<div class="palette-item ${i === paletteSelected ? 'selected' : ''}" data-idx="${i}" onclick="selectPaletteItem(${i})">
+      <span>${it.icon || '📄'}</span><span>${escapeHtml(it.label)}</span>
+    </div>`
+  ).join('') || '<div class="palette-item" style="color:#57534e;">نتیجه‌ای نیست</div>';
+}
+
+function selectPaletteItem(i) {
+  const item = paletteItems[i];
+  if (!item) return;
+  closePalette();
+  try { item.action(); } catch (e) { log('error', e.message); }
+}
+
+function handlePaletteKey(e) {
+  if (e.key === 'Escape') { closePalette(); return; }
+  if (e.key === 'ArrowDown') { paletteSelected = Math.min(paletteSelected + 1, paletteItems.length - 1); renderPalette(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { paletteSelected = Math.max(paletteSelected - 1, 0); renderPalette(); e.preventDefault(); }
+  else if (e.key === 'Enter') { selectPaletteItem(paletteSelected); }
+}
+
+function switchBottomTab(tab) {
+  document.querySelectorAll('.bottom-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  // Can be expanded to switch content
+}
+
+// ═══════════════════════════════════════════════════════════
+// PANEL RESIZER
+// ═══════════════════════════════════════════════════════════
+(function initResizers() {
+  const MIN_SIDEBAR = 180, MAX_SIDEBAR = 500;
+  const MIN_RIGHT = 320, MAX_RIGHT = 1200;
+
+  const savedSidebar = localStorage.getItem('mamal_sidebar_width');
+  const savedRight = localStorage.getItem('mamal_right_width');
+  if (savedSidebar) {
+    const w = parseInt(savedSidebar, 10);
+    if (w >= MIN_SIDEBAR && w <= MAX_SIDEBAR) {
+      const el = document.getElementById('sidebar-panel');
+      if (el) el.style.width = w + 'px';
+    }
+  }
+  if (savedRight) {
+    const w = parseInt(savedRight, 10);
+    if (w >= MIN_RIGHT && w <= MAX_RIGHT) {
+      const el = document.getElementById('right-panel');
+      if (el) el.style.width = w + 'px';
+    }
+  }
+
+  document.querySelectorAll('.resizer').forEach(resizer => {
+    resizer.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const target = document.getElementById(resizer.dataset.target);
+      if (!target) return;
+      const side = resizer.dataset.side;
+      const startX = e.clientX;
+      const startWidth = target.getBoundingClientRect().width;
+      const isLeft = side === 'left';
+
+      document.body.classList.add('resizing');
+      resizer.classList.add('dragging');
+
+      const onMove = ev => {
+        const dx = ev.clientX - startX;
+        let newWidth = isLeft ? startWidth + dx : startWidth - dx;
+        if (isLeft) newWidth = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, newWidth));
+        else newWidth = Math.max(MIN_RIGHT, Math.min(MAX_RIGHT, newWidth));
+        target.style.width = newWidth + 'px';
+        target.style.flexShrink = '0';
+      };
+
+      const onUp = () => {
+        document.body.classList.remove('resizing');
+        resizer.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        if (isLeft) localStorage.setItem('mamal_sidebar_width', target.getBoundingClientRect().width);
+        else localStorage.setItem('mamal_right_width', target.getBoundingClientRect().width);
+      };
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    resizer.addEventListener('dblclick', () => {
+      const target = document.getElementById(resizer.dataset.target);
+      if (!target) return;
+      const isLeft = resizer.dataset.side === 'left';
+      target.style.width = isLeft ? '280px' : '680px';
+      localStorage.removeItem(isLeft ? 'mamal_sidebar_width' : 'mamal_right_width');
+    });
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════
+// GLOBAL SHORTCUTS
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'k') { e.preventDefault(); toggleSettings(); }
+  if (e.ctrlKey && e.key === 'p') { e.preventDefault(); openQuickOpen(); }
+  if (e.ctrlKey && e.shiftKey && e.key === 'P') { e.preventDefault(); openCommandPalette(); }
+  if (e.key === 'Escape') {
+    const pal = document.getElementById('palette-overlay');
+    if (pal && pal.style.display !== 'none') closePalette();
+  }
+  if (e.key === 'Enter' && !e.shiftKey && document.activeElement?.id === 'chat-input') {
+    e.preventDefault();
+    sendTask();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(async () => {
+  loadProjectFromStorage();
+  loadSessions();
+  loadTeam();
+  renderFileTree();
+  renderEditorTabs();
+  updateSidebarStats();
+  loadSettings();
+  switchAgentMode('build');
+  setStatus('idle', 'آماده');
+  await fetchOpenRouterKey().catch(()=>{});
+  await loadModels();
+})();
+</script>
+</body>
+</html>
