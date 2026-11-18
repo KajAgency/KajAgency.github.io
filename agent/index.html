@@ -265,6 +265,31 @@
   .palette-list { max-height: 300px; overflow-y: auto; }
   .palette-item { padding: 10px 16px; font-size: 12px; color: #d6d3d1; cursor: pointer; display: flex; align-items: center; gap: 8px; }
   .palette-item:hover, .palette-item.selected { background: rgba(139,92,246,0.2); color: #fef3c7; }
+
+  .code-editor { tab-size: 2; -moz-tab-size: 2; }
+  .tb-board { margin: 12px; border: 1px solid rgba(139,92,246,0.3); border-radius: 12px; background: rgba(15,13,10,0.55); overflow: hidden; }
+  .tb-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.08)); border-bottom: 1px solid rgba(139,92,246,0.2); flex-wrap: wrap; }
+  .tb-stat { font-size: 10px; font-weight: 800; color: #6ee7b7; background: rgba(16,185,129,0.15); border-radius: 20px; padding: 2px 8px; }
+  .tb-form { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-bottom: 1px solid rgba(139,92,246,0.2); }
+  .tb-input { width: 100%; background: #1c1917; border: 1px solid #57534e; color: #fef3c7; font-size: 11.5px; border-radius: 8px; padding: 7px 9px; outline: none; font-family: inherit; }
+  .tb-input:focus { border-color: #8b5cf6; }
+  .tb-empty { text-align: center; color: #a8a29e; font-size: 11px; padding: 18px; }
+  .task-card { display: flex; gap: 8px; padding: 9px 12px; border-bottom: 1px solid rgba(87,83,78,0.4); border-right: 3px solid var(--pc, #f59e0b); }
+  .task-card:last-child { border-bottom: none; }
+  .task-card.running { background: rgba(245,158,11,0.08); } .task-card.done { opacity: 0.8; } .task-card.error { background: rgba(239,68,68,0.08); }
+  .task-title { font-size: 12px; font-weight: 800; color: #fef3c7; } .task-meta { font-size: 10px; color: #a8a29e; margin-top: 2px; }
+  .task-desc { font-size: 10.5px; color: #d6d3d1; margin-top: 4px; white-space: pre-wrap; }
+  .task-out { margin-top: 5px; font-size: 10px; color: #a8a29e; } .task-out pre { white-space: pre-wrap; margin: 4px 0 0; font-family: 'JetBrains Mono', monospace; max-height: 140px; overflow: auto; }
+  .task-act { background: none; border: none; cursor: pointer; font-size: 12px; padding: 2px; color: #a78bfa; }
+
+  .ide-xbar { display:flex; flex-wrap:wrap; gap:4px; align-items:center; padding:4px 8px; background:rgba(15,13,10,0.9); border-bottom:1px solid rgba(139,92,246,0.25); }
+  .xb { background:#292524; color:#fef3c7; border:1px solid #57534e; border-radius:6px; font-size:10.5px; padding:3px 7px; cursor:pointer; font-family:inherit; }
+  .xb:hover { border-color:#8b5cf6; }
+  .proj-bar { display:flex; gap:6px; padding:8px 12px; background:rgba(15,13,10,0.7); border-bottom:1px solid rgba(139,92,246,0.2); }
+  .ag-quick { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+  .ag-chip { background:rgba(139,92,246,0.15); color:#ddd6fe; border:1px solid rgba(139,92,246,0.4); border-radius:20px; font-size:10.5px; padding:3px 9px; cursor:pointer; font-family:inherit; }
+  .ag-chip:hover { background:rgba(139,92,246,0.35); }
+  .ag-h { display:flex; gap:6px; align-items:center; font-size:10.5px; color:#d6d3d1; padding:4px 0; border-bottom:1px solid rgba(87,83,78,0.4); }
 </style>
 </head>
 <body>
@@ -477,6 +502,10 @@
         <div class="agent-task-input">
           <div id="agent-mode-hint" style="font-size:11px; color:#a78bfa; margin-bottom:8px;">🛠️ حالت ساخت: کد، HTML/CSS، فایل و ... می‌سازد</div>
 
+          <div id="ag-quick" class="ag-quick"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;"><label class="agent-option"><input type="checkbox" id="ag-ctx-file"> 📄 فایل باز به‌عنوان کانتکست</label><label class="agent-option"><input type="checkbox" id="ag-ctx-all"> 🗂️ همه‌ی فایل‌های پروژه</label></div>
+          <textarea id="agent-extra" class="task-textarea" style="min-height:36px;margin-bottom:8px;" placeholder="دستورالعمل اضافه (سبک کدنویسی، زبان پاسخ، محدودیت‌ها...)"></textarea>
+          <details style="margin-bottom:8px;"><summary style="font-size:11px;color:#a78bfa;cursor:pointer;">🕘 تاریخچه‌ی اجراها</summary><div id="ag-hist"></div></details>
           <!-- Vision upload -->
           <div id="agent-vision-box" style="display:none; margin-bottom:10px;">
             <div style="display:flex; gap:8px; align-items:center;">
@@ -562,6 +591,8 @@
         <div style="font-size:10px; color:#6ee7b7; font-weight:700;" id="team-status">آماده</div>
       </div>
 
+      <div class="proj-bar"><select id="proj-select" class="tb-input" onchange="switchProject(this.value)"></select><button class="team-btn primary" onclick="toggleProjForm()">➕ پروژه</button><button class="team-btn" style="color:#fca5a5" onclick="deleteProject()">🗑️</button></div>
+      <div id="proj-form" class="tb-form" style="display:none;"><input id="pf-name" class="tb-input" placeholder="نام پروژه"><select id="pf-type" class="tb-input"></select><button class="team-btn primary" onclick="createProject()">ساخت پروژه</button></div>
       <div class="team-toolbar">
         <button onclick="openAddAgentModal()" class="team-btn primary">➕ افزودن ایجنت</button>
         <button onclick="loadTemplate('web')" class="team-btn">🌐 Web Team</button>
@@ -594,6 +625,24 @@
       </div>
 
       <div style="flex:1; overflow-y:auto;">
+        <div class="tb-board">
+          <div class="tb-head">
+            <div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:900;font-size:12px;color:#fef3c7;">📋 بُرد تسک‌ها</span><span class="tb-stat" id="task-counter">0/0</span></div>
+            <div style="display:flex;gap:6px;">
+              <button class="team-btn primary" onclick="toggleTaskForm()">➕ تسک</button>
+              <button class="team-btn" id="task-run-btn" onclick="runTeamTasks()">▶ اجرای همه</button>
+              <button class="team-btn" onclick="clearDoneTasks()" title="پاک کردن انجام‌شده‌ها">🧹</button>
+            </div>
+          </div>
+          <div id="task-form" class="tb-form" style="display:none;">
+            <input id="tf-title" class="tb-input" placeholder="عنوان تسک (مثلاً: ساخت فرم ورود)">
+            <textarea id="tf-desc" class="tb-input" rows="2" placeholder="توضیحات / معیار پذیرش (اختیاری)"></textarea>
+            <div style="display:flex;gap:6px;"><select id="tf-agent" class="tb-input"></select>
+              <select id="tf-pri" class="tb-input"><option value="high">🔴 بالا</option><option value="mid" selected>🟡 متوسط</option><option value="low">🟢 پایین</option></select></div>
+            <div style="display:flex;gap:6px;"><button class="team-btn primary" onclick="saveTask()">💾 ذخیره</button><button class="team-btn" onclick="toggleTaskForm(false)">انصراف</button></div>
+          </div>
+          <div id="team-tasks"></div>
+        </div>
         <div class="agents-grid" id="agents-grid"></div>
         <div id="team-summary" style="padding: 0 12px 12px; display:none;">
           <div style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.05)); border: 1px solid rgba(16,185,129,0.3); border-radius: 10px; padding: 10px;">
@@ -616,7 +665,11 @@
         <button onclick="openQuickOpen()" class="toolbar-btn">🔍 Go to</button>
         <button onclick="openCommandPalette()" class="toolbar-btn">⌘ Commands</button>
         <div style="flex-grow:1;"></div>
-        <button onclick="saveCurrentFile()" class="toolbar-btn success">💾</button>
+        <button onclick="togglePreview()" class="toolbar-btn" title="پیش‌نمایش HTML">▶ Preview</button>
+        <button onclick="renameCurrentFile()" class="toolbar-btn" title="تغییر نام">✏️</button>
+        <button onclick="formatCurrentJson()" class="toolbar-btn" title="فرمت JSON">{ }</button>
+        <button onclick="downloadCurrentFile()" class="toolbar-btn" title="دانلود فایل جاری">⬇</button>
+        <button onclick="saveCurrentFile()" class="toolbar-btn success" title="ذخیره (Ctrl+S)">💾</button>
         <button onclick="downloadProject()" class="toolbar-btn">📦</button>
         <button onclick="clearProject()" class="toolbar-btn danger">🗑️</button>
       </div>
@@ -920,7 +973,21 @@ function loadSessions() {
   renderActiveSession();
 }
 
-function saveSessions() { try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions)); } catch (e) {} }
+function saveSessions() {
+  try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions)); return true; }
+  catch (e) {
+    try { // سهمیه پر است: نسخه‌ی ذخیره‌شده بدون تصاویر base64
+      const slim = sessions.map(x => ({ ...x, messages: x.messages.map(m => Array.isArray(m.content)
+        ? { ...m, content: m.content.map(p => p.type === 'image_url' ? { type: 'text', text: '[تصویر برای صرفه‌جویی در حافظه حذف شد]' } : p) } : m) }));
+      localStorage.setItem(SESSIONS_KEY, JSON.stringify(slim));
+      showToast('⚠️ حافظه‌ی مرورگر پر بود؛ تصاویر از نسخه‌ی ذخیره‌شده حذف شدند');
+      return true;
+    } catch (e2) {
+      showToast('❌ ذخیره‌ی جلسه‌ها ممکن نیست (حافظه پر است) — از Export استفاده کنید');
+      return false;
+    }
+  }
+}
 
 function createSession(mode, title) {
   const id = 'sess-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
@@ -1186,6 +1253,7 @@ function handleTreeClick(e, path, type) {
 
 function openFileInEditor(path) {
   if (!(path in projectFiles)) return;
+  closePreview();
   if (!openTabs.includes(path)) openTabs.push(path);
   activeTabFile = path;
   document.getElementById('code-editor').value = projectFiles[path];
@@ -1508,6 +1576,26 @@ async function runTeam() {
   }
 }
 
+const FORMAT_REMINDER = 'Observation: ERROR — فرمت نامعتبر. فقط با «Thought / Action / Action Input» یا «Final Answer» پاسخ بده.';
+const TOOL_PATH_TOOLS = ['write_file', 'read_file', 'delete_file'];
+function validateToolArgs(tool, a) {
+  if (!a || typeof a !== 'object' || Array.isArray(a)) return 'Action Input must be a JSON object';
+  if (TOOL_PATH_TOOLS.includes(tool)) {
+    const p = a.path;
+    if (typeof p !== 'string' || !p.trim()) return 'path is required (non-empty string)';
+    if (p.length > 200 || p.startsWith('/') || p.split('/').includes('..') || /[\\\0]/.test(p)) return 'invalid path: ' + p.slice(0, 60);
+  }
+  if (tool === 'write_file' && typeof a.content !== 'string') return 'content must be a string';
+  return null;
+}
+function pickFinal(reply) {
+  const f = reply.search(/Final Answer:/);
+  if (f < 0) return null;
+  const a = reply.search(/Action:\s*\w+\s*\n\s*Action Input:/);
+  if (a >= 0 && a < f) return null; // Action قبل از Final Answer: اول اجرا شود
+  return reply.match(/Final Answer:\s*([\s\S]+)$/);
+}
+
 async function runAgentTask(agent, task, apiKey, context = '', autoOpen = false) {
   agent.status = 'thinking';
   renderAgentsGrid();
@@ -1572,7 +1660,7 @@ Start now. Follow the format strictly.`;
     const reply = data.choices?.[0]?.message?.content || '';
     messages.push({ role: 'assistant', content: reply });
 
-    const finalMatch = reply.match(/Final Answer:\s*([\s\S]+)$/);
+    const finalMatch = pickFinal(reply);
     if (finalMatch) {
       finalAnswer = finalMatch[1].trim();
       break;
@@ -1594,7 +1682,7 @@ Start now. Follow the format strictly.`;
       let observation = '';
       if (toolArgs) {
         try {
-          if (toolName === 'write_file') {
+          if (validateToolArgs(toolName, toolArgs)) { observation = 'ERROR: ' + validateToolArgs(toolName, toolArgs); } else if (toolName === 'write_file') {
             projectFiles[toolArgs.path] = toolArgs.content || '';
             saveProject();
             renderFileTree();
@@ -1616,6 +1704,8 @@ Start now. Follow the format strictly.`;
         observation = 'ERROR: Invalid JSON in Action Input';
       }
       messages.push({ role: 'user', content: `Observation: ${observation}` });
+    } else {
+      messages.push({ role: 'user', content: FORMAT_REMINDER });
     }
   }
 
@@ -1903,9 +1993,9 @@ Action: [tool_name]
 Action Input: [JSON]
 
 Tools: write_file, read_file, list_files, delete_file
-When done: Final Answer: [summary]${fileHint}`;
+When done: Final Answer: [summary]${fileHint}${agentExtra()}`;
 
-    const userPrompt = `Task: ${task}\nFiles: ${Object.keys(projectFiles).join(', ') || '(empty)'}`;
+    const userPrompt = `Task: ${task}\nFiles: ${Object.keys(projectFiles).join(', ') || '(empty)'}` + agentCtx();
     agentLog('thought', 'INIT', `تسک: ${task}`);
 
     const messages = [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
@@ -1933,7 +2023,7 @@ When done: Final Answer: [summary]${fileHint}`;
       const thoughtMatch = reply.match(/Thought:\s*(.+?)(?=\n(?:Action|Final Answer)|$)/s);
       if (thoughtMatch) agentLog('thought', 'THOUGHT', thoughtMatch[1].trim());
 
-      const finalMatch = reply.match(/Final Answer:\s*([\s\S]+)$/);
+      const finalMatch = pickFinal(reply);
       if (finalMatch) {
         finalAnswer = finalMatch[1].trim();
         agentLog('result', 'FINAL', finalAnswer);
@@ -1958,7 +2048,7 @@ When done: Final Answer: [summary]${fileHint}`;
           agentLog('action', `TOOL: ${toolName}`, JSON.stringify(toolArgs).substring(0, 300));
           let obs = '';
           try {
-            if (toolName === 'write_file') {
+            if (validateToolArgs(toolName, toolArgs)) { obs = 'ERROR: ' + validateToolArgs(toolName, toolArgs); } else if (toolName === 'write_file') {
               projectFiles[toolArgs.path] = toolArgs.content || '';
               saveProject(); renderFileTree();
               obs = `✓ نوشته شد: ${toolArgs.path}`;
@@ -1973,7 +2063,11 @@ When done: Final Answer: [summary]${fileHint}`;
           } catch (e) { obs = `ERROR: ${e.message}`; }
           agentLog('observation', 'OBSERVATION', obs.substring(0, 300));
           messages.push({ role: 'user', content: `Observation: ${obs}` });
+        } else {
+          messages.push({ role: 'user', content: FORMAT_REMINDER });
         }
+      } else {
+        messages.push({ role: 'user', content: FORMAT_REMINDER });
       }
     }
 
@@ -2504,6 +2598,405 @@ document.addEventListener('keydown', e => {
   await fetchOpenRouterKey().catch(()=>{});
   await loadModels();
 })();
+
+// ═══════════════════════════════════════════════════════════
+// TEAM TASK BOARD
+// ═══════════════════════════════════════════════════════════
+let teamTasks = [];
+let editingTask = -1;
+const TASKS_KEY = 'mamal_team_tasks_v1';
+const PRI = { high: 0, mid: 1, low: 2 };
+const PRI_COLOR = { high: '#ef4444', mid: '#f59e0b', low: '#10b981' };
+const TASK_STATUS = { todo: '⏳ در صف', running: '⚙️ در حال اجرا', done: '✅ انجام شد', error: '❌ خطا' };
+
+function saveTasks() { try { localStorage.setItem(TASKS_KEY, JSON.stringify(teamTasks)); } catch (e) { showToast('❌ ذخیره‌ی تسک‌ها ممکن نشد'); } }
+function loadTasks() {
+  try { const t = localStorage.getItem(TASKS_KEY); if (t) teamTasks = JSON.parse(t).map(x => x.status === 'running' ? { ...x, status: 'todo' } : x); } catch (e) {}
+  renderTasks();
+}
+function toggleTaskForm(show) {
+  const f = document.getElementById('task-form');
+  const open = show === undefined ? f.style.display === 'none' : show;
+  f.style.display = open ? 'flex' : 'none';
+  if (!open) { editingTask = -1; return; }
+  document.getElementById('tf-agent').innerHTML = '<option value="">🤖 انتخاب خودکار ایجنت</option>' +
+    teamAgents.map(a => `<option value="${escapeHtml(a.name)}">${escapeHtml(a.emoji || '🤖')} ${escapeHtml(a.name)}</option>`).join('');
+  if (editingTask < 0) { ['tf-title', 'tf-desc'].forEach(i => document.getElementById(i).value = ''); document.getElementById('tf-agent').value = ''; document.getElementById('tf-pri').value = 'mid'; }
+  document.getElementById('tf-title').focus();
+}
+function saveTask() {
+  const title = document.getElementById('tf-title').value.trim();
+  if (!title) { showToast('🐾 عنوان تسک را بنویسید'); return; }
+  const data = { title, desc: document.getElementById('tf-desc').value.trim(), agent: document.getElementById('tf-agent').value, pri: document.getElementById('tf-pri').value };
+  if (editingTask >= 0) Object.assign(teamTasks[editingTask], data, { status: 'todo', output: '' });
+  else teamTasks.push({ id: 't' + Date.now(), ...data, status: 'todo', output: '' });
+  editingTask = -1; saveTasks(); renderTasks(); toggleTaskForm(false);
+}
+function editTask(i) { const t = teamTasks[i]; editingTask = i; toggleTaskForm(true);
+  document.getElementById('tf-title').value = t.title; document.getElementById('tf-desc').value = t.desc || '';
+  document.getElementById('tf-agent').value = t.agent || ''; document.getElementById('tf-pri').value = t.pri; }
+function moveTask(i, d) { const j = i + d; if (j < 0 || j >= teamTasks.length) return; [teamTasks[i], teamTasks[j]] = [teamTasks[j], teamTasks[i]]; saveTasks(); renderTasks(); }
+function removeTask(i) { if (!confirm('🐾 این تسک حذف شود؟')) return; teamTasks.splice(i, 1); saveTasks(); renderTasks(); }
+function clearDoneTasks() { teamTasks = teamTasks.filter(t => t.status !== 'done'); saveTasks(); renderTasks(); }
+
+function renderTasks() {
+  const box = document.getElementById('team-tasks'); if (!box) return;
+  const done = teamTasks.filter(t => t.status === 'done').length;
+  document.getElementById('task-counter').textContent = `${done}/${teamTasks.length}`;
+  box.innerHTML = teamTasks.length ? teamTasks.map((t, i) => `
+    <div class="task-card ${t.status}" style="--pc:${PRI_COLOR[t.pri] || '#f59e0b'}">
+      <div style="flex:1; min-width:0;">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        <div class="task-meta">${TASK_STATUS[t.status] || ''} · 👤 ${escapeHtml(t.agent || 'خودکار')}</div>
+        ${t.desc ? `<div class="task-desc">${escapeHtml(t.desc)}</div>` : ''}
+        ${t.output ? `<details class="task-out"><summary>خروجی</summary><pre>${escapeHtml(t.output)}</pre></details>` : ''}
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div style="display:flex;">
+          <button class="task-act" onclick="runTeamTasks(${i})" title="اجرای این تسک">▶</button>
+          <button class="task-act" onclick="editTask(${i})" title="ویرایش">✏️</button>
+          <button class="task-act" style="color:#fca5a5" onclick="removeTask(${i})" title="حذف">🗑️</button>
+        </div>
+        <div><button class="task-act" onclick="moveTask(${i},-1)">▲</button><button class="task-act" onclick="moveTask(${i},1)">▼</button></div>
+      </div>
+    </div>`).join('') : '<div class="tb-empty">🐾 هنوز تسکی تعریف نشده؛ با «➕ تسک» شروع کنید</div>';
+}
+
+async function runTeamTasks(onlyIndex) {
+  if (teamRunning) { if (teamAbortController) teamAbortController.abort(); return; }
+  if (!teamAgents.length) { alert('ابتدا ایجنت اضافه کنید'); return; }
+  const list = onlyIndex !== undefined ? [teamTasks[onlyIndex]]
+    : teamTasks.filter(t => t.status !== 'done').sort((a, b) => PRI[a.pri] - PRI[b.pri]);
+  if (!list.length) { alert('تسکی برای اجرا وجود ندارد'); return; }
+  teamRunning = true; teamAbortController = new AbortController();
+  const btn = document.getElementById('task-run-btn'), st = document.getElementById('team-status');
+  btn.textContent = '⏹ توقف'; st.textContent = 'اجرای تسک‌ها...';
+  const goal = document.getElementById('team-task').value.trim();
+  const autoOpen = document.getElementById('team-open').checked;
+  let context = '', rr = 0;
+  try {
+    const apiKey = await fetchOpenRouterKey();
+    for (const t of list) {
+      if (teamAbortController.signal.aborted) break;
+      const agent = teamAgents.find(a => a.name === t.agent) || teamAgents[rr++ % teamAgents.length];
+      const orig = agent.task;
+      agent.task = t.title + (t.desc ? ' — ' + t.desc : '');
+      t.status = 'running'; renderTasks();
+      try {
+        await runAgentTask(agent, goal || t.title, apiKey, context, autoOpen);
+        t.status = 'done'; t.output = agent.output;
+        context += `\n[${t.title} ← ${agent.name}]:\n${agent.output}\n`;
+      } catch (e) {
+        t.status = 'error'; t.output = e.message;
+        if (teamAbortController?.signal.aborted) { t.status = 'todo'; break; }
+      } finally { agent.task = orig; saveTasks(); renderTasks(); renderAgentsGrid(); }
+    }
+    st.textContent = teamAbortController?.signal.aborted ? '⏹ متوقف' : '✅ تسک‌ها تمام شد';
+  } catch (e) { st.textContent = '❌ خطا'; log('error', e.message); }
+  finally {
+    teamRunning = false; teamAbortController = null; btn.textContent = '▶ اجرای همه';
+    teamTasks.forEach(t => { if (t.status === 'running') t.status = 'todo'; }); saveTasks(); renderTasks();
+    setTimeout(() => { st.textContent = 'آماده'; }, 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// IDE EXTENSIONS
+// ═══════════════════════════════════════════════════════════
+function closePreview() {
+  const f = document.getElementById('preview-frame'), e = document.getElementById('code-editor');
+  if (f) { f.style.display = 'none'; f.srcdoc = ''; }
+  if (e) e.style.display = '';
+}
+function togglePreview() {
+  const f = document.getElementById('preview-frame');
+  if (f.style.display === 'block') { closePreview(); return; }
+  if (!activeTabFile || !/\.html?$/i.test(activeTabFile)) { showToast('🐾 یک فایل HTML باز کنید'); return; }
+  f.srcdoc = document.getElementById('code-editor').value;
+  f.style.display = 'block'; document.getElementById('code-editor').style.display = 'none';
+}
+function downloadCurrentFile() {
+  if (!activeTabFile) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([projectFiles[activeTabFile] || ''], { type: 'text/plain' }));
+  a.download = activeTabFile.split('/').pop(); a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function renameCurrentFile() {
+  if (!activeTabFile) return;
+  const old = activeTabFile, n = (prompt('نام/مسیر جدید:', old) || '').trim();
+  if (!n || n === old) return;
+  if (n in projectFiles) { showToast('❌ فایلی با این نام وجود دارد'); return; }
+  if (validateToolArgs('write_file', { path: n, content: '' })) { showToast('❌ مسیر نامعتبر'); return; }
+  projectFiles[n] = projectFiles[old]; delete projectFiles[old];
+  if (unsavedChanges[old]) { unsavedChanges[n] = true; delete unsavedChanges[old]; }
+  openTabs = openTabs.map(p => p === old ? n : p);
+  saveProject(); openFileInEditor(n);
+}
+function formatCurrentJson() {
+  if (!activeTabFile || !activeTabFile.endsWith('.json')) { showToast('🐾 فقط فایل JSON'); return; }
+  const ta = document.getElementById('code-editor');
+  try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); ta.dispatchEvent(new Event('input')); }
+  catch (e) { showToast('❌ JSON نامعتبر: ' + e.message); }
+}
+(function () {
+  const ta = document.getElementById('code-editor');
+  const upd = () => { const b = ta.value.slice(0, ta.selectionStart).split('\n'); document.getElementById('status-cursor').textContent = `Ln ${b.length}, Col ${b[b.length - 1].length + 1}`; };
+  ['keyup', 'click', 'input', 'focus'].forEach(ev => ta.addEventListener(ev, upd));
+  ta.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end'); ta.dispatchEvent(new Event('input')); } });
+})();
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveCurrentFile(); } });
+
+// ═══════════════════════════════════════════════════════════
+// TEAM PROJECTS
+// ═══════════════════════════════════════════════════════════
+const PROJ_KEY = 'mamal_projects_v1';
+let projects = { list: [], active: null };
+const CLS = ['linear-gradient(135deg, #f59e0b, #ec4899)', 'linear-gradient(135deg, #10b981, #3b82f6)', 'linear-gradient(135deg, #8b5cf6, #06b6d4)', 'linear-gradient(135deg, #ef4444, #f59e0b)'];
+const PT_LABEL = { web: '🌐 وب', fullstack: '⚡ فول‌استک', debug: '🐛 دیباگ', api: '🔌 API/Backend', game: '🎮 بازی', data: '📊 داده/Python', docs: '📝 مستندات', tests: '🧪 تست و ریفکتور', custom: '✨ سفارشی' };
+const PT = {
+  api: [['API Dev','🔌','Backend','سرور Express با routeها و اعتبارسنجی در server.js'],['Docs','📖','Tech Writer','README و docs/api.md'],['QA','🧪','Tester','تست‌های endpointها در tests/']],
+  game: [['Game Dev','🎮','Gameplay','حلقه‌ی بازی و منطق در game.js با canvas'],['Artist','🎨','UI/Art','index.html و style.css برای صحنه و HUD']],
+  data: [['Data Eng','🛠️','Python','اسکریپت‌های پاک‌سازی داده در main.py'],['Analyst','📊','Analysis','تحلیل و گزارش در report.md']],
+  docs: [['Writer','✍️','Content','نوشتن محتوای اصلی در content.md'],['Editor','🧐','Editor','ویرایش، ساختار و عنوان‌بندی']],
+  tests: [['QA','🧪','Tester','نوشتن تست برای کدهای موجود'],['Refactorer','♻️','Refactor','بازسازی کد موجود بدون تغییر رفتار']]
+};
+const TT = {
+  web: [['ساختار HTML','index.html semantic','high'],['استایل responsive','style.css','mid'],['منطق JS','script.js','mid']],
+  fullstack: [['طراحی API','لیست endpointها','high'],['UI','صفحات و فرم‌ها','mid'],['دیتابیس','schema و مدل‌ها','mid']],
+  debug: [['بازتولید باگ','شرایط و مراحل','high'],['یافتن علت','تحلیل ریشه‌ای','high'],['اصلاح و تست','رفع و تست رگرسیون','mid']],
+  api: [['طراحی endpointها','مسیرها و مدل‌ها','high'],['پیاده‌سازی سرور','server.js','high'],['تست و مستندات','tests و README','mid']],
+  game: [['حلقه‌ی بازی','update/render','high'],['کنترل و برخورد','ورودی و collision','mid'],['امتیاز و HUD','نمایش امتیاز','low']],
+  data: [['پاک‌سازی داده','missing/duplicates','high'],['تحلیل','آمار توصیفی','mid'],['گزارش','نتیجه‌گیری','low']],
+  docs: [['طرح کلی','سرفصل‌ها','high'],['پیش‌نویس','نوشتن بخش‌ها','mid'],['ویرایش نهایی','نگارش و یکدستی','low']],
+  tests: [['بررسی پوشش','فایل‌های بدون تست','high'],['نوشتن تست','unit tests','high'],['ریفکتور','خوانایی و تکرار','mid']]
+};
+const curProj = () => projects.list.find(p => p.id === projects.active);
+function syncProject() {
+  const p = curProj(); if (!p) return;
+  p.agents = teamAgents; p.tasks = teamTasks; p.goal = document.getElementById('team-task').value;
+  try { localStorage.setItem(PROJ_KEY, JSON.stringify(projects)); } catch (e) {}
+}
+{ const a = saveTeam, b = saveTasks; saveTeam = function () { a(); syncProject(); }; saveTasks = function () { b(); syncProject(); }; }
+function renderProjBar() {
+  document.getElementById('proj-select').innerHTML = projects.list.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === projects.active ? 'selected' : ''}>${escapeHtml((PT_LABEL[p.type] || '').split(' ')[0])} ${escapeHtml(p.name)}</option>`).join('');
+  document.getElementById('pf-type').innerHTML = Object.entries(PT_LABEL).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+}
+function loadProjects() {
+  try { const r = localStorage.getItem(PROJ_KEY); if (r) projects = JSON.parse(r); } catch (e) {}
+  if (!projects.list.length) { projects = { list: [{ id: 'p' + Date.now(), name: 'پروژه‌ی اصلی', type: 'custom', goal: document.getElementById('team-task').value, agents: teamAgents, tasks: teamTasks }], active: null }; projects.active = projects.list[0].id; }
+  const p = curProj() || projects.list[0]; projects.active = p.id;
+  teamAgents = p.agents || []; teamTasks = p.tasks || []; document.getElementById('team-task').value = p.goal || '';
+  renderAgentsGrid(); renderTasks(); renderProjBar();
+  document.getElementById('team-task').addEventListener('input', syncProject);
+}
+function switchProject(id) {
+  if (teamRunning) { showToast('⏳ تا پایان اجرا صبر کنید'); renderProjBar(); return; }
+  syncProject(); projects.active = id; const p = curProj();
+  teamAgents = p.agents || []; teamTasks = p.tasks || []; document.getElementById('team-task').value = p.goal || '';
+  syncProject(); renderAgentsGrid(); renderTasks(); renderProjBar(); updateSidebarStats();
+}
+function toggleProjForm() { const f = document.getElementById('proj-form'); f.style.display = f.style.display === 'none' ? 'flex' : 'none'; }
+function createProject() {
+  if (teamRunning) return;
+  syncProject();
+  const type = document.getElementById('pf-type').value, name = document.getElementById('pf-name').value.trim() || PT_LABEL[type].replace(/^\S+\s/, '');
+  teamAgents = []; teamTasks = [];
+  if (['web', 'fullstack', 'debug'].includes(type)) loadTemplate(type);
+  else if (PT[type]) teamAgents = PT[type].map((x, i) => ({ name: x[0], emoji: x[1], role: x[2], task: x[3], color: CLS[i % 4], model: '', status: 'idle', output: '', error: '' }));
+  teamTasks = (TT[type] || []).map((t, i) => ({ id: 't' + Date.now() + i, title: t[0], desc: t[1], pri: t[2], agent: '', status: 'todo', output: '' }));
+  const p = { id: 'p' + Date.now(), name, type, goal: '', agents: teamAgents, tasks: teamTasks };
+  projects.list.push(p); projects.active = p.id; document.getElementById('team-task').value = '';
+  syncProject(); renderAgentsGrid(); renderTasks(); renderProjBar(); toggleProjForm(); document.getElementById('pf-name').value = ''; updateSidebarStats();
+}
+function deleteProject() {
+  if (projects.list.length < 2) { showToast('🐾 حداقل یک پروژه باید بماند'); return; }
+  if (!confirm('🐾 پروژه‌ی «' + curProj().name + '» حذف شود؟')) return;
+  projects.list = projects.list.filter(p => p.id !== projects.active); projects.active = null;
+  switchProject(projects.list[0].id);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AGENT STUDIO EXTENSIONS
+// ═══════════════════════════════════════════════════════════
+const AG_KEY = 'mamal_agent_hist_v1';
+let agHist = []; try { agHist = JSON.parse(localStorage.getItem(AG_KEY) || '[]'); } catch (e) {}
+const AG_PRESETS = [
+  ['🔎 ریویو', 'کد فایل جاری را ریویو کن: باگ‌ها، خوانایی، امنیت و بهبودها را فهرست و اصلاحات را اعمال کن.', 1],
+  ['🐞 دیباگ', 'خطای زیر را پیدا و برطرف کن. شرح خطا/رفتار:\n', 1],
+  ['🧪 تست', 'برای کد فایل جاری unit test کامل بنویس و در فایل جداگانه ذخیره کن.', 1],
+  ['📖 مستندسازی', 'برای پروژه README.md کامل (نصب، استفاده، ساختار) بساز.', 0],
+  ['♻️ ریفکتور', 'فایل جاری را بدون تغییر رفتار ریفکتور کن (نام‌گذاری، تکرار، ماژولار).', 1],
+  ['🛡️ امنیت', 'فایل جاری را از نظر آسیب‌پذیری‌ها (XSS، injection، secrets) بررسی و رفع کن.', 1],
+  ['⚡ بهینه‌سازی', 'عملکرد فایل جاری را بهینه کن و توضیح بده چه چیزی تغییر کرد.', 1],
+  ['🌍 تبدیل', 'فایل جاری را به TypeScript تبدیل کن و در فایل جدید ذخیره کن.', 1]
+];
+function renderAgQuick() {
+  document.getElementById('ag-quick').innerHTML = AG_PRESETS.map((p, i) => `<button class="ag-chip" onclick="agQuick(${i})">${p[0]}</button>`).join('');
+}
+function agQuick(i) {
+  const p = AG_PRESETS[i]; document.getElementById('agent-task').value = p[1];
+  document.getElementById('ag-ctx-file').checked = !!p[2]; document.getElementById('agent-task').focus();
+}
+function agentCtx() {
+  let c = '';
+  if (document.getElementById('ag-ctx-file')?.checked && activeTabFile && projectFiles[activeTabFile] != null) c += `\n\nCurrent file (${activeTabFile}):\n${projectFiles[activeTabFile].slice(0, 6000)}`;
+  if (document.getElementById('ag-ctx-all')?.checked) c += '\n\nProject files (truncated):\n' + Object.entries(projectFiles).filter(([p]) => !p.endsWith('/.gitkeep')).slice(0, 15).map(([p, v]) => `--- ${p} ---\n${String(v).slice(0, 800)}`).join('\n');
+  return c;
+}
+function agentExtra() { const v = document.getElementById('agent-extra')?.value.trim(); return v ? `\n\nExtra instructions from the user:\n${v}` : ''; }
+let _agLast = '';
+{ const al = agentLog; agentLog = function (t, l, c) { if (t === 'result') _agLast = c; return al(t, l, c); }; }
+{ const rs = runSingleAgent; runSingleAgent = async function () {
+  if (agentRunning) return rs();
+  _agLast = ''; const task = document.getElementById('agent-task').value.trim(); const t0 = Date.now();
+  await rs();
+  if (_agLast) {
+    agHist.unshift({ task: task.slice(0, 200), mode: agentMode, ans: _agLast, t: Date.now(), sec: Math.round((Date.now() - t0) / 1000) });
+    agHist = agHist.slice(0, 15); try { localStorage.setItem(AG_KEY, JSON.stringify(agHist)); } catch (e) {}
+    renderAgHist();
+  }
+}; }
+function renderAgHist() {
+  document.getElementById('ag-hist').innerHTML = agHist.length ? agHist.map((h, i) => `<div class="ag-h"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(h.mode)} · ${escapeHtml(h.task)}</span><span>${h.sec}s</span>
+    <button class="xb" onclick="document.getElementById('agent-task').value=agHist[${i}].task">↺</button><button class="xb" onclick="navigator.clipboard.writeText(agHist[${i}].ans);showToast('📋 کپی شد')">📋</button></div>`).join('') : '<div class="tb-empty">تاریخچه‌ای نیست</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// IDE PRO
+// ═══════════════════════════════════════════════════════════
+const $i = id => document.getElementById(id);
+const IDE_TPL = {
+  'index.html': '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>پروژه</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>سلام 🐾</h1>\n  <script src="script.js"><\/script>\n</body>\n</html>\n',
+  'style.css': '* { box-sizing: border-box; }\nbody { font-family: sans-serif; margin: 0; padding: 24px; }\n',
+  'script.js': '"use strict";\nconsole.log("ready");\n',
+  'README.md': '# Project\n\n## Usage\n\n',
+  'package.json': '{\n  "name": "app",\n  "version": "1.0.0",\n  "scripts": { "start": "node server.js" }\n}\n',
+  'main.py': 'def main():\n    print("hello")\n\n\nif __name__ == "__main__":\n    main()\n'
+};
+$i('code-editor').closest('.editor-wrapper').insertAdjacentHTML('beforebegin', `
+  <div class="ide-xbar">
+    <button class="xb" onclick="ideFont(-1)">A−</button><button class="xb" onclick="ideFont(1)">A+</button>
+    <label class="xb"><input type="checkbox" id="ide-auto"> Auto-save</label>
+    <button class="xb" onclick="ideFindToggle()" title="Ctrl+F">🔎 Find</button>
+    <button class="xb" onclick="ideGrep()" title="جستجو در همه‌ی فایل‌ها">🗂 Search all</button>
+    <button class="xb" onclick="ideGoto()" title="Ctrl+G">↦ Line</button>
+    <button class="xb" onclick="ideRunJS()">▶ Run JS</button>
+    <button class="xb" onclick="ideDup()" title="کپی فایل">⧉</button><button class="xb" onclick="ideDel()" title="حذف فایل">🗑</button>
+    <select class="xb" id="ide-tpl" onchange="ideTpl(this)"><option value="">📄 قالب فایل...</option>${Object.keys(IDE_TPL).map(k => `<option>${k}</option>`).join('')}</select>
+    <select class="xb" onchange="ideAI(this.value);this.value=''"><option value="">✨ AI...</option><option value="explain">توضیح کد</option><option value="fix">رفع باگ</option><option value="refactor">ریفکتور</option><option value="comment">افزودن کامنت</option><option value="test">ساخت تست</option></select>
+  </div>
+  <div id="ide-find" class="ide-xbar" style="display:none;">
+    <input id="if-q" class="tb-input" style="width:140px" placeholder="Find" onkeydown="if(event.key==='Enter')ideFind(1)"><input id="if-r" class="tb-input" style="width:120px" placeholder="Replace">
+    <button class="xb" onclick="ideFind(-1)">▲</button><button class="xb" onclick="ideFind(1)">▼</button><button class="xb" onclick="ideReplace(false)">Replace</button><button class="xb" onclick="ideReplace(true)">All</button><span id="if-n" class="tb-stat"></span>
+  </div>
+  <div id="ide-results" style="display:none;max-height:130px;overflow:auto;background:#1c1917;font-size:10.5px;padding:4px 8px;font-family:'JetBrains Mono',monospace;"></div>`);
+
+let ideFS = 13;
+function ideFont(d) { ideFS = Math.max(10, Math.min(24, ideFS + d)); ['code-editor', 'line-numbers'].forEach(i => { $i(i).style.fontSize = ideFS + 'px'; $i(i).style.lineHeight = Math.round(ideFS * 1.6) + 'px'; }); }
+function ideTpl(sel) {
+  const n = sel.value; sel.value = ''; if (!n) return;
+  let name = n, i = 2; while (name in projectFiles) name = n.replace(/(\.[^.]+)$/, '-' + (i++) + '$1');
+  projectFiles[name] = IDE_TPL[n]; saveProject(); renderFileTree(); openFileInEditor(name);
+}
+function ideFindToggle() {
+  const f = $i('ide-find'); f.style.display = f.style.display === 'none' ? 'flex' : 'none';
+  if (f.style.display === 'flex') { const ta = $i('code-editor'), s = ta.value.slice(ta.selectionStart, ta.selectionEnd); if (s && !s.includes('\n')) $i('if-q').value = s; $i('if-q').focus(); }
+}
+function ideFind(d) {
+  const ta = $i('code-editor'), q = $i('if-q').value; if (!q) return;
+  const v = ta.value.toLowerCase(), ql = q.toLowerCase();
+  let i = d > 0 ? v.indexOf(ql, ta.selectionEnd) : v.lastIndexOf(ql, ta.selectionStart - 1);
+  if (i < 0) i = d > 0 ? v.indexOf(ql) : v.lastIndexOf(ql);
+  $i('if-n').textContent = (v.split(ql).length - 1) + ' نتیجه';
+  if (i < 0) return; ta.focus(); ta.setSelectionRange(i, i + q.length);
+}
+function ideReplace(all) {
+  const ta = $i('code-editor'), q = $i('if-q').value, r = $i('if-r').value; if (!q) return;
+  if (all) { const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); ta.focus(); ta.select(); document.execCommand('insertText', false, ta.value.replace(re, () => r)); }
+  else { if (ta.value.slice(ta.selectionStart, ta.selectionEnd).toLowerCase() === q.toLowerCase()) { ta.focus(); document.execCommand('insertText', false, r); } ideFind(1); }
+}
+function ideGrep() {
+  $i('ide-find').style.display = 'flex'; const q = $i('if-q').value.toLowerCase(), box = $i('ide-results');
+  if (!q) { $i('if-q').focus(); return; }
+  const hits = [];
+  for (const [p, c] of Object.entries(projectFiles)) { if (p.endsWith('/.gitkeep')) continue; String(c).split('\n').forEach((l, i) => { if (l.toLowerCase().includes(q) && hits.length < 80) hits.push([p, i + 1, l.trim().slice(0, 90)]); }); }
+  box.style.display = 'block';
+  box.innerHTML = hits.length ? hits.map(h => `<div style="cursor:pointer;padding:2px 0;color:#d6d3d1" data-p="${escapeHtml(h[0])}" data-l="${h[1]}" onclick="ideJump(this.dataset.p,+this.dataset.l)"><b style="color:#fbbf24">${escapeHtml(h[0])}:${h[1]}</b> ${escapeHtml(h[2])}</div>`).join('') : '<div style="color:#a8a29e">نتیجه‌ای نیست</div>';
+}
+function ideJump(p, l) {
+  openFileInEditor(p); const ta = $i('code-editor'), ls = ta.value.split('\n');
+  const off = ls.slice(0, l - 1).join('\n').length + (l > 1 ? 1 : 0);
+  ta.focus(); ta.setSelectionRange(off, off + (ls[l - 1] || '').length);
+  ta.scrollTop = Math.max(0, (l - 4) * (parseFloat(getComputedStyle(ta).lineHeight) || 20));
+}
+function ideGoto() { const n = parseInt(prompt('شماره خط:')); if (n > 0 && activeTabFile) ideJump(activeTabFile, n); }
+function ideDup() {
+  if (!activeTabFile) return; const m = activeTabFile.match(/^(.*?)(\.[^./]+)?$/); let n = m[1] + '-copy' + (m[2] || ''), i = 2;
+  while (n in projectFiles) n = m[1] + '-copy' + (i++) + (m[2] || '');
+  projectFiles[n] = projectFiles[activeTabFile]; saveProject(); renderFileTree(); openFileInEditor(n);
+}
+function ideDel() {
+  if (!activeTabFile || !confirm('🐾 حذف ' + activeTabFile + '؟')) return;
+  const p = activeTabFile; delete projectFiles[p]; delete unsavedChanges[p]; saveProject(); closeTab(p); renderFileTree();
+}
+function ideRunJS() {
+  if (!activeTabFile || !/\.js$/.test(activeTabFile)) { showToast('🐾 یک فایل .js باز کنید'); return; }
+  const out = $i('terminal-output'), f = document.createElement('iframe'); f.sandbox = 'allow-scripts'; f.style.display = 'none';
+  const h = e => { if (e.source === f.contentWindow) out.insertAdjacentHTML('beforeend', `<div style="color:${e.data.e ? '#fca5a5' : '#d6d3d1'}">${escapeHtml(e.data.m)}</div>`); };
+  addEventListener('message', h);
+  f.srcdoc = '<script>const p=(m,e)=>parent.postMessage({m:m,e:e},"*");console.log=console.info=(...a)=>p(a.map(x=>typeof x==="object"?JSON.stringify(x):String(x)).join(" "));console.error=(...a)=>p(a.join(" "),1);onerror=m=>p(String(m),1);<\/script><script>' + $i('code-editor').value.replace(/<\/script>/gi, '<\\/script>') + '<\/script>';
+  document.body.appendChild(f); out.insertAdjacentHTML('beforeend', `<div style="color:#fbbf24">▶ ${escapeHtml(activeTabFile)}</div>`);
+  setTimeout(() => { f.remove(); removeEventListener('message', h); }, 5000);
+}
+async function ideAI(kind) {
+  if (!kind) return; if (!activeTabFile) { showToast('🐾 فایلی باز نیست'); return; }
+  const ta = $i('code-editor'), a = ta.selectionStart, b = ta.selectionEnd, code = a !== b ? ta.value.slice(a, b) : ta.value;
+  const P = { explain: 'Explain this code concisely in Persian.', fix: 'Find and fix bugs. Return ONLY the corrected code, no commentary.', refactor: 'Refactor for readability and best practices without changing behavior. Return ONLY the code.', comment: 'Add helpful comments. Return ONLY the code.', test: 'Write unit tests for this code. Return ONLY the test code.' };
+  showToast('✨ در حال پردازش...');
+  try {
+    const key = await fetchOpenRouterKey();
+    const r = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': location.href, 'X-Title': 'Mamal IDE' },
+      body: JSON.stringify({ model: $i('agent-model-select')?.value || $i('model-select').value, messages: [{ role: 'system', content: P[kind] + ' File: ' + activeTabFile }, { role: 'user', content: code }], temperature: 0.2, max_tokens: 3000 }) }, 2, 90000);
+    if (!r.ok) throw new Error('API ' + r.status);
+    let t = (await r.json()).choices?.[0]?.message?.content || '';
+    if (kind === 'explain') { $i('terminal-output').insertAdjacentHTML('beforeend', `<div style="color:#c4b5fd;white-space:pre-wrap">✨ ${escapeHtml(t)}</div>`); showToast('✨ توضیح در ترمینال پایین'); return; }
+    t = t.replace(/^\s*```\w*\n?/, '').replace(/```\s*$/, '');
+    if (kind === 'test') { const n = activeTabFile.replace(/(\.[^.]+)?$/, '.test$1'); projectFiles[n] = t; saveProject(); renderFileTree(); openFileInEditor(n); return; }
+    ta.focus(); if (a === b) ta.select(); document.execCommand('insertText', false, t); showToast('✅ اعمال شد (Ctrl+Z برای بازگشت)');
+  } catch (e) { showToast('❌ ' + e.message); }
+}
+(function () {
+  const ta = $i('code-editor'); let tm;
+  ta.addEventListener('input', () => { if (!$i('ide-auto').checked || !activeTabFile) return; clearTimeout(tm); tm = setTimeout(saveCurrentFile, 1200); });
+  ta.addEventListener('keydown', e => {
+    const s = ta.selectionStart, en = ta.selectionEnd, v = ta.value, k = e.key, ins = t => document.execCommand('insertText', false, t), mod = e.ctrlKey || e.metaKey;
+    if (mod && k === 'f') { e.preventDefault(); ideFindToggle(); return; }
+    if (mod && k === 'g') { e.preventDefault(); ideGoto(); return; }
+    if (mod && k === 'd') { e.preventDefault(); const ls = v.lastIndexOf('\n', s - 1) + 1; let le = v.indexOf('\n', en); if (le < 0) le = v.length; ta.setSelectionRange(le, le); ins('\n' + v.slice(ls, le)); return; }
+    if (mod && k === '/') {
+      e.preventDefault(); const c = /^(py|sh|yml|yaml)$/.test((activeTabFile || '').split('.').pop()) ? '# ' : '// ';
+      const a = v.lastIndexOf('\n', s - 1) + 1; let b = v.indexOf('\n', en); if (b < 0) b = v.length;
+      const ls = v.slice(a, b).split('\n'), all = ls.every(l => l.trim().startsWith(c.trim()));
+      ta.setSelectionRange(a, b); ins(ls.map(l => all ? l.replace(c, '').replace(c.trim(), '') : c + l).join('\n')); return;
+    }
+    if (mod || e.altKey) return;
+    const close = { '(': ')', '[': ']', '{': '}' };
+    if (close[k] && s === en) { e.preventDefault(); ins(k + close[k]); ta.setSelectionRange(s + 1, s + 1); return; }
+    if (')]}'.includes(k) && s === en && v[s] === k) { e.preventDefault(); ta.setSelectionRange(s + 1, s + 1); return; }
+    if ('"\'`'.includes(k) && s === en) {
+      if (v[s] === k) { e.preventDefault(); ta.setSelectionRange(s + 1, s + 1); return; }
+      if (!/\w/.test(v[s - 1] || '') && !/\w/.test(v[s] || '')) { e.preventDefault(); ins(k + k); ta.setSelectionRange(s + 1, s + 1); return; }
+    }
+    if (k === 'Enter') {
+      const ls = v.lastIndexOf('\n', s - 1) + 1, before = v.slice(ls, s), ind = before.match(/^\s*/)[0]; e.preventDefault();
+      if (/[{(\[]$/.test(before.trimEnd()) && /^[})\]]/.test(v[s] || '')) { ins('\n' + ind + '  \n' + ind); ta.setSelectionRange(s + ind.length + 3, s + ind.length + 3); }
+      else ins('\n' + ind + (/[{(\[:]\s*$/.test(before) ? '  ' : ''));
+    }
+  });
+})();
+loadTasks();
+loadProjects(); renderAgQuick(); renderAgHist();
 </script>
 </body>
 </html>
