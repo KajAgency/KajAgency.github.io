@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐾 Mamal IDE — Pro Studio (Multi-Agent +  Multi-Language)</title>
+<title>🐾 Mamal IDE — Pro Studio (Multi-Agent + Multi-Language)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -24040,6 +24040,2215 @@ console.log('Mamal IDE Pro starter loaded 🐾');`
   else setTimeout(boot, 3400);
 
   window.MamalStudioAP = { refreshTab: refreshTab, outlineOf: outlineOf, set: AP_SET, applySet: applySet, checkData: checkData };
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MAMAL STUDIO — ماژول AU: آکادمی قابل‌اعتماد
+   • انتخاب مدل مخصوص بخش آموزش (دروپ‌داون + مدل دلخواه، ذخیره)
+   • درسنامه شخصی: سرفصل + درس‌ها + متن درسنامه — ارسال به مدل دلخواه
+   • timeout مقاوم AI (پایان دادن به کارت‌های گیرکرده «انت») + خطای شفاف فارسی
+   • fallback خودکار به مسیر رایگان برای کلیدهای خراب (۴۰۱) در کل اپ
+   • گارد مدل خالی در چت اصلی + جابجایی چیپ شناور که جلوی ارسال را می‌گرفت
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  if (window.__mamalStudioAU) return;
+  window.__mamalStudioAU = true;
+
+  var $id = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function FA(x) { return String(x).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; }); }
+  function toast(m) { try { if (window.MamalStudio && window.MamalStudio.toast) window.MamalStudio.toast(m); else console.log('[toast] ' + m); } catch (e) {} }
+  var N = function (n, w) { if (window.MamalFeatures) window.MamalFeatures.add(n, w || 'آموزش'); };
+  var W = 'آموزش';
+
+  /* ═══ ۱) مدل آموزش = همان مدل مشترک همه بخش‌ها ═══ */
+  var AU_SET = { model: '', style: 'normal', len: 'normal', eng: false };
+  try { AU_SET = Object.assign(AU_SET, JSON.parse(localStorage.getItem('acad_model_v1') || '{}')); } catch (e) {}
+  function saveAU() { try { localStorage.setItem('acad_model_v1', JSON.stringify(AU_SET)); } catch (e) {} }
+  function acadModel() { return AU_SET.model || ''; }
+  function sharedModel() {
+    try {
+      var ms = $id('model-select');
+      if (ms && ms.value && !/بارگذاری/.test(ms.value)) return ms.value;
+      if (window.MamalBot && window.MamalBot.settings && window.MamalBot.settings.model) return window.MamalBot.settings.model;
+      var mb = $id('mb-model');
+      if (mb && mb.value && !/بارگذاری/.test(mb.value)) return mb.value;
+      return 'deepseek/deepseek-r1:free';
+    } catch (e) { return 'deepseek/deepseek-r1:free'; }
+  }
+  function mirrorModelList(sel) {
+    var ms = $id('model-select');
+    if (!ms) return false;
+    var real = Array.prototype.filter.call(ms.options || [], function (o) { return o.value && !/بارگذاری/.test(o.textContent); });
+    if (!real.length) return false;
+    var cur = AU_SET.model;
+    sel.innerHTML = '<option value=""' + (cur === '' ? ' selected' : '') + '>— همان مدل مشترک همه بخش‌ها —</option>' +
+      real.map(function (o) { return '<option value="' + esc(o.value) + '"' + (cur === o.value ? ' selected' : '') + '>' + esc(o.textContent) + '</option>'; }).join('') +
+      '<option value="__custom__">مدل دلخواه…</option>';
+    return true;
+  }
+  function isAcadCall(body) {
+    try {
+      var s = (body.messages && body.messages[0] && body.messages[0].content) || '';
+      return /مربی|دبیر هستی|معلم ارشد برنامه|درسنامه|تدریس/.test(String(s));
+    } catch (e) { return false; }
+  }
+  /* چرخش مدل: اول مدلِ موفقِ قبلی، بعد مدل بعدیِ لیست مشترک */
+  function goodModel() { try { return localStorage.getItem('au_good_model') || ''; } catch (e) { return ''; } }
+  function nextRotModel(cur, tried) {
+    try {
+      var ms = $id('model-select');
+      var vals = Array.prototype.map.call((ms && ms.options) || [], function (o) { return o.value; }).filter(function (v) { return v && !/بارگذاری/.test(v); });
+      if (!vals.length) return '';
+      var seen = {};
+      (tried || []).forEach(function (x) { seen[x] = true; });
+      seen[cur] = true;
+      var g = goodModel();
+      if (g && !seen[g] && vals.indexOf(g) !== -1) return g;
+      for (var n = 1; n <= vals.length; n++) {
+        var cand = vals[(vals.indexOf(cur) + 1 + n) % vals.length];
+        if (!seen[cand]) return cand;
+      }
+      return '';
+    } catch (e) { return ''; }
+  }
+  /* ═══ ۱-ب) سبک تدریس (شخصی‌سازی) — به پرامپت همه‌ی تماس‌های آموزش تزریق می‌شود ═══ */
+  function styleSuffix() {
+    var p = [];
+    var st = AU_SET.style || 'normal';
+    if (st === 'simple') p.push('سبک تدریس: خیلی ساده و روان، با تشبیه‌های روزمره و بدون اصطلاح سنگین.');
+    else if (st === 'deep') p.push('سبک تدریس: عمیق و فنی، با جزئیات معماری، دلیلِ پشت هر تصمیم و لبه‌های پیشرفته.');
+    else if (st === 'example') p.push('سبک تدریس: مثال‌محور — هر مفهوم را بلافاصله با یک مثال کامل و قابل اجرا نشان بده.');
+    else p.push('سبک تدریس: متعادل، توضیح + مثال کوتاه برای هر بخش.');
+    var ln = AU_SET.len || 'normal';
+    if (ln === 'short') p.push('طول پاسخ: فشرده و خلاصه (حداکثر حدود ۳۰۰ کلمه).');
+    else if (ln === 'long') p.push('طول پاسخ: کامل و مفصل، بدون خلاصه‌کردن مفاهیم مهم.');
+    if (AU_SET.eng) p.push('ترم‌ها و اصطلاح‌های فنی را انگلیسی نگه دار (بدون ترجمه‌ی آن‌ها).');
+    return p.length ? '\n' + p.join(' ') : '';
+  }
+
+  /* ═══ ۲) مسیر AI مقاوم: timeout + مدل مشترک/آکادمی + سبک تدریس + خطای شفاف ═══ */
+  var prevOr = window.orStream;
+  window.orStream = function (key, body, onDelta, ctl) {
+    if (isAcadCall(body)) {
+      var m0 = (body.messages && body.messages[0]) || {};
+      var c0 = String(m0.content || '') + styleSuffix();
+      body = Object.assign({}, body, {
+        model: acadModel() || body.model || sharedModel(),
+        messages: [Object.assign({}, m0, { content: c0 })].concat((body.messages || []).slice(1))
+      });
+      try { if (window.__auDebug) window.__auLastBody = JSON.parse(JSON.stringify(body)); } catch (e0) {}
+    }
+    var own = !ctl || !ctl.signal;
+    var c2 = own ? new AbortController() : ctl;
+    var fired = false, seen = false;
+    var od2 = function (t, x) { seen = true; return onDelta && onDelta(t, x); };
+    var to = setTimeout(function () { fired = true; try { c2.abort(); } catch (e) {} }, 115000);
+    var p;
+    try { p = prevOr.call(null, key, body, od2, c2); } catch (e) { clearTimeout(to); return Promise.reject(e); }
+    return Promise.resolve(p).then(function (r) {
+      clearTimeout(to);
+      if (r && String(r).trim()) { try { localStorage.setItem('au_good_model', body.model); } catch (e2) {} }
+      if (!seen && r && String(r).trim() && onDelta) { try { onDelta(null, r); } catch (e2) {} }
+      return r;
+    }, function (err) {
+      clearTimeout(to);
+      if (err && err.name === 'AbortError' && fired && !(ctl && ctl.signal && ctl.signal.aborted)) throw new Error('زمان انتقال پاسخ تمام شد (۱۱۵ ثانیه) — دوباره بزن');
+      /* چرخش خودکار مدل هنگام شلوغی/قطعی مدل یا شکست هر دو مسیر کلید/رایگان */
+      var msg = String((err && err.message) || '');
+      var tries = +(body.__retryN || 0);
+      if (/API (429|503|504|500)|سرویس رایگان در دسترس نیست/.test(msg) && tries < 4 && !(ctl && ctl.signal && ctl.signal.aborted)) {
+        var tried = (body.__tried || []).concat([body.model]);
+        var next = nextRotModel(body.model, tried);
+        if (next && next !== body.model) {
+          var b2 = Object.assign({}, body, { model: next, __retryN: tries + 1, __tried: tried });
+          try { toast('⚠ مدل شلوغ بود — با مدل «' + next.split('/').pop() + '» دوباره…'); } catch (e3) {}
+          var c3 = own ? new AbortController() : ctl;
+          return window.orStream(key, b2, onDelta, c3);
+        }
+      }
+      throw err;
+    });
+  };
+
+  /* fallback کلیدهای خراب برای کل اپ (از جمله چت TRACE و تیم): */
+  var prevFwr = window.fetchWithRetry;
+  if (typeof prevFwr === 'function') {
+    window.fetchWithRetry = async function (url, opts, retries, timeout) {
+      var res = await prevFwr.call(null, url, opts, retries, timeout);
+      if (/openrouter\.ai/.test(String(url)) && (res.status === 401 || res.status === 402 || res.status === 403)) {
+        var bodyJson = {};
+        try { bodyJson = JSON.parse(opts.body || '{}'); } catch (e0) {}
+        var acc = '';
+        try { await window.orStream('FREE', bodyJson, function (_, x) { acc = x; }, null); } catch (e1) { acc = ''; }
+        if (acc && acc.trim()) {
+          toast('⚠ کلید اصلی رد شد — با مسیر رایگان جواب گرفتم');
+          return new Response(JSON.stringify({ choices: [{ message: { content: acc } }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+        try {
+          var k2 = await window.fetchOpenRouterKey();
+          if (k2 && k2 !== 'FREE') {
+            var o2 = Object.assign({}, opts, { headers: Object.assign({}, opts.headers, { 'Authorization': 'Bearer ' + k2 }) });
+            var r2 = await prevFwr.call(null, url, o2, 1, timeout);
+            if (r2.ok) { toast('⚠ کلید قبلی رد شد — با کلید مشترک جواب گرفتم'); return r2; }
+            if (r2.status === 403) {
+              var safe = sharedModel();
+              var o3 = Object.assign({}, o2, { body: JSON.stringify(Object.assign({}, bodyJson, { model: safe })) });
+              var r3 = await prevFwr.call(null, url, o3, 1, timeout);
+              if (r3.ok) { toast('⚠ مدل قبلی در دسترس نبود — با مدل «' + safe.split('/').pop() + '» جواب گرفتم'); return r3; }
+            }
+          }
+        } catch (e2) {}
+        toast('❌ کلید رد شد (۴۰۱) — تنظیمات کلید را چک کن یا مسیر رایگان بمان');
+      }
+      /* چرخش خودکار مدل برای همه بخش‌ها هنگام شلوغی مدل (۴۲۹/۵۰۰/۵۰۳/۵۰۴) */
+      if (/openrouter\.ai\/api\/v1\/chat\/completions/.test(String(url)) && [429, 500, 503, 504].indexOf(res.status) !== -1) {
+        var rj = {};
+        try { rj = JSON.parse(opts.body || '{}'); } catch (e3) {}
+        var tried = (rj.__tried || []).concat([rj.model]);
+        var nTries = +(rj.__rotN || 0);
+        if (nTries < 4 && rj.model) {
+          var nModel = nextRotModel(rj.model, tried);
+          if (nModel && nModel !== rj.model) {
+            try { toast('⚠ مدل شلوغ بود (' + res.status + ') — با مدل «' + nModel.split('/').pop() + '» دوباره…'); } catch (e4) {}
+            var nb = Object.assign({}, rj, { model: nModel, __rotN: nTries + 1, __tried: tried });
+            var nOpts = Object.assign({}, opts, { body: JSON.stringify(nb) });
+            return window.fetchWithRetry(url, nOpts, 1, timeout);
+          }
+        }
+        /* همه مدل‌ها شلوغ — یک بار مسیر رایگان */
+        var acc2 = '';
+        try { await window.orStream('FREE', rj, function (_, x) { acc2 = x; }, null); } catch (e5) { acc2 = ''; }
+        if (acc2 && acc2.trim()) {
+          toast('⚠ همه مدل‌ها شلوغ بودند — با مسیر رایگان جواب گرفتم');
+          return new Response(JSON.stringify({ choices: [{ message: { content: acc2 } }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+      return res;
+    };
+    N('چرخش خودکار به مسیر رایگان هنگام رد شدن کلید (۴۰۱)', 'هسته');
+  }
+
+  /* ═══ ۳) گارد مدل خالی چت اصلی (ارسال بی‌صدا ممنوع) ═══ */
+  var prevSend = window.sendTask;
+  if (typeof prevSend === 'function') {
+    window.sendTask = function () {
+      var sel = $id('model-select');
+      if (sel && (!sel.value || /بارگذاری/.test(sel.value))) {
+        var real = Array.prototype.filter.call(sel.options || [], function (o) { return o.value && !/بارگذاری/.test(o.textContent); });
+        if (real.length) { sel.value = real[0].value; toast('مدل خالی بود — «' + real[0].textContent.slice(0, 30) + '» انتخاب شد'); }
+        else { toast('اول از منوی بالا یک مدل انتخاب کن'); return; }
+      }
+      return prevSend.apply(null, arguments);
+    };
+    N('گارد مدل خالی در ارسال چت اصلی', 'هسته');
+  }
+
+  /* ═══ ۴) چیپ شناور که جلوی دکمه ارسال چت را می‌گرفت ═══ */
+  function fixPill() {
+    var b = $id('vfs-bar');
+    var ia = document.querySelector('.input-area');
+    if (!b || !ia) return;
+    b.style.cssText = 'position:static;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;background:rgba(10,14,28,.55);border:1px solid rgba(139,92,246,.4);border-radius:14px;padding:7px 12px;margin:8px auto 0;width:calc(100% - 24px);box-sizing:border-box;z-index:5;';
+    if (b.nextElementSibling !== ia) ia.parentNode.insertBefore(b, ia);
+  }
+
+  /* ═══ ۵) درسنامه شخصی ═══ */
+  var CKEY = 'mamal_academy_custom_v1';
+  function cust() { try { return JSON.parse(localStorage.getItem(CKEY) || 'null') || null; } catch (e) { return null; } }
+  function saveCust(c) { try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) {} }
+
+  function acadChatPush(who, text) {
+    var st = {};
+    try { st = JSON.parse(localStorage.getItem('mamal_academy_v1') || '{}'); } catch (e) {}
+    st.chat = st.chat || [];
+    st.chat.push({ w: who, t: text, ts: Date.now() });
+    st.chat = st.chat.slice(-60);
+    try { localStorage.setItem('mamal_academy_v1', JSON.stringify(st)); } catch (e) {}
+    var log = $id('acd-log');
+    if (!log) return;
+    var me = who === 'me';
+    var d = document.createElement('div');
+    d.style.cssText = 'max-width:88%;' + (me ? 'align-self:flex-start;' : 'align-self:flex-end;');
+    d.innerHTML = me
+      ? '<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);border-radius:13px 13px 3px 13px;padding:9px 14px;color:#fde68a;font-size:12.5px;line-height:2;white-space:pre-wrap;">' + esc(text) + '</div>'
+      : '<div style="background:rgba(139,92,246,.09);border:1px solid rgba(139,92,246,.35);border-radius:13px 13px 13px 3px;padding:9px 14px;color:#e6e0f8;font-size:12.5px;line-height:2;white-space:pre-wrap;">' + esc(text) + '</div>';
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function renderCustChips() {
+    var host = $id('au-cur');
+    if (!host) return;
+    var c = cust();
+    if (!c || !c.lessons.length) { host.innerHTML = '<span style="color:#8fa0bd;font-size:11.5px;">درسنامه شخصی نداری — «✍️ درسنامه شخصی» را بزن تا سرفصل و درس‌های خودت را بسازی.</span>'; return; }
+    host.innerHTML = '<b style="color:#93c5fd;">🧑‍🏫 ' + esc(c.title) + ':</b>' + c.lessons.map(function (l, i) {
+      return '<button data-au-les="' + i + '" title="تدریس این درس با مدل انتخابی" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.45);color:#93c5fd;border-radius:99px;padding:4px 13px;cursor:pointer;font-size:11px;font-family:inherit;">' + FA(i + 1) + '. ' + esc(l.title) + '</button>';
+    }).join('') + '<button data-au-ed title="ویرایش درسنامه شخصی" style="background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;border-radius:99px;padding:4px 11px;cursor:pointer;font-size:11px;font-family:inherit;">✏️ ویرایش</button>';
+    host.querySelectorAll('[data-au-les]').forEach(function (b) {
+      b.addEventListener('click', function () { startCustom(+b.getAttribute('data-au-les')); });
+    });
+    host.querySelectorAll('[data-au-ed]').forEach(function (b) {
+      b.addEventListener('click', openCustBuilder);
+    });
+  }
+
+  var busyAU = false;
+  async function startCustom(idx) {
+    var c = cust();
+    if (!c || !c.lessons[idx]) return;
+    if (busyAU) { toast('یک کار در جریان است'); return; }
+    var l = c.lessons[idx];
+    busyAU = true;
+    acadChatPush('me', 'درس ' + FA(idx + 1) + ' را شروع کن: ' + l.title);
+    var h = null;
+    try { h = window.hudReg({ name: '📖 درس شخصی: ' + l.title, section: 'آموزش', retry: function () { startCustom(idx); }, total: 1, taskId: 'au-les' }); } catch (e) {}
+    var acc = '';
+    try {
+      var k = await window.fetchOpenRouterKey();
+      await window.orStream(k, {
+        model: acadModel() || sharedModel(),
+        messages: [
+          { role: 'system', content: 'مربی هستی. اگر «متن درسنامه» داده شد، دقیقا بر اساس همان متن تدریس کن و به آن وفادار بمان. فقط JSON:\n{"title":"...","md":"توضیح کامل درس با مثال‌ها در markdown","example":"کد کامل اجرایی JavaScript مرتبط با درس","task":"تمرین عملی مشخص","hints":["راهنما ۱","راهنما ۲","راهنما ۳"]}\nکد باید console.log داشته باشد. فارسی.' },
+          { role: 'user', content: 'درسنامه شخصی «' + c.title + '» — درس ' + (idx + 1) + ': «' + l.title + '» (هدف: ' + (l.goal || '—') + ')\nمتن درسنامه:\n' + (l.content || '(متن جدا ندارم — از عنوان و هدف تدریس کن)') + '\nکامل تدریس کن.' }
+        ], temperature: 0.4, max_tokens: 2500
+      }, function (_, x) { acc = x; }, null);
+    } catch (e) {
+      acadChatPush('bot', '❌ ' + e.message);
+      busyAU = false;
+      try { window.hudDone(h, false); } catch (e2) {}
+      return;
+    }
+    var les = null;
+    try { les = JSON.parse(acc.replace(/```json\n?|```\n?/g, '').trim()); } catch (e) {}
+    if (!les || !les.md) {
+      acadChatPush('bot', acc && acc.trim() ? '📖 ' + acc.slice(0, 1200) : '⚠ پاسخ مدل خالی بود — از منوی «مدل آموزش» مدل دیگری انتخاب کن و دوباره روی درس بزن.');
+      busyAU = false;
+      try { window.hudDone(h, true); } catch (e2) {}
+      return;
+    }
+    /* ثبت در state آکادمی + UI */
+    var cid = 'cu-' + idx;
+    var st = {};
+    try { st = JSON.parse(localStorage.getItem('mamal_academy_v1') || '{}'); } catch (e) {}
+    st.active = { id: cid, idx: idx + 1, title: les.title || l.title, task: les.task || '', hints: les.hints || [], md: les.md || '' };
+    st.code = st.code || {};
+    st.code[cid] = les.example || '';
+    st.progress = st.progress || {};
+    st.progress[cid] = st.progress[cid] || 0;
+    try { localStorage.setItem('mamal_academy_v1', JSON.stringify(st)); } catch (e) {}
+    var lt = $id('acd-ltitle'), tk = $id('acd-task'), hn = $id('acd-hints'), cd = $id('acd-code');
+    if (lt) lt.textContent = '📖 درس فعلی: ' + FA(idx + 1) + '. ' + (les.title || l.title) + ' (شخصی)';
+    if (tk) tk.textContent = les.task || '—';
+    if (hn) hn.innerHTML = (les.hints || []).map(function (hh, i) { return '<div>💡 <b style="color:#fcd34d;">راهنما ' + FA(i + 1) + ':</b> ' + esc(hh) + '</div>'; }).join('');
+    if (cd) { cd.value = les.example || ''; try { cd.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+    acadChatPush('bot', '📖 **درس ' + FA(idx + 1) + ': ' + (les.title || l.title) + '**\n\n' + (les.md || '').slice(0, 900) + '\n\n📝 **تمرین:** ' + (les.task || ''));
+    busyAU = false;
+    try { window.hudDone(h, true); } catch (e2) {}
+    toast('✅ درس شخصی تدریس شد — در IDE آموزش ببین');
+  }
+
+  function openCustBuilder() {
+    var c = cust() || { title: '', lessons: [] };
+    var o = document.createElement('div');
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.7);display:flex;align-items:center;justify-content:center;';
+    function body() {
+      return '<div style="direction:rtl;">' +
+        '<label style="color:#a5b4fc;font-size:12px;">نام سرفصل / دوره:</label>' +
+        '<input id="au-c-title" value="' + esc(c.title) + '" placeholder="مثلاً: آموزش VPN برای شبکه" style="width:100%;margin-top:5px;background:#0a1220;border:1px solid rgba(139,92,246,.45);border-radius:10px;color:#dbe4f5;padding:9px 12px;font-size:13px;box-sizing:border-box;font-family:inherit;">' +
+        '<div id="au-c-list" style="margin-top:12px;max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:10px;">' +
+        c.lessons.map(function (l, i) { return lesRow(l, i); }).join('') +
+        (c.lessons.length ? '' : '<div style="color:#64748b;font-size:12px;">هنوز درسی نداری — «➕ درس جدید» را بزن.</div>') + '</div>' +
+        '<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;">' +
+        '<button id="au-c-add" title="افزودن درس تازه" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.45);color:#6ee7b7;border-radius:10px;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:12px;">➕ درس جدید</button>' +
+        '<span style="flex:1;"></span>' +
+        '<button id="au-c-save" title="ذخیره درسنامه شخصی" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;color:#fff;border-radius:10px;padding:8px 22px;cursor:pointer;font-weight:800;font-family:inherit;font-size:12.5px;">💾 ذخیره</button>' +
+        '</div><div style="color:#64748b;font-size:11px;margin-top:8px;">«متن درسنامه» اختیاری است — اگر بنویسی، مدل دقیقا از روی همان متن تدریس می‌کند.</div></div>';
+    }
+    function lesRow(l, i) {
+      return '<div data-au-row="' + i + '" style="background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:9px;">' +
+        '<div style="display:flex;gap:6px;align-items:center;"><b style="color:#c4b5fd;font-size:11.5px;">درس ' + FA(i + 1) + '</b><span style="flex:1;"></span>' +
+        '<button data-au-up="' + i + '" title="انتقال به بالا" style="background:none;border:none;color:#8fa0bd;cursor:pointer;">▲</button>' +
+        '<button data-au-dn="' + i + '" title="انتقال به پایین" style="background:none;border:none;color:#8fa0bd;cursor:pointer;">▼</button>' +
+        '<button data-au-del="' + i + '" title="حذف این درس" style="background:none;border:none;color:#f87171;cursor:pointer;">✕</button></div>' +
+        '<input data-au-t value="' + esc(l.title) + '" placeholder="عنوان درس" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(139,92,246,.4);border-radius:9px;color:#dbe4f5;padding:7px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;">' +
+        '<input data-au-g value="' + esc(l.goal || '') + '" placeholder="هدف درس (یک جمله)" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(139,92,246,.4);border-radius:9px;color:#dbe4f5;padding:7px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;">' +
+        '<textarea data-au-c rows="3" placeholder="متن درسنامه (اختیاری — همان‌ که می‌نویسی تدریس می‌شود)" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(139,92,246,.4);border-radius:9px;color:#dbe4f5;padding:8px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;">' + esc(l.content || '') + '</textarea></div>';
+    }
+    function readRows() {
+      var rows = [];
+      o.querySelectorAll('[data-au-row]').forEach(function (r) {
+        rows.push({
+          title: (r.querySelector('[data-au-t]').value || '').trim(),
+          goal: (r.querySelector('[data-au-g]').value || '').trim(),
+          content: (r.querySelector('[data-au-c]').value || '').trim()
+        });
+      });
+      return rows;
+    }
+    function rerender() {
+      o.querySelector('#au-c-list').innerHTML = c.lessons.length ? c.lessons.map(function (l, i) { return lesRow(l, i); }).join('') : '<div style="color:#64748b;font-size:12px;">هنوز درسی نداری — «➕ درس جدید» را بزن.</div>';
+      wireRows();
+    }
+    function wireRows() {
+      o.querySelectorAll('[data-au-add1]').forEach(function (b) { b.addEventListener('click', addRow); });
+      o.querySelectorAll('[data-au-del]').forEach(function (b) {
+        b.addEventListener('click', function () { var cur = readRows(); cur.splice(+b.getAttribute('data-au-del'), 1); c.lessons = cur; rerender(); });
+      });
+      o.querySelectorAll('[data-au-up]').forEach(function (b) {
+        b.addEventListener('click', function () { var i = +b.getAttribute('data-au-up'); var cur = readRows(); if (i > 0) { var t = cur[i - 1]; cur[i - 1] = cur[i]; cur[i] = t; c.lessons = cur; rerender(); } });
+      });
+      o.querySelectorAll('[data-au-dn]').forEach(function (b) {
+        b.addEventListener('click', function () { var i = +b.getAttribute('data-au-dn'); var cur = readRows(); if (i < cur.length - 1) { var t = cur[i + 1]; cur[i + 1] = cur[i]; cur[i] = t; c.lessons = cur; rerender(); } });
+      });
+    }
+    function addRow() { c.lessons = readRows(); c.lessons.push({ title: '', goal: '', content: '' }); rerender(); }
+    o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(139,92,246,.55);border-radius:16px;width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(139,92,246,.3);"><b style="color:#e9eefb;">✍️ درسنامه شخصی من</b><button class="au-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+      '<div style="flex:1;overflow:auto;padding:14px 16px;font-size:12.5px;line-height:2;color:#dbe4f5;">' + body() + '</div></div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('au-cx')) o.remove(); });
+    document.body.appendChild(o);
+    o.querySelector('#au-c-add').addEventListener('click', addRow);
+    o.querySelector('#au-c-save').addEventListener('click', function () {
+      c.title = (o.querySelector('#au-c-title').value || '').trim() || 'درسنامه شخصی';
+      c.lessons = readRows().filter(function (l) { return l.title; });
+      saveCust(c);
+      renderCustChips();
+      o.remove();
+      toast('💾 درسنامه شخصی ذخیره شد — روی هر درس بزن تا تدریس شود');
+    });
+    wireRows();
+  }
+
+  /* ═══ ۵-ب) ویرایش درسنامه‌ی ساخته‌شده توسط مدل ═══ */
+  function openCurEdit() {
+    var A = {};
+    try { A = window.MamalAcademy.state(); } catch (e) {}
+    if (!A.curriculum || !A.curriculum.lessons || !A.curriculum.lessons.length) { toast('اول با «📚 درسنامه بساز» یک درسنامه بساز تا ویرایشش کنیم'); return; }
+    var c = JSON.parse(JSON.stringify(A.curriculum));
+    var o = document.createElement('div');
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.7);display:flex;align-items:center;justify-content:center;';
+    function lesRow(l, i) {
+      return '<div data-ce-row="' + i + '"' + (l.id ? ' data-ce-id="' + esc(l.id) + '"' : '') + ' style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:9px;">' +
+        '<div style="display:flex;gap:6px;align-items:center;"><b style="color:#fcd34d;font-size:11.5px;">درس ' + FA(i + 1) + '</b><span style="flex:1;"></span>' +
+        '<button data-ce-up="' + i + '" title="انتقال به بالا" style="background:none;border:none;color:#8fa0bd;cursor:pointer;">▲</button>' +
+        '<button data-ce-dn="' + i + '" title="انتقال به پایین" style="background:none;border:none;color:#8fa0bd;cursor:pointer;">▼</button>' +
+        '<button data-ce-del="' + i + '" title="حذف این درس" style="background:none;border:none;color:#f87171;cursor:pointer;">✕</button></div>' +
+        '<input data-ce-t value="' + esc(l.title) + '" placeholder="عنوان درس" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(245,158,11,.4);border-radius:9px;color:#fde68a;padding:7px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;">' +
+        '<input data-ce-g value="' + esc(l.goal || '') + '" placeholder="هدف درس" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(245,158,11,.4);border-radius:9px;color:#fde68a;padding:7px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;">' +
+        '<input data-ce-k value="' + esc((l.topics || []).join('، ')) + '" placeholder="موضوع‌ها (با ، جدا کن)" style="width:100%;margin-top:6px;background:#0a1220;border:1px solid rgba(245,158,11,.4);border-radius:9px;color:#fde68a;padding:7px 10px;font-size:12px;box-sizing:border-box;font-family:inherit;direction:rtl;"></div>';
+    }
+    function readRows() {
+      var rows = [], t = 0;
+      o.querySelectorAll('[data-ce-row]').forEach(function (r) {
+        t++;
+        rows.push({
+          id: r.getAttribute('data-ce-id') || ('les-u-' + Date.now() + '-' + t),
+          title: (r.querySelector('[data-ce-t]').value || '').trim(),
+          goal: (r.querySelector('[data-ce-g]').value || '').trim(),
+          topics: (r.querySelector('[data-ce-k]').value || '').split(/[،,]/).map(function (x) { return x.trim(); }).filter(Boolean)
+        });
+      });
+      return rows;
+    }
+    function rerender() {
+      o.querySelector('#ce-list').innerHTML = c.lessons.length ? c.lessons.map(function (l, i) { return lesRow(l, i); }).join('') : '<div style="color:#64748b;font-size:12px;">درسی نمانده — «➕ درس جدید» بزن.</div>';
+      wireRows();
+    }
+    function wireRows() {
+      o.querySelectorAll('[data-ce-del]').forEach(function (b) {
+        b.addEventListener('click', function () { readRowsIntoC(); c.lessons.splice(+b.getAttribute('data-ce-del'), 1); rerender(); });
+      });
+      o.querySelectorAll('[data-ce-up]').forEach(function (b) {
+        b.addEventListener('click', function () { var i = +b.getAttribute('data-ce-up'); readRowsIntoC(); if (i > 0) { var t = c.lessons[i - 1]; c.lessons[i - 1] = c.lessons[i]; c.lessons[i] = t; rerender(); } });
+      });
+      o.querySelectorAll('[data-ce-dn]').forEach(function (b) {
+        b.addEventListener('click', function () { var i = +b.getAttribute('data-ce-dn'); readRowsIntoC(); if (i < c.lessons.length - 1) { var t = c.lessons[i + 1]; c.lessons[i + 1] = c.lessons[i]; c.lessons[i] = t; rerender(); } });
+      });
+    }
+    function readRowsIntoC() { c.lessons = readRows(); }
+    function addRow() { readRowsIntoC(); c.lessons.push({ id: 'les-u-' + Date.now(), title: '', goal: '', topics: [] }); rerender(); }
+    o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(245,158,11,.55);border-radius:16px;width:min(680px,94vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(245,158,11,.3);"><b style="color:#fde68a;">✏️ ویرایش درسنامه: ' + esc(c.title) + '</b><button class="ce-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+      '<div style="flex:1;overflow:auto;padding:14px 16px;font-size:12.5px;line-height:2;color:#dbe4f5;direction:rtl;">' +
+      '<input id="ce-title" value="' + esc(c.title) + '" placeholder="نام درسنامه" style="width:100%;background:#0a1220;border:1px solid rgba(245,158,11,.45);border-radius:10px;color:#fde68a;padding:9px 12px;font-size:13px;box-sizing:border-box;font-family:inherit;">' +
+      '<div id="ce-list" style="margin-top:12px;max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:10px;">' + c.lessons.map(function (l, i) { return lesRow(l, i); }).join('') + '</div>' +
+      '<div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap;">' +
+      '<button id="ce-add" title="افزودن درس تازه" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.45);color:#6ee7b7;border-radius:10px;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:12px;">➕ درس جدید</button>' +
+      '<span style="flex:1;"></span>' +
+      '<button id="ce-save" title="ذخیره و اعمال درسنامه" style="background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;border-radius:10px;padding:8px 22px;cursor:pointer;font-weight:800;font-family:inherit;font-size:12.5px;">💾 ذخیره و اعمال</button>' +
+      '</div><div style="color:#64748b;font-size:11px;margin-top:8px;">تغییرات روی چیپ‌های درس و تدریسِ بعدی هر درس اعمال می‌شود.</div></div></div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('ce-cx')) o.remove(); });
+    document.body.appendChild(o);
+    o.querySelector('#ce-add').addEventListener('click', addRow);
+    o.querySelector('#ce-save').addEventListener('click', function () {
+      var newTitle = (o.querySelector('#ce-title').value || '').trim() || c.title;
+      var lessons = readRows().filter(function (l) { return l.title; });
+      var st = {};
+      try { st = JSON.parse(localStorage.getItem('mamal_academy_v1') || '{}'); } catch (e) {}
+      if (!st.curriculum) { o.remove(); return; }
+      st.curriculum.title = newTitle;
+      st.curriculum.lessons = lessons.map(function (l, i) { return { id: l.id, idx: i + 1, title: l.title, goal: l.goal, topics: l.topics }; });
+      var ids = {};
+      st.curriculum.lessons.forEach(function (l) { ids[l.id] = true; });
+      Object.keys(st.progress || {}).forEach(function (k) { if (!ids[k]) delete st.progress[k]; });
+      Object.keys(st.code || {}).forEach(function (k) { if (!ids[k]) delete st.code[k]; });
+      try { localStorage.setItem('mamal_academy_v1', JSON.stringify(st)); } catch (e) {}
+      o.remove();
+      toast('💾 درسنامه ذخیره شد — صفحه برای اعمال تازه می‌شود');
+      if (!window.__auNoReload) setTimeout(function () { location.reload(); }, 900);
+    });
+    wireRows();
+  }
+
+  /* ═══ ۵-ج) اکشن‌های درس با مدل ═══ */
+  var busyAct = false;
+  async function lessonAction(kind) {
+    var A = {};
+    try { A = window.MamalAcademy.state(); } catch (e) {}
+    var a = A.active;
+    if (!a) { toast('اول یک درس را شروع کن'); return; }
+    if (busyAct) { toast('یک کار در جریان است'); return; }
+    busyAct = true;
+    var cfg = {
+      deep: { t: '🔍 عمیق‌تر', me: 'این درس را عمیق‌تر توضیح بده: ' + a.title, sys: 'مربی هستی. موضوع را بسیار عمیق و فنی توضیح بده: جزئیات، دلیل‌ها، لبه‌های پیشرفته و اشتباه‌های رایج. فارسی، خروجی markdown ساده.' },
+      sum: { t: '📝 خلاصه', me: 'خلاصه‌ی این درس را بده: ' + a.title, sys: 'مربی هستی. درس را در حداکثر ۸ بولت کوتاه و یک «جمع‌بندی یک‌خطی» خلاصه کن. فارسی.' },
+      quiz: { t: '❓ کوییز', me: 'از این درس کوییز بده: ' + a.title, sys: 'مربی هستی. ۴ سوال چهارگزینه‌ای از همین مطلب بده؛ بعد از هر سوال پاسخ درست با توضیح یک‌خطی در بخش «پاسخ‌ها» در آخر. فارسی.' },
+      ex: { t: '💡 مثال بیشتر', me: 'مثال‌های بیشتری از این درس بده: ' + a.title, sys: 'مربی هستی. ۳ مثال متنوع و واقعی (کد کامل اجرایی) از همین مطلب بده. فارسی.' },
+      tr: { t: '🌐 ترجمه', me: 'این درس را به انگلیسی بازنویسی کن: ' + a.title, sys: 'You are a tutor. Rewrite this lesson summary in clear, simple English. Keep code as-is. Output markdown only.' }
+    };
+    var c = cfg[kind] || cfg.sum;
+    acadChatPush('me', c.me);
+    var h = null;
+    try { h = window.hudReg({ name: c.t + ': ' + a.title, section: 'آموزش', retry: function () { lessonAction(kind); }, total: 1, taskId: 'au-act' }); } catch (e) {}
+    var acc = '';
+    try {
+      var k = await window.fetchOpenRouterKey();
+      await window.orStream(k, {
+        model: acadModel() || sharedModel(),
+        messages: [
+          { role: 'system', content: c.sys },
+          { role: 'user', content: 'محتوای درس تا اینجا:\n' + (a.md || '').slice(0, 1500) + '\n\nدرخواست: ' + c.me }
+        ], temperature: 0.4, max_tokens: 1800
+      }, function (_, x) { acc = x; }, null);
+    } catch (e) {
+      acadChatPush('bot', '❌ ' + e.message);
+      busyAct = false;
+      try { window.hudDone(h, false); } catch (e2) {}
+      return;
+    }
+    acadChatPush('bot', acc && acc.trim() ? c.t + ':\n\n' + acc : '⚠ پاسخ خالی بود — دوباره بزن یا مدل را عوض کن.');
+    busyAct = false;
+    try { window.hudDone(h, true); } catch (e2) {}
+  }
+
+  function wireLessonActions() {
+    var lt = $id('acd-ltitle');
+    if (!lt || $id('au-actions')) return;
+    var row = lt.closest('div');
+    if (!row) return;
+    var bar = document.createElement('div');
+    bar.id = 'au-actions';
+    bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 0;';
+    [['deep', '🔍 عمیق‌تر'], ['sum', '📝 خلاصه'], ['quiz', '❓ کوییز'], ['ex', '💡 مثال'], ['tr', '🌐 ترجمه'], ['retake', '🔁 تدریس مجدد']].forEach(function (p) {
+      var b = document.createElement('button');
+      b.id = 'au-act-' + p[0];
+      b.title = p[1] + ' — این درس به مدل داده می‌شود';
+      b.textContent = p[1];
+      b.style.cssText = 'background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.45);color:#fcd34d;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:11px;font-family:inherit;';
+      b.addEventListener('click', function () {
+        if (p[0] === 'retake') {
+          var A = {};
+          try { A = window.MamalAcademy.state(); } catch (e) {}
+          if (A.active && A.active.id && window.MamalAcademy && window.MamalAcademy.start) { window.MamalAcademy.start(A.active.id); return; }
+          toast('اول یک درس از چیپ‌ها شروع کن');
+          return;
+        }
+        lessonAction(p[0]);
+      });
+      bar.appendChild(b);
+    });
+    row.parentNode.insertBefore(bar, row.nextSibling);
+  }
+
+  /* ═══ ۶) سیم‌کشی در هدر آکادمی ═══ */
+  function wireAcademy() {
+    var sec = $id('academy-section');
+    if (!sec || $id('au-model')) return;
+    var hdr = sec.querySelector('div');
+    if (!hdr) return;
+    var sel = document.createElement('select');
+    sel.id = 'au-model';
+    sel.title = 'مدل آموزش — همان مدل‌های رایگان مشترک همه بخش‌ها + مدل دلخواه';
+    sel.style.cssText = 'background:#0a1220;border:1px solid rgba(139,92,246,.45);border-radius:10px;color:#c4b5fd;padding:8px 12px;font-size:12.5px;outline:none;font-family:inherit;max-width:230px;';
+    if (!mirrorModelList(sel)) sel.innerHTML = '<option value="">— مدل مشترک (در حال بارگذاری) —</option><option value="__custom__">مدل دلخواه…</option>';
+    var cin = document.createElement('input');
+    cin.id = 'au-model-custom';
+    cin.placeholder = 'مدل دلخواه openrouter (id دقیق)';
+    cin.title = 'شناسه دقیق مدل openrouter — با Enter ثبت می‌شود';
+    cin.value = esc(AU_SET.model);
+    cin.style.cssText = 'display:none;background:#0a1220;border:1px solid rgba(139,92,246,.45);border-radius:10px;color:#c4b5fd;padding:8px 12px;font-size:12px;outline:none;width:210px;direction:ltr;font-family:inherit;';
+    var btn = document.createElement('button');
+    btn.id = 'au-cust';
+    btn.title = 'سرفصل و درس‌های خودت را تعریف کن و به مدل دلخواه بفرست';
+    btn.textContent = '✍️ درسنامه شخصی';
+    btn.style.cssText = 'background:linear-gradient(135deg,#3b82f6,#6d28d9);border:none;color:#fff;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:800;font-size:12.5px;font-family:inherit;';
+    var ebtn = document.createElement('button');
+    ebtn.id = 'au-curedit';
+    ebtn.title = 'درسنامه و سرفصل‌هایی که مدل ساخته را تغییر بده (عنوان، هدف، افزودن، حذف، جابجایی)';
+    ebtn.textContent = '✏️ ویرایش درسنامه';
+    ebtn.style.cssText = 'background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.5);color:#fcd34d;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:800;font-size:12.5px;font-family:inherit;';
+    var stsel = document.createElement('select');
+    stsel.id = 'au-style';
+    stsel.title = 'سبک تدریس مدل — روی همه‌ی درس‌ها و مربی اعمال می‌شود';
+    stsel.style.cssText = 'background:#0a1220;border:1px solid rgba(139,92,246,.45);border-radius:10px;color:#c4b5fd;padding:8px 12px;font-size:12px;outline:none;font-family:inherit;';
+    stsel.innerHTML = '<option value="normal"' + (AU_SET.style === 'normal' ? ' selected' : '') + '>سبک: متعادل</option><option value="simple"' + (AU_SET.style === 'simple' ? ' selected' : '') + '>سبک: خیلی ساده</option><option value="deep"' + (AU_SET.style === 'deep' ? ' selected' : '') + '>سبک: عمیق و فنی</option><option value="example"' + (AU_SET.style === 'example' ? ' selected' : '') + '>سبک: مثال‌محور</option>';
+    var lnsel = document.createElement('select');
+    lnsel.id = 'au-len';
+    lnsel.title = 'طول پاسخ مدل در آموزش';
+    lnsel.style.cssText = 'background:#0a1220;border:1px solid rgba(139,92,246,.45);border-radius:10px;color:#c4b5fd;padding:8px 12px;font-size:12px;outline:none;font-family:inherit;';
+    lnsel.innerHTML = '<option value="normal"' + (AU_SET.len === 'normal' ? ' selected' : '') + '>طول: عادی</option><option value="short"' + (AU_SET.len === 'short' ? ' selected' : '') + '>طول: کوتاه</option><option value="long"' + (AU_SET.len === 'long' ? ' selected' : '') + '>طول: مفصل</option>';
+    var engcb = document.createElement('label');
+    engcb.id = 'au-eng';
+    engcb.title = 'اصطلاح‌های فنی انگلیسی بمانند';
+    engcb.style.cssText = 'color:#a5b4fc;font-size:11.5px;cursor:pointer;display:flex;align-items:center;gap:5px;user-select:none;';
+    engcb.innerHTML = '<input type="checkbox"' + (AU_SET.eng ? ' checked' : '') + ' style="accent-color:#8b5cf6;cursor:pointer;"> ترم انگلیسی';
+    hdr.appendChild(sel);
+    hdr.appendChild(cin);
+    hdr.appendChild(stsel);
+    hdr.appendChild(lnsel);
+    hdr.appendChild(engcb);
+    hdr.appendChild(btn);
+    hdr.appendChild(ebtn);
+    sel.addEventListener('change', function () {
+      if (sel.value === '__custom__') { cin.style.display = ''; cin.focus(); return; }
+      cin.style.display = 'none';
+      AU_SET.model = sel.value;
+      saveAU();
+      toast('🧠 مدل آموزش: ' + (sel.value ? sel.value.split('/').pop() : 'همان مدل مشترک همه بخش‌ها'));
+    });
+    cin.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        AU_SET.model = (cin.value || '').trim();
+        saveAU();
+        toast('🧠 مدل دلخواه ثبت شد: ' + (AU_SET.model || 'خالی'));
+      }
+    });
+    stsel.addEventListener('change', function () { AU_SET.style = stsel.value; saveAU(); toast('🎨 سبک تدریس ذخیره شد'); });
+    lnsel.addEventListener('change', function () { AU_SET.len = lnsel.value; saveAU(); toast('📏 طول پاسخ ذخیره شد'); });
+    engcb.querySelector('input').addEventListener('change', function (e) { AU_SET.eng = e.target.checked; saveAU(); toast(AU_SET.eng ? '🔤 ترم‌ها انگلیسی می‌مانند' : '🔤 ترم‌ها فارسی‌سازی می‌شوند'); });
+    btn.addEventListener('click', openCustBuilder);
+    ebtn.addEventListener('click', openCurEdit);
+    /* همگام‌سازی منوی مدل با لیست مشترک (بعد از لود مدل‌ها) */
+    setTimeout(function () { try { mirrorModelList($id('au-model')); } catch (e) {} }, 7000);
+    sel.addEventListener('click', function () { try { mirrorModelList(sel); } catch (e) {} });
+    var cur = $id('acd-cur');
+    if (cur) {
+      var mine = document.createElement('div');
+      mine.id = 'au-cur';
+      mine.style.cssText = 'display:flex;gap:7px;flex-wrap:wrap;align-items:center;min-height:30px;padding:4px 0;';
+      cur.parentNode.insertBefore(mine, cur.nextSibling);
+      renderCustChips();
+    }
+    wireLessonActions();
+    fixPill();
+    N('مدل آموزش = همان مدل مشترک همه بخش‌ها (منوی همگام)', W);
+    N('مدل دلخواه آموزش', W);
+    N('سبک تدریس: ساده/متعادل/عمیق/مثال‌محور', W);
+    N('طول پاسخ آموزش: کوتاه/عادی/مفصل', W);
+    N('حفظ ترم‌های انگلیسی (اختیاری)', W);
+    N('ویرایش درسنامه‌ی ساخته‌شده توسط مدل', W);
+    N('درسنامه شخصی: ساخت سرفصل و درس‌ها', W);
+    N('درسنامه شخصی: ویرایش/حذف/جابجایی درس', W);
+    N('درسنامه شخصی: تدریس درس با مدل انتخابی', W);
+    N('متن درسنامه‌ی شخصی به مدل ارسال می‌شود', W);
+    N('اکشن‌های درس: عمیق‌تر، خلاصه، کوییز، مثال، ترجمه، تدریس مجدد', W);
+    N('timeout ۱۱۵ ثانیه‌ای پاسخ AI (پایان کارت گیرکرده)', 'هسته');
+    N('خطای شفاف فارسی هنگام رد شدن کلید (۴۰۱)', 'هسته');
+    N('گارد مدل خالی در ارسال چت اصلی', 'هسته');
+    N('جابجایی چیپ ابزار فایل به بالای چت (رفع پوشش ارسال)', 'هسته');
+    N('چرخش خودکار مدل هنگام شلوغی در همه بخش‌ها (۴۲۹/۵۰۳)', 'هسته');
+  }
+
+  function boot() {
+    var tries = 0;
+    (function tick() {
+      if ($id('academy-section') && $id('acd-cur')) { wireAcademy(); fixPill(); setTimeout(fixPill, 2500); return; }
+      if (++tries < 40) setTimeout(tick, 500);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 3600); });
+  else setTimeout(boot, 3600);
+
+  window.MamalStudioAU = {
+    startCustom: startCustom, openCustBuilder: openCustBuilder, cust: cust,
+    setModel: function (m) { AU_SET.model = m; saveAU(); }, model: acadModel,
+    sharedModel: sharedModel, styleSuffix: styleSuffix,
+    openCurEdit: openCurEdit, lessonAction: lessonAction, isAcadCall: isAcadCall
+  };
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MAMAL STUDIO — ماژول AS: ساب‌ایجنت در بخش AGENT
+   • وظیفه اصلی → مدل وظیفه را به زیر-وظیفه‌ها تجزیه می‌کند
+   • هر ساب‌ایجنت واقعا با ابزارها (نوشتن/خواندن/لیست فایل) اجرا می‌شود
+   • مدل = همان منوی مشترک همه بخش‌ها (#agent-model-select)
+   • اجرای موازی یا ترتیبی، توقف واقعی، کارت وضعیت، گزارش نهایی ادغامی
+   • ذخیره گزارش در فایل استودیو + کپی
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  if (window.__mamalStudioAS) return;
+  window.__mamalStudioAS = true;
+
+  var $id = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function FA(x) { return String(x).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; }); }
+  function toast(m) { try { if (window.MamalStudio && window.MamalStudio.toast) window.MamalStudio.toast(m); else console.log('[toast] ' + m); } catch (e) {} }
+  var N = function (n, w) { if (window.MamalFeatures) window.MamalFeatures.add(n, w || 'ایجنت'); };
+
+  var CLS = ['#ef4444', '#f59e0b', '#8b5cf6', '#10b981', '#3b82f6', '#ec4899'];
+  var running = false;
+  var ctl = null;
+  var SUBS = [];
+
+  function asModel() {
+    var s = $id('agent-model-select');
+    if (s && s.value && !/بارگذاری/.test(s.value)) return s.value;
+    var m = $id('model-select');
+    if (m && m.value && !/بارگذاری/.test(m.value)) return m.value;
+    return 'deepseek/deepseek-r1:free';
+  }
+  function writeFile(name, content) {
+    try {
+      var f = window.MamalStudio.files() || {};
+      f[name] = String(content);
+      try { window.MamalStudio.saveNow(); } catch (e) {}
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* ═══ ساخت UI در پنل AGENT ═══ */
+  function build() {
+    var panel = $id('panel-agent');
+    if (!panel || $id('as-box')) return;
+    var task = $id('agent-task');
+    if (!task) return;
+    var box = document.createElement('div');
+    box.id = 'as-box';
+    box.style.cssText = 'margin:10px 0;border:1px solid rgba(139,92,246,.4);background:rgba(139,92,246,.06);border-radius:14px;padding:12px;';
+    box.innerHTML =
+      '<details open>' +
+      '<summary style="cursor:pointer;color:#c4b5fd;font-size:12.5px;font-weight:800;user-select:none;">🧩 ساب‌ایجنت‌ها — وظیفه را بین چند ساب‌ایجنت تقسیم و اجرا کن</summary>' +
+      '<div style="padding-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+      '<textarea id="as-task" rows="2" placeholder="وظیفه اصلی ساب‌ایجنت‌ها (مثلاً: یک فرم ثبت‌نام کامل با اعتبارسنجی بساز)" style="width:100%;background:#0a0a0f;border:1px solid rgba(139,92,246,.4);border-radius:10px;color:#dbe4f5;padding:9px 12px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">' +
+      '<select id="as-count" title="تعداد ساب‌ایجنت‌ها" style="background:#0a0a0f;border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;"><option value="0">تعداد: خودکار</option><option value="2">۲ ساب‌ایجنت</option><option value="3">۳ ساب‌ایجنت</option><option value="4">۴ ساب‌ایجنت</option><option value="5">۵ ساب‌ایجنت</option></select>' +
+      '<select id="as-mode" title="ترتیب اجرا" style="background:#0a0a0f;border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;"><option value="seq">ترتیبی (هر کدام از خروجی قبلی)</option><option value="par">موازی</option></select>' +
+      '<span style="font-size:10.5px;color:#a78bfa;">مدل: از منوی «مدل ایجنت» بالا</span>' +
+      '<span style="flex:1;"></span>' +
+      '<button id="as-run" title="تجزیه وظیفه و اجرای ساب‌ایجنت‌ها" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;color:#fff;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">🚀 تجزیه و اجرا</button>' +
+      '<button id="as-stop" title="توقف همه ساب‌ایجنت‌ها" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.5);color:#fca5a5;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;display:none;">⏹ توقف</button>' +
+      '<button id="as-clear" title="پاک کردن لیست و گزارش" style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:12px;font-family:inherit;">🧹</button>' +
+      '</div>' +
+      '<div id="as-list" style="display:flex;flex-direction:column;gap:7px;"></div>' +
+      '<div id="as-out" style="display:none;border-top:1px dashed rgba(139,92,246,.4);padding-top:9px;"></div>' +
+      '</div></details>';
+    task.parentNode.insertBefore(box, task);
+    $id('as-run').addEventListener('click', run);
+    $id('as-stop').addEventListener('click', stop);
+    $id('as-clear').addEventListener('click', function () {
+      SUBS = [];
+      $id('as-list').innerHTML = '';
+      $id('as-out').style.display = 'none';
+      $id('as-out').innerHTML = '';
+    });
+    N('ساب‌ایجنت: تجزیه خودکار وظیفه به زیر-وظیفه', 'ایجنت');
+    N('ساب‌ایجنت: اجرای واقعی با ابزار نوشتن/خواندن فایل', 'ایجنت');
+    N('ساب‌ایجنت: اجرای موازی یا ترتیبی با کانتکست', 'ایجنت');
+    N('ساب‌ایجنت: توقف واقعی در میانه اجرا', 'ایجنت');
+    N('ساب‌ایجنت: کارت وضعیت هر ساب‌ایجنت', 'ایجنت');
+    N('ساب‌ایجنت: گزارش نهایی ادغامی + ذخیره در فایل', 'ایجنت');
+    N('ساب‌ایجنت: مدل مشترک همه بخش‌ها', 'ایجنت');
+  }
+
+  function renderSubs() {
+    var host = $id('as-list');
+    if (!host) return;
+    host.innerHTML = SUBS.map(function (s, i) {
+      var stColor = s.status === 'done' ? '#10b981' : s.status === 'error' ? '#ef4444' : s.status === 'running' ? '#f59e0b' : '#8fa0bd';
+      var stText = { idle: '⏳ در صف', running: '⚙ در حال کار…', done: '✅ انجام شد', error: '❌ خطا' }[s.status] || s.status;
+      return '<div data-as-card="' + i + '" style="background:rgba(10,10,20,.5);border:1px solid ' + stColor + '44;border-radius:11px;padding:8px 10px;">' +
+        '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+        '<span style="width:9px;height:9px;border-radius:99px;background:' + stColor + ';display:inline-block;"></span>' +
+        '<b style="color:#dbe4f5;font-size:11.5px;">🧩 ' + esc(s.title) + '</b>' +
+        '<span style="color:' + stColor + ';font-size:10.5px;">' + stText + '</span>' +
+        (s.out ? '<button data-as-show="' + i + '" title="نمایش خروجی این ساب‌ایجنت" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:8px;padding:2px 9px;cursor:pointer;font-size:10px;font-family:inherit;">👁 خروجی</button>' : '') +
+        '</div>' +
+        '<div data-as-out="' + i + '" style="display:none;margin-top:6px;color:#8fa0bd;font-size:10.5px;white-space:pre-wrap;max-height:150px;overflow:auto;line-height:1.9;">' + esc(s.out || s.err || '') + '</div>' +
+        '</div>';
+    }).join('');
+    host.querySelectorAll('[data-as-show]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var box = host.querySelector('[data-as-out="' + b.getAttribute('data-as-show') + '"]');
+        if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      });
+    });
+  }
+
+  function stop() {
+    if (ctl) { try { ctl.abort(); } catch (e) {} }
+    running = false;
+    var b = $id('as-stop');
+    if (b) b.style.display = 'none';
+    var r = $id('as-run');
+    if (r) r.disabled = false;
+    toast('⏹ ساب‌ایجنت‌ها متوقف شدند');
+  }
+
+  var SYS_TOOLS = 'You are a focused coding sub-agent inside a team. Work ONLY on your sub-task.\n' +
+    'Tools (ReAct format, one per reply):\nAction: write_file\nAction Input: {"path":"...","content":"..."}\nAction: read_file\nAction Input: {"path":"..."}\nAction: list_files\nAction Input: {}\n' +
+    'When your sub-task is complete reply with: Final Answer: <short Persian summary + list of files written>\nAlways Persian summaries.';
+
+  async function agentLoop(s, apiKey, mainTask, ctxText) {
+    var files = {};
+    try { files = window.MamalStudio.files() || {}; } catch (e) {}
+    var messages = [
+      { role: 'system', content: SYS_TOOLS },
+      { role: 'user', content: 'Main task: ' + mainTask + '\nYour sub-task: ' + s.task + (ctxText ? '\nContext from previous sub-agents:\n' + ctxText : '') + '\nExisting files: ' + Object.keys(files).join(', ') + '\nStart now.' }
+    ];
+    for (var it = 0; it < 6; it++) {
+      if (ctl.signal.aborted) throw new Error('متوقف شد');
+      var acc = '';
+      await window.orStream(apiKey, { model: asModel(), messages: messages, temperature: 0.3, max_tokens: 2200 }, function (_, x) { acc = x; }, ctl);
+      if (!acc || !acc.trim()) throw new Error('پاسخ خالی از مدل');
+      messages.push({ role: 'assistant', content: acc });
+      var fa = acc.match(/Final Answer:\s*([\s\S]+)/);
+      if (fa) { s.out = fa[1].trim().slice(0, 2000); return s.out; }
+      var am = acc.match(/Action:\s*(\w+)\s*\n\s*Action Input:\s*([\s\S]+?)(?=\n(?:Thought|Observation|Final|$))/);
+      if (!am) { s.out = acc.slice(0, 1500); return s.out; }
+      var tool = am[1], args = {};
+      try { args = JSON.parse((am[2] || '').trim()); } catch (e) {}
+      var obs = '';
+      if (tool === 'write_file') {
+        var ok = writeFile(args.path || ('sub-' + Date.now() + '.txt'), args.content || '');
+        obs = 'OBSERVATION: file ' + (args.path || '?') + (ok ? ' saved.' : ' failed.');
+        s.out = (s.out || '') + '\n📝 نوشت: ' + (args.path || '?');
+      } else if (tool === 'read_file') {
+        var fc = (window.MamalStudio.files() || {})[args.path];
+        obs = 'OBSERVATION: ' + (fc === undefined ? 'file not found.' : String(fc).slice(0, 3000));
+      } else if (tool === 'list_files') {
+        obs = 'OBSERVATION: ' + Object.keys(window.MamalStudio.files() || {}).join(', ');
+      } else {
+        obs = 'OBSERVATION: unknown tool — use Final Answer.';
+      }
+      messages.push({ role: 'user', content: obs });
+      renderSubs();
+    }
+    s.out = (s.out || '') + '\n(حد پیام‌ها رسید)';
+    return s.out;
+  }
+
+  async function run() {
+    if (running) return;
+    var task = ($id('as-task').value || '').trim();
+    if (!task) { toast('وظیفه اصلی را بنویس'); return; }
+    running = true;
+    ctl = new AbortController();
+    $id('as-run').disabled = true;
+    $id('as-stop').style.display = '';
+    $id('as-out').style.display = 'none';
+    SUBS = [];
+    renderSubs();
+    var h0 = null;
+    try { h0 = window.hudReg({ name: '🧩 ساب‌ایجنت: تجزیه', section: 'ایجنت', retry: run, total: 1, taskId: 'as-dec' }); } catch (e) {}
+    try {
+      var apiKey = await window.fetchOpenRouterKey();
+      /* ۱) تجزیه */
+      var want = +($id('as-count').value || 0);
+      var dec = '';
+      await window.orStream(apiKey, {
+        model: asModel(),
+        messages: [
+          { role: 'system', content: 'تو مدیر فنی هستی. فقط JSON:\n{"subtasks":[{"title":"کوتاه","task":"شرح دقیق زیر-وظیفه"}]}\n۲ تا ۵ زیر-وظیفه متمم و غیرپوششی. فارسی.' },
+          { role: 'user', content: 'وظیفه: ' + task + (want ? '\nدقیقا ' + want + ' زیر-وظیفه.' : '') }
+        ], temperature: 0.3, max_tokens: 900
+      }, function (_, x) { dec = x; }, ctl);
+      var plan = null;
+      try { plan = JSON.parse(dec.replace(/```json\n?|```\n?/g, '').trim()); } catch (e) {}
+      var st = (plan && plan.subtasks || []).filter(function (x) { return x && x.task; }).slice(0, 5);
+      if (!st.length) throw new Error('تجزیه ناموفق بود — دوباره بزن');
+      SUBS = st.map(function (x, i) { return { title: x.title || ('ساب ' + (i + 1)), task: x.task, status: 'idle', out: '' }; });
+      renderSubs();
+      try { window.hudDone(h0, true); } catch (e) {}
+      /* ۲) اجرا */
+      var mode = $id('as-mode').value;
+      var ctxText = '';
+      if (mode === 'par') {
+        var jobs = SUBS.map(function (s, i) {
+          return new Promise(function (res) {
+            setTimeout(function () {
+              s.status = 'running'; renderSubs();
+              var h = null;
+              try { h = window.hudReg({ name: '🧩 ' + s.title, section: 'ایجنت', retry: function () {}, total: 1, taskId: 'as-' + i }); } catch (e) {}
+              agentLoop(s, apiKey, task, '').then(function () { s.status = 'done'; try { window.hudDone(h, true); } catch (e) {}; renderSubs(); res(); })
+                .catch(function (e) { s.status = 'error'; s.err = e.message.slice(0, 120); try { window.hudDone(h, false); } catch (e2) {}; renderSubs(); res(); });
+            }, i * 900);
+          });
+        });
+        await Promise.all(jobs);
+      } else {
+        for (var i = 0; i < SUBS.length; i++) {
+          var s = SUBS[i];
+          s.status = 'running'; renderSubs();
+          var h = null;
+          try { h = window.hudReg({ name: '🧩 ' + s.title, section: 'ایجنت', retry: function () {}, total: 1, taskId: 'as-' + i }); } catch (e) {}
+          try {
+            await agentLoop(s, apiKey, task, ctxText);
+            s.status = 'done';
+            try { window.hudDone(h, true); } catch (e) {}
+            ctxText += '\n— ' + s.title + ': ' + String(s.out || '').slice(0, 600);
+          } catch (e) {
+            s.status = 'error'; s.err = e.message.slice(0, 120);
+            try { window.hudDone(h, false); } catch (e2) {}
+          }
+          renderSubs();
+          if (ctl.signal.aborted) break;
+        }
+      }
+      /* ۳) گزارش ادغامی */
+      if (!ctl.signal.aborted) {
+        var doneList = SUBS.filter(function (s) { return s.status === 'done'; });
+        if (doneList.length) {
+          var rep = '';
+          await window.orStream(apiKey, {
+            model: asModel(),
+            messages: [
+              { role: 'system', content: 'تو مدیر فنی هستی. گزارش نهایی کوتاه (حداکثر ۲۵۰ کلمه): چه ساخته شد، فایل‌های تغییریافته، وضعیت کلی. فارسی.' },
+              { role: 'user', content: 'وظیفه اصلی: ' + task + '\n\nخروجی ساب‌ایجنت‌ها:\n' + SUBS.map(function (s) { return '🧩 ' + s.title + ' [' + s.status + ']: ' + String(s.out || s.err || '').slice(0, 700); }).join('\n\n') }
+            ], temperature: 0.3, max_tokens: 900
+          }, function (_, x) { rep = x; }, ctl);
+          var outBox = $id('as-out');
+          outBox.style.display = 'block';
+          outBox.innerHTML = '<b style="color:#c4b5fd;font-size:12px;">📋 گزارش نهایی ساب‌ایجنت‌ها</b>' +
+            '<div id="as-rep" style="color:#dbe4f5;font-size:11.5px;line-height:2;white-space:pre-wrap;max-height:220px;overflow:auto;margin-top:6px;">' + esc(rep || '(خالی)') + '</div>' +
+            '<div style="display:flex;gap:7px;margin-top:8px;">' +
+            '<button id="as-save" title="ذخیره گزارش در فایل استودیو" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.5);color:#6ee7b7;border-radius:9px;padding:6px 14px;cursor:pointer;font-size:11px;font-family:inherit;">💾 ذخیره گزارش</button>' +
+            '<button id="as-copy" title="کپی گزارش" style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;border-radius:9px;padding:6px 14px;cursor:pointer;font-size:11px;font-family:inherit;">📋 کپی</button></div>';
+          $id('as-save').addEventListener('click', function () {
+            writeFile('subagent-report.md', '# گزارش ساب‌ایجنت‌ها\n\nوظیفه: ' + task + '\n\n' + (rep || '') + '\n\n---\n' + SUBS.map(function (s) { return '## 🧩 ' + s.title + ' (' + s.status + ')\n' + String(s.out || s.err || ''); }).join('\n\n'));
+            toast('💾 گزارش در subagent-report.md ذخیره شد');
+          });
+          $id('as-copy').addEventListener('click', function () {
+            try { navigator.clipboard.writeText($id('as-rep').textContent); toast('📋 کپی شد'); } catch (e) { toast('کپی نشد'); }
+          });
+          try { if (window.MamalMem) window.MamalMem.add('ساب‌ایجنت‌ها وظیفه «' + task.slice(0, 40) + '» را با ' + doneList.length + ' ساب‌ایجنت انجام دادند.', 'ایجنت'); } catch (e) {}
+        } else {
+          toast('هیچ ساب‌ایجنتی موفق نشد — مدل را چک کن و دوباره بزن');
+        }
+      }
+    } catch (e) {
+      try { window.hudDone(h0, false); } catch (e2) {}
+      toast('❌ ' + (e.message || 'خطا'));
+    }
+    running = false;
+    $id('as-run').disabled = false;
+    $id('as-stop').style.display = 'none';
+  }
+
+  function boot() {
+    var tries = 0;
+    (function tick() {
+      if ($id('panel-agent') && $id('agent-task')) { build(); return; }
+      if (++tries < 40) setTimeout(tick, 500);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 3400); });
+  else setTimeout(boot, 3400);
+
+  window.MamalStudioAS = { run: run, stop: stop, subs: function () { return SUBS; } };
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MAMAL STUDIO — ماژول AZ: توسعه سنگین آکادمی (نسخه انتشار)
+   • 🃏 فلش‌کارت درس (برگ‌زنی، آموختم/دوباره، ذخیره واقعی)
+   • 🔑 راه‌حل تمرین (مدل حل می‌کند → کد وارد IDE)
+   • ⚔️ چالش بیشتر (تمرین سخت‌تر با راهنماها)
+   • 🎓 آزمون نهایی دوره (۶ سؤال، تصحیح و نمره واقعی، تاریخچه)
+   • 🏅 گواهی دوره (قفل پیشرفت/آزمون + چاپ)
+   • 📊 آمار یادگیری (داشبورد از داده‌های واقعی LS)
+   • 📤 خروجی درسنامه + یادداشت‌ها به فایل استودیو
+   • 🔎 جستجوی زنده در چیپ‌های درس
+   • 📝 یادداشت هر درس + «نکته از مدل»
+   همه تماس‌ها با مدل مشترک همه بخش‌ها (چرخش خودکار ۴۲۹).
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  if (window.__mamalStudioAZ) return;
+  window.__mamalStudioAZ = true;
+
+  var $id = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function FA(x) { return String(x).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; }); }
+  function toast(m) { try { if (window.MamalStudio && window.MamalStudio.toast) window.MamalStudio.toast(m); else console.log('[toast] ' + m); } catch (e) {} }
+  var N = function (n, w) { if (window.MamalFeatures) window.MamalFeatures.add(n, w || 'آموزش'); };
+  var W = 'آموزش';
+  var K_A = 'mamal_academy_v1', K_FC = 'mamal_academy_fc_v1', K_EX = 'mamal_academy_exam_v1', K_NO = 'mamal_academy_note_v1';
+  function LSk(k, d) { try { return JSON.parse(localStorage.getItem(k) || d || '{}'); } catch (e) { return {}; } }
+  function LSs(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function A() { return LSk(K_A); }
+  function stateActive() { try { return (window.MamalAcademy.state() || {}).active || A().active || null; } catch (e) { return A().active || null; } }
+  function jparse(t) { try { return JSON.parse(String(t || '').replace(/```json\n?|```\n?/g, '').trim()); } catch (e) { return null; } }
+  function sharedModel() { try { return window.MamalStudioAU.sharedModel(); } catch (e) { return ''; } }
+
+  async function callAI(sys, usr, maxTok, taskName) {
+    var h = null;
+    try { h = window.hudReg({ name: taskName || '🤖 درخواست مدل', section: 'آموزش', retry: function () {}, total: 1, taskId: 'az-' + Date.now() }); } catch (e) {}
+    var acc = '';
+    try {
+      var k = await window.fetchOpenRouterKey();
+      await window.orStream(k, {
+        model: sharedModel(),
+        messages: [{ role: 'system', content: sys }, { role: 'user', content: usr }],
+        temperature: 0.4, max_tokens: maxTok || 1600
+      }, function (_, x) { acc = x; }, null);
+      try { window.hudDone(h, true); } catch (e) {}
+      return acc;
+    } catch (e) {
+      try { window.hudDone(h, false); } catch (e2) {}
+      throw e;
+    }
+  }
+  function aPush(who, t) { try { if (window.MamalAcademy && window.MamalAcademy.push) window.MamalAcademy.push(who, t); } catch (e) {} }
+
+  /* ═══ ردیف ابزار تازه + جستجو ═══ */
+  function build() {
+    var sec = $id('academy-section');
+    if (!sec || $id('az-tools')) return;
+    var anchor = $id('au-actions');
+    if (!anchor) return;
+    var bar = document.createElement('div');
+    bar.id = 'az-tools';
+    bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 0;';
+    var BTNS = [
+      ['az-fc', '🃏 فلش‌کارت', 'فلش‌کارت‌های درس فعال — با مدل ساخته می‌شود'],
+      ['az-sol', '🔑 راه‌حل تمرین', 'مدل تمرین درس فعال را حل می‌کند و کد را در IDE می‌گذارد'],
+      ['az-chal', '⚔️ چالش بیشتر', 'تمرین سخت‌تر از همین درس با راهنما'],
+      ['az-exam', '🎓 آزمون نهایی', 'آزمون از کل درسنامه با تصحیح و نمره'],
+      ['az-cert', '🏅 گواهی', 'گواهی دوره — با پیشرفت کامل یا نمره آزمون باز می‌شود'],
+      ['az-stats', '📊 آمار', 'داشبورد یادگیری از داده‌های واقعی'],
+      ['az-export', '📤 خروجی', 'فایل markdown درسنامه + یادداشت‌ها در استودیو'],
+      ['az-note', '📝 یادداشت', 'باز/بستن جعبه یادداشت این درس']
+    ];
+    BTNS.forEach(function (p) {
+      var b = document.createElement('button');
+      b.id = p[0];
+      b.title = p[2];
+      b.textContent = p[1];
+      b.style.cssText = 'background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.45);color:#fcd34d;border-radius:9px;padding:5px 12px;cursor:pointer;font-size:11px;font-family:inherit;';
+      b.addEventListener('click', function () { ACTIONS[p[0]](); });
+      bar.appendChild(b);
+    });
+    var si = document.createElement('input');
+    si.id = 'az-search';
+    si.placeholder = '🔎 جستجو در درس‌ها…';
+    si.title = 'فیلتر زنده چیپ‌های درسنامه و درس‌های شخصی';
+    si.style.cssText = 'background:#0a1220;border:1px solid rgba(245,158,11,.45);border-radius:9px;color:#fde68a;padding:5px 11px;font-size:11.5px;outline:none;width:180px;font-family:inherit;box-sizing:border-box;';
+    bar.appendChild(si);
+    anchor.parentNode.insertBefore(bar, anchor.nextSibling);
+    si.addEventListener('input', doSearch);
+    wireNotes();
+    N('فلش‌کارت درس با مدل', W);
+    N('راه‌حل تمرین توسط مدل + ورود کد به IDE', W);
+    N('چالش سخت‌تر از مدل', W);
+    N('آزمون نهایی دوره با نمره‌دهی واقعی', W);
+    N('گواهی دوره با قفل پیشرفت و چاپ', W);
+    N('داشبورد آمار یادگیری', W);
+    N('خروجی markdown درسنامه و یادداشت', W);
+    N('جستجوی زنده در درس‌ها', W);
+    N('یادداشت هر درس + نکته از مدل', W);
+  }
+
+  function doSearch() {
+    var q = ($id('az-search').value || '').trim();
+    var hit = 0, total = 0;
+    ['#acd-cur', '#au-cur'].forEach(function (sel) {
+      var host = $id(sel.slice(1));
+      if (!host) return;
+      Array.prototype.slice.call(host.querySelectorAll('button')).forEach(function (b) {
+        total++;
+        var show = !q || (b.textContent || '').indexOf(q) !== -1;
+        b.style.display = show ? '' : 'none';
+        if (show && q) hit++;
+      });
+    });
+    $id('az-search').title = q ? ('یافت‌شده: ' + hit + ' از ' + total) : 'فیلتر زنده چیپ‌های درس';
+  }
+
+  /* ═══ فلش‌کارت ═══ */
+  async function flashcards() {
+    var a = stateActive();
+    if (!a) { toast('اول یک درس را شروع کن'); return; }
+    toast('🃏 در حال ساخت فلش‌کارت‌ها…');
+    var raw;
+    try {
+      raw = await callAI('مربی هستی. فقط JSON:\n{"cards":[{"f":"سؤال یا مفهوم کوتاه","b":"پاسخ کوتاه"}]} — ۶ فلش‌کارت از این درس. فارسی، هر پاسخ حداکثر دو جمله.', 'درس: ' + a.title + '\nمحتوا:\n' + (a.md || '').slice(0, 1200), 1200, '🃏 فلش‌کارت');
+    } catch (e) { toast('❌ ' + e.message); return; }
+    var r = jparse(raw);
+    var cards = ((r && r.cards) || []).filter(function (c) { return c && c.f && c.b; }).slice(0, 8);
+    if (!cards.length) { toast('⚠ مدل فلش‌کارت نامعتبر داد — دوباره بزن'); return; }
+    var fc = LSk(K_FC); fc[a.id] = fc[a.id] || { learned: 0, repeat: 0 }; LSs(K_FC, fc);
+    var i = 0, flipped = false;
+    var prev = $id('az-fc-modal'); if (prev) prev.remove();
+    var o = document.createElement('div');
+    o.id = 'az-fc-modal';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.72);display:flex;align-items:center;justify-content:center;';
+    function draw() {
+      var c = cards[i];
+      o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(245,158,11,.55);border-radius:16px;width:min(520px,94vw);padding:20px;direction:rtl;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#fde68a;">🃏 فلش‌کارت ' + FA(i + 1) + ' از ' + FA(cards.length) + '</b><button class="az-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+        '<div id="az-fc-face" style="background:#0a1220;border:1px solid rgba(245,158,11,.3);border-radius:14px;min-height:130px;margin-top:12px;padding:18px;color:#fde68a;font-size:14.5px;line-height:2.2;text-align:center;display:flex;align-items:center;justify-content:center;cursor:pointer;">' + esc(flipped ? c.b : c.f) + '</div>' +
+        '<div style="color:#64748b;font-size:11px;text-align:center;margin-top:6px;">' + (flipped ? 'پاسخ — برای برگشت کلیک کن' : 'روی کارت کلیک کن تا پاسخ را ببینی') + '</div>' +
+        '<div style="display:flex;gap:7px;margin-top:14px;flex-wrap:wrap;justify-content:center;">' +
+        '<button id="az-fc-ok" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.5);color:#6ee7b7;border-radius:10px;padding:7px 18px;cursor:pointer;font-size:12px;font-family:inherit;">✓ آموختم</button>' +
+        '<button id="az-fc-re" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.5);color:#fca5a5;border-radius:10px;padding:7px 18px;cursor:pointer;font-size:12px;font-family:inherit;">↺ دوباره</button>' +
+        '<button id="az-fc-nx" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.5);color:#fcd34d;border-radius:10px;padding:7px 18px;cursor:pointer;font-size:12px;font-family:inherit;">◀ بعدی</button></div>' +
+        '<div style="color:#64748b;font-size:11px;text-align:center;margin-top:10px;">آموخته: ' + FA(fc[a.id].learned) + ' — مرور: ' + FA(fc[a.id].repeat) + '</div></div>';
+      o.querySelector('.az-cx').addEventListener('click', function () { o.remove(); });
+      o.querySelector('#az-fc-face').addEventListener('click', function () { flipped = !flipped; draw(); });
+      o.querySelector('#az-fc-ok').addEventListener('click', function () { fc[a.id].learned++; LSs(K_FC, fc); next(); });
+      o.querySelector('#az-fc-re').addEventListener('click', function () { fc[a.id].repeat++; LSs(K_FC, fc); next(); });
+      o.querySelector('#az-fc-nx').addEventListener('click', next);
+      function next() { i = (i + 1) % cards.length; flipped = false; draw(); }
+    }
+    o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
+    document.body.appendChild(o);
+    draw();
+  }
+
+  /* ═══ راه‌حل تمرین ═══ */
+  var busySol = false;
+  async function solution() {
+    var a = stateActive();
+    if (!a) { toast('اول یک درس را شروع کن'); return; }
+    if (busySol) { toast('یک کار در جریان است'); return; }
+    busySol = true;
+    toast('🔑 در حال حل تمرین…');
+    try {
+      var raw = await callAI('مربی برنامه‌نویسی هستی. تمرین را کامل و درست حل کن. فقط JSON:\n{"code":"کد کامل اجرایی JavaScript با console.log","exp":"توضیح فارسی دو-سه جمله‌ای"}', 'تمرین درس «' + a.title + '»: ' + (a.task || '—') + '\nکد فعلی شاگرد:\n' + ((($id('acd-code') || {}).value) || '(خالی)').slice(0, 900), 1800, '🔑 راه‌حل');
+      var r = jparse(raw);
+      if (!r || !r.code) { toast('⚠ پاسخ نامعتبر — دوباره بزن'); busySol = false; return; }
+      var cd = $id('acd-code');
+      if (cd) { cd.value = r.code; try { cd.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+      aPush('bot', '🔑 **راه‌حل تمرین**:\n\n' + (r.exp || '') + '\n\nکد در IDE آموزش گذاشته شد — «▶ اجرای کد» را بزن.');
+      var st = A(); st.code = st.code || {}; st.code[a.id] = r.code; LSs(K_A, st);
+      toast('✅ راه‌حل در IDE گذاشته شد');
+    } catch (e) { toast('❌ ' + e.message); }
+    busySol = false;
+  }
+
+  /* ═══ چالش بیشتر ═══ */
+  async function challenge() {
+    var a = stateActive();
+    if (!a) { toast('اول یک درس را شروع کن'); return; }
+    toast('⚔️ در حال ساختن چالش…');
+    try {
+      var raw = await callAI('مربی هستی. یک تمرین چالشی سخت‌تر (سطح بالاتر) از همین مطلب بساز. فقط JSON:\n{"task":"شرح چالش","hints":["راهنما ۱","راهنما ۲","راهنما ۳"]}', 'درس: ' + a.title + ' — تمرین اصلی: ' + (a.task || '—') + '\nمحتوا:\n' + (a.md || '').slice(0, 800), 900, '⚔️ چالش');
+      var r = jparse(raw);
+      if (!r || !r.task) { toast('⚠ پاسخ نامعتبر — دوباره بزن'); return; }
+      var tk = $id('acd-task');
+      if (tk) tk.textContent = '⚔️ چالش: ' + r.task;
+      var hn = $id('acd-hints');
+      if (hn) hn.innerHTML = (r.hints || []).map(function (hh, i) { return '<div>💡 <b style="color:#fcd34d;">راهنما ' + FA(i + 1) + ':</b> ' + esc(hh) + '</div>'; }).join('');
+      var st = A(); st.challenge = { id: a.id, task: r.task, hints: r.hints || [] }; LSs(K_A, st);
+      aPush('bot', '⚔️ **چالش جدید**:\n\n' + r.task + '\n\nراهنماها زیر تمرین گذاشته شدند. بنویس و «✅ بررسی تمرین» بزن!');
+      toast('⚔️ چالش آماده شد');
+    } catch (e) { toast('❌ ' + e.message); }
+  }
+
+  /* ═══ آزمون نهایی ═══ */
+  async function exam() {
+    var st = A();
+    if (!st.curriculum || !st.curriculum.lessons || !st.curriculum.lessons.length) { toast('اول درسنامه بساز — آزمون روی کل درسنامه است'); return; }
+    toast('🎓 در حال ساختن آزمون…');
+    var raw;
+    try {
+      raw = await callAI('مربی هستی. آزمون جامع از کل درسنامه. فقط JSON:\n{"qs":[{"q":"سؤال","options":["الف","ب","ج","د"],"a":0,"why":"چرا درست است"}]} — دقیقا ۶ سؤال چهارگزینه‌ای پوشش‌دهنده کل سرفصل‌ها. فارسی.', 'سرفصل‌ها:\n' + st.curriculum.lessons.map(function (l) { return '- ' + l.title; }).join('\n'), 2200, '🎓 آزمون نهایی');
+    } catch (e) { toast('❌ ' + e.message); return; }
+    var r = jparse(raw);
+    var qs = ((r && r.qs) || []).filter(function (x) { return x && x.q && Array.isArray(x.options) && x.options.length >= 2; }).slice(0, 6);
+    if (qs.length < 3) { toast('⚠ آزمون نامعتبر شد — دوباره بزن'); return; }
+    var picks = {};
+    var prev = $id('az-exam-modal'); if (prev) prev.remove();
+    var o = document.createElement('div');
+    o.id = 'az-exam-modal';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.75);display:flex;align-items:center;justify-content:center;';
+    function draw(res) {
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><b style="color:#fde68a;">🎓 آزمون نهایی — ' + esc(st.curriculum.title) + '</b><button class="az-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>';
+      qs.forEach(function (q, qi) {
+        html += '<div style="margin-bottom:13px;"><div style="color:#dbe4f5;font-size:12.5px;line-height:1.9;">' + FA(qi + 1) + '. ' + esc(q.q) + '</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;">';
+        q.options.forEach(function (op, oi) {
+          var stc = 'rgba(148,163,184,.15)', col = '#cbd5e1';
+          if (res) {
+            if (oi === q.a) { stc = 'rgba(16,185,129,.2)'; col = '#6ee7b7'; }
+            else if (picks[qi] === oi) { stc = 'rgba(239,68,68,.2)'; col = '#fca5a5'; }
+          } else if (picks[qi] === oi) { stc = 'rgba(245,158,11,.25)'; col = '#fcd34d'; }
+          html += '<button data-az-q="' + qi + '" data-az-o="' + oi + '" style="text-align:right;background:' + stc + ';border:1px solid rgba(148,163,184,.3);color:' + col + ';border-radius:9px;padding:7px 12px;cursor:pointer;font-size:12px;font-family:inherit;">' + esc(op) + '</button>';
+        });
+        html += '</div>' + (res ? '<div style="color:#8fa0bd;font-size:11px;margin-top:5px;">' + esc(q.why || '') + '</div>' : '') + '</div>';
+      });
+      html += '<div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">';
+      if (!res) {
+        html += '<button id="az-ex-sub" style="background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;border-radius:10px;padding:9px 24px;cursor:pointer;font-weight:800;font-family:inherit;">✅ تصحیح و نمره</button><span style="color:#64748b;font-size:11px;">' + FA(Object.keys(picks).length) + ' از ' + FA(qs.length) + ' پاسخ دادی</span>';
+      } else {
+        var ok = qs.filter(function (q, qi) { return picks[qi] === q.a; }).length;
+        var pct = Math.round(ok / qs.length * 100);
+        html += '<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 18px;color:#fde68a;font-weight:800;font-size:15px;">نمره: ' + FA(ok) + ' از ' + FA(qs.length) + ' (' + FA(pct) + '٪)</div>' +
+          '<button id="az-ex-again" style="background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;border-radius:10px;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:12px;">🔁 آزمون دیگر</button>';
+      }
+      html += '</div>';
+      o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(245,158,11,.55);border-radius:16px;width:min(640px,94vw);max-height:88vh;overflow:auto;padding:16px;direction:rtl;">' + html + '</div>';
+      o.querySelector('.az-cx').addEventListener('click', function () { o.remove(); });
+      o.querySelectorAll('[data-az-q]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          picks[+b.getAttribute('data-az-q')] = +b.getAttribute('data-az-o');
+          draw(false);
+        });
+      });
+      var sub = o.querySelector('#az-ex-sub');
+      if (sub) sub.addEventListener('click', function () {
+        if (Object.keys(picks).length < qs.length) { toast('به همه‌ی سؤال‌ها جواب بده (' + FA(Object.keys(picks).length) + '/' + FA(qs.length) + ')'); return; }
+        var ok = qs.filter(function (q, qi) { return picks[qi] === q.a; }).length;
+        var ex = LSk(K_EX); ex.hist = ex.hist || [];
+        ex.hist.push({ score: ok, total: qs.length, ts: Date.now() });
+        ex.best = Math.max(ex.best || 0, Math.round(ok / qs.length * 100));
+        LSs(K_EX, ex);
+        toast('🎓 نمره‌ات: ' + FA(ok) + ' از ' + FA(qs.length));
+        draw(true);
+      });
+      var ag = o.querySelector('#az-ex-again');
+      if (ag) ag.addEventListener('click', function () { o.remove(); exam(); });
+    }
+    o.addEventListener('click', function (e) { if (e.target === o) o.remove(); });
+    document.body.appendChild(o);
+    draw(false);
+  }
+
+  /* ═══ گواهی ═══ */
+  function cert() {
+    var st = A();
+    if (!st.curriculum) { toast('اول درسنامه بساز و درس‌ها را کامل کن'); return; }
+    var done = st.curriculum.lessons.filter(function (l) { return (st.progress || {})[l.id] >= 100; }).length;
+    var tot = st.curriculum.lessons.length;
+    var ex = LSk(K_EX);
+    var examPct = ex.best || 0;
+    var full = done >= tot && tot > 0;
+    var pass = examPct >= 70;
+    if (!full && !pass) {
+      toast('🔒 گواهی قفل است — همه ' + FA(tot) + ' درس کامل، یا نمره آزمون حداقل ۷۰٪ (الان: ' + FA(examPct) + '٪ — آزمون «🎓 آزمون نهایی» را بده)');
+      return;
+    }
+    var prev = $id('az-cert-modal'); if (prev) prev.remove();
+    var o = document.createElement('div');
+    o.id = 'az-cert-modal';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99760;background:rgba(2,6,18,.75);display:flex;align-items:center;justify-content:center;';
+    var faDate = '';
+    try { faDate = new Date().toLocaleDateString('fa-IR'); } catch (e) { faDate = ''; }
+    o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(245,158,11,.55);border-radius:16px;width:min(560px,94vw);padding:18px;direction:rtl;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><b style="color:#fde68a;">🏅 گواهی دوره</b><button class="az-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+      '<input id="az-cert-name" placeholder="نام گواهی‌دار" value="دانشجوی مامال" style="width:100%;background:#0a1220;border:1px solid rgba(245,158,11,.45);border-radius:10px;color:#fde68a;padding:9px 12px;font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;">' +
+      '<div id="az-cert-body" style="margin-top:12px;border:3px double #f59e0b;border-radius:14px;padding:24px;text-align:center;background:linear-gradient(160deg,#1a1230,#10162a);">' +
+      '<div style="color:#fbbf24;font-size:13px;letter-spacing:2px;">🎓 آکادمی کدنویسی مامال</div>' +
+      '<div style="color:#fff;font-size:21px;font-weight:900;margin:14px 0 6px;">گواهی اتمام دوره</div>' +
+      '<div id="az-cert-name-show" style="color:#fde68a;font-size:17px;font-weight:800;">دانشجوی مامال</div>' +
+      '<div style="color:#cbd5e1;font-size:12.5px;margin-top:10px;line-height:2;">دوره «' + esc(st.curriculum.title) + '» با موفقیت' + (full ? ' (همه ' + FA(tot) + ' درس)' : '') + (pass ? ' و نمره آزمون ' + FA(examPct) + '٪' : '') + ' به پایان رسید.</div>' +
+      '<div style="color:#64748b;font-size:11px;margin-top:12px;">تاریخ: ' + esc(faDate) + '</div></div>' +
+      '<div style="display:flex;gap:7px;margin-top:12px;justify-content:flex-end;"><button id="az-cert-print" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.5);color:#6ee7b7;border-radius:10px;padding:8px 18px;cursor:pointer;font-size:12px;font-family:inherit;">🖨 چاپ گواهی</button></div></div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('az-cx')) o.remove(); });
+    document.body.appendChild(o);
+    o.querySelector('#az-cert-name').addEventListener('input', function (e) { o.querySelector('#az-cert-name-show').textContent = e.target.value || '—'; });
+    o.querySelector('#az-cert-print').addEventListener('click', function () {
+      var w = window.open('', '_blank');
+      if (!w) { toast('پنجره چاپ باز نشد'); return; }
+      w.document.write('<html dir="rtl"><head><title>گواهی</title></head><body style="font-family:sans-serif;text-align:center;padding:60px;">' + o.querySelector('#az-cert-body').innerHTML + '</body></html>');
+      w.document.close();
+      w.print();
+    });
+  }
+
+  /* ═══ آمار ═══ */
+  function stats() {
+    var st = A();
+    var fc = LSk(K_FC), ex = LSk(K_EX), no = LSk(K_NO);
+    var done = 0, start = 0, tot = 0;
+    if (st.curriculum) {
+      tot = st.curriculum.lessons.length;
+      st.curriculum.lessons.forEach(function (l) {
+        var p = (st.progress || {})[l.id] || 0;
+        if (p >= 100) done++;
+        else if (p > 0) start++;
+      });
+    }
+    var learn = 0, rep = 0;
+    Object.keys(fc).forEach(function (k) { learn += (fc[k].learned || 0); rep += (fc[k].repeat || 0); });
+    var notes = Object.keys(no).filter(function (k) { return (no[k] || '').trim(); }).length;
+    var AU = {};
+    try { AU = JSON.parse(localStorage.getItem('acad_model_v1') || '{}'); } catch (e) {}
+    var rows = [
+      ['📚 درس‌های تکمیل‌شده', FA(done) + (tot ? ' از ' + FA(tot) : '')],
+      ['📖 درس‌های نیمه‌تمام', FA(start)],
+      ['🎓 آزمون‌های داده‌شده', FA((ex.hist || []).length) + ((ex.hist || []).length ? ' — بهترین: ' + FA(ex.best || 0) + '٪' : '')],
+      ['🃏 فلش‌کارت آموخته / مرور', FA(learn) + ' / ' + FA(rep)],
+      ['📝 یادداشت‌های نوشته‌شده', FA(notes)],
+      ['💬 پیام‌های گفتگو با مربی', FA((st.chat || []).length)],
+      ['🎨 سبک تدریس فعلی', ({ simple: 'خیلی ساده', normal: 'متعادل', deep: 'عمیق و فنی', example: 'مثال‌محور' }[AU.style] || 'متعادل') + ' — طول: ' + ({ short: 'کوتاه', normal: 'عادی', long: 'مفصل' }[AU.len] || 'عادی')]
+    ];
+    var prev = $id('az-stats-modal'); if (prev) prev.remove();
+    var o = document.createElement('div');
+    o.id = 'az-stats-modal';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.72);display:flex;align-items:center;justify-content:center;';
+    o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(245,158,11,.55);border-radius:16px;width:min(460px,94vw);max-height:86vh;overflow:auto;padding:16px;direction:rtl;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#fde68a;">📊 آمار یادگیری</b><button class="az-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+      rows.map(function (r) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:11px;padding:9px 13px;margin-top:8px;"><span style="color:#cbd5e1;font-size:12px;">' + r[0] + '</span><b style="color:#fde68a;font-size:12.5px;">' + r[1] + '</b></div>';
+      }).join('') + '</div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('az-cx')) o.remove(); });
+    document.body.appendChild(o);
+  }
+
+  /* ═══ خروجی ═══ */
+  function exportMd() {
+    var st = A(), no = LSk(K_NO), ex = LSk(K_EX);
+    if (!st.curriculum) { toast('درسنامه‌ای برای خروجی نیست'); return; }
+    var md = '# درسنامه: ' + st.curriculum.title + '\n\nخروجی از آکادمی مامال — ' + new Date().toLocaleString('fa-IR') + '\n\n';
+    st.curriculum.lessons.forEach(function (l, i) {
+      var p = (st.progress || {})[l.id] || 0;
+      md += '## ' + (i + 1) + '. ' + l.title + ' (' + p + '%)\n';
+      if (l.goal) md += '**هدف:** ' + l.goal + '\n';
+      if (l.topics && l.topics.length) md += '**موضوع‌ها:** ' + l.topics.join('، ') + '\n';
+      var n = (no[l.id] || '').trim();
+      if (n) md += '**یادداشت من:**\n' + n + '\n';
+      md += '\n';
+    });
+    if ((ex.hist || []).length) {
+      md += '## 🎓 آزمون‌ها\n';
+      ex.hist.forEach(function (h) { md += '- ' + h.score + '/' + h.total + ' — ' + new Date(h.ts).toLocaleString('fa-IR') + '\n'; });
+    }
+    try {
+      var f = window.MamalStudio.files() || {};
+      f['academy-export.md'] = md;
+      window.MamalStudio.saveNow();
+      toast('📤 در academy-export.md ذخیره شد — در استودیو ببین');
+    } catch (e) { toast('استودیو در دسترس نیست'); }
+  }
+
+  /* ═══ یادداشت ═══ */
+  var noteTimer = null;
+  var lastNoteId = null;
+  function noteBox() {
+    var box = $id('az-note-box');
+    if (box) { box.remove(); return; }
+    var hints = $id('acd-hints');
+    if (!hints) { toast('اول یک درس را شروع کن تا جعبه تمرین باز شود'); return; }
+    var box2 = document.createElement('div');
+    box2.id = 'az-note-box';
+    box2.style.cssText = 'margin:10px 26px 0;';
+    box2.innerHTML = '<div style="border:1px dashed rgba(245,158,11,.4);border-radius:12px;padding:10px;background:rgba(245,158,11,.04);">' +
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><b style="color:#fcd34d;font-size:12px;">📝 یادداشت این درس</b><span style="flex:1;"></span>' +
+      '<button id="az-note-ai" title="مدل نکته‌های کلیدی درس را به یادداشت اضافه می‌کند" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.45);color:#c4b5fd;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:11px;font-family:inherit;">💡 نکته از مدل</button>' +
+      '<button id="az-note-clear" title="پاک کردن یادداشت این درس" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#fca5a5;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:11px;font-family:inherit;">🗑 پاک</button></div>' +
+      '<textarea id="az-note-ta" rows="4" placeholder="یادداشت‌هایت را بنویس… (خودکار ذخیره می‌شود)" style="width:100%;margin-top:8px;background:#0a1220;border:1px solid rgba(245,158,11,.35);border-radius:10px;color:#fde68a;padding:9px 12px;font-size:12.5px;outline:none;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea></div>';
+    hints.parentNode.insertBefore(box2, hints.nextSibling);
+    var ta = $id('az-note-ta');
+    var a = stateActive();
+    lastNoteId = a ? a.id : null;
+    if (a) ta.value = LSk(K_NO)[a.id] || '';
+    ta.addEventListener('input', function () {
+      var cur = stateActive();
+      if (!cur) return;
+      var no = LSk(K_NO); no[cur.id] = ta.value; LSs(K_NO, no);
+    });
+    $id('az-note-clear').addEventListener('click', function () {
+      var cur = stateActive();
+      if (!cur) return;
+      var no = LSk(K_NO); no[cur.id] = ''; LSs(K_NO, no);
+      ta.value = '';
+      toast('یادداشت پاک شد');
+    });
+    $id('az-note-ai').addEventListener('click', async function () {
+      var cur = stateActive();
+      if (!cur) { toast('اول یک درس را شروع کن'); return; }
+      toast('💡 در حال استخراج نکته‌ها…');
+      try {
+        var raw = await callAI('مربی هستی. از این درس فقط نکته‌های کلیدی را به شکل بولت کوتاه فارسی بده (حداکثر ۶ بولت، بدون مقدمه).', 'درس: ' + cur.title + '\n' + (cur.md || '').slice(0, 1100), 800, '💡 نکته‌ها');
+        if (!raw || !raw.trim()) { toast('⚠ پاسخ خالی بود'); return; }
+        ta.value = (ta.value ? ta.value + '\n\n' : '') + '— نکته‌های مدل —\n' + raw.trim();
+        var no = LSk(K_NO); no[cur.id] = ta.value; LSs(K_NO, no);
+        toast('✅ نکته‌ها اضافه شدند');
+      } catch (e) { toast('❌ ' + e.message); }
+    });
+  }
+  /* سوییچ درس → یادداشت درست لود شود */
+  function wireNotes() {
+    if (noteTimer) return;
+    noteTimer = setInterval(function () {
+      var ta = $id('az-note-ta');
+      if (!ta) return;
+      var a = stateActive();
+      var id = a ? a.id : null;
+      if (id !== lastNoteId) {
+        lastNoteId = id;
+        ta.value = id ? (LSk(K_NO)[id] || '') : '';
+      }
+    }, 1500);
+  }
+
+  var ACTIONS = { 'az-fc': flashcards, 'az-sol': solution, 'az-chal': challenge, 'az-exam': exam, 'az-cert': cert, 'az-stats': stats, 'az-export': exportMd, 'az-note': noteBox };
+
+  function boot() {
+    var tries = 0;
+    (function tick() {
+      if ($id('academy-section') && $id('au-actions')) { build(); return; }
+      if (++tries < 50) setTimeout(tick, 500);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 4200); });
+  else setTimeout(boot, 4200);
+
+  window.MamalStudioAZ = { flashcards: flashcards, solution: solution, challenge: challenge, exam: exam, cert: cert, stats: stats, exportMd: exportMd, build: build };
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MAMAL STUDIO — ماژول BA: ساب‌ایجنت حرفه‌ای در بخش‌های ۲/۳/۴/۵
+   موتور مشترک MamalSubEngine:
+   • تجزیه با نقش‌های تخصصی (تحلیل‌گر/کدنویس/آزمون‌گر/مستندساز/بهینه‌ساز/بازبین)
+   • اجرای موازی/ترتیبی + کانتکست زنجیره‌ای + ابزار واقعی فایل
+   • تلاش مجدد هر ساب‌ایجنت، توقف واقعی، نوار پیشرفت درصدی، زمان‌سنج
+   • گزارش ادغامی md + ذخیره فایل + تاریخچه اجراها
+   بخش ۲ AGENT: جعبه حرفه‌ای کنار ساب‌ایجنت ساده
+   بخش ۳ TEAM: تقسیم ماموریت تیم بین ساب‌ایجنت‌های نقش‌دار
+   بخش ۴ IDE: ساب‌ایجنت پروژه — بررسی/رفع باگ/بهینه‌سازی/مستندسازی روی فایل‌ها
+   بخش ۵ BOT: پاسخ چندمرحله‌ای با ساب‌ایجنت‌ها در چت بات
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  if (window.__mamalStudioBA) return;
+  window.__mamalStudioBA = true;
+
+  var $id = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function FA(x) { return String(x).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; }); }
+  function toast(m) { try { if (window.MamalStudio && window.MamalStudio.toast) window.MamalStudio.toast(m); else console.log('[toast] ' + m); } catch (e) {} }
+  var N = function (n, w) { if (window.MamalFeatures) window.MamalFeatures.add(n, w || 'ایجنت'); };
+  var K_H = 'mamal_subeng_hist_v1';
+  function LSk(k) { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { return []; } }
+  function LSs(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function jparse(t) { try { return JSON.parse(String(t || '').replace(/```json\n?|```\n?/g, '').trim()); } catch (e) { return null; } }
+  function writeFile(name, content) {
+    try {
+      var f = window.MamalStudio.files() || {};
+      f[name] = String(content);
+      try { window.MamalStudio.saveNow(); } catch (e0) {}
+      return true;
+    } catch (e) { return false; }
+  }
+  function agentModel() {
+    var s = $id('agent-model-select');
+    if (s && s.value && !/بارگذاری/.test(s.value)) return s.value;
+    var m = $id('model-select');
+    if (m && m.value && !/بارگذاری/.test(m.value)) return m.value;
+    return 'deepseek/deepseek-r1:free';
+  }
+  function botModel() {
+    var s = $id('mb-model');
+    if (s && s.value && !/بارگذاری/.test(s.value)) return s.value;
+    return agentModel();
+  }
+
+  /* ═══ نقش‌های تخصصی ═══ */
+  var ROLES = {
+    analyzer: { fa: '🔍 تحلیل‌گر', sys: 'تو تحلیل‌گر فنی هستی. فقط تحلیل، نقشه راه و تصمیم بده؛ کد کامل ننویس. فارسی و خلاصه.' },
+    coder: { fa: '👨‍💻 کدنویس', sys: 'تو کدنویس ارشد هستی. کد کامل و اجرایی بنویس و فایل‌ها را با ابزار بساز. فارسی خلاصه کن.' },
+    tester: { fa: '🧪 آزمون‌گر', sys: 'تو آزمون‌گر هستی. کد را نقد کن، کیس‌های تست و باگ‌های احتمالی بنویس؛ خروجی‌ات فهرست دقیق باشد. فارسی.' },
+    docs: { fa: '📖 مستندساز', sys: 'تو مستندساز هستی. مستندات واضح و ساخت‌یافته بنویس. فارسی.' },
+    optimizer: { fa: '⚡ بهینه‌ساز', sys: 'تو بهینه‌ساز هستی. کد را برای سرعت/خوانایی/حجم بهتر کن و نسخه اصلاح‌شده را با ابزار بنویس. فارسی خلاصه.' },
+    reviewer: { fa: '🕵️ بازبین', sys: 'تو بازبین کد هستی. اشکالات امنیتی، منطقی و کیفیت را دقیق فهرست کن با پیشنهاد اصلاح. فارسی.' }
+  };
+  var ROLE_KEYS = ['analyzer', 'coder', 'tester', 'docs', 'optimizer', 'reviewer'];
+
+  /* ═══ موتور مشترک ═══ */
+  var lastRun = { subs: [], task: '', mode: 'seq', running: false, ctl: null, section: '' };
+
+  async function aiMsgs(model, messages, maxTok, ctl, label) {
+    var h = null;
+    try { h = window.hudReg({ name: label || '🧩 ساب‌ایجنت', section: 'ایجنت', retry: function () {}, total: 1, taskId: 'ba-' + Date.now() }); } catch (e) {}
+    var acc = '';
+    try {
+      var apiKey = await window.fetchOpenRouterKey();
+      await window.orStream(apiKey, { model: model, messages: messages, temperature: 0.3, max_tokens: maxTok || 1600 }, function (_, x) { acc = x; }, ctl || null);
+      try { window.hudDone(h, true); } catch (e0) {}
+      return acc;
+    } catch (e) {
+      try { window.hudDone(h, false); } catch (e1) {}
+      throw e;
+    }
+  }
+  async function aiCall(model, sys, usr, maxTok, ctl, label) {
+    var h = null;
+    try { h = window.hudReg({ name: label || '🧩 ساب‌ایجنت', section: 'ایجنت', retry: function () {}, total: 1, taskId: 'ba-' + Date.now() }); } catch (e) {}
+    var acc = '';
+    try {
+      var apiKey = await window.fetchOpenRouterKey();
+      await window.orStream(apiKey, { model: model, messages: [{ role: 'system', content: sys }, { role: 'user', content: usr }], temperature: 0.3, max_tokens: maxTok || 1600 }, function (_, x) { acc = x; }, ctl || null);
+      try { window.hudDone(h, true); } catch (e0) {}
+      return acc;
+    } catch (e) {
+      try { window.hudDone(h, false); } catch (e1) {}
+      throw e;
+    }
+  }
+
+  async function plan(task, want, ctl) {
+    var dec = await aiCall(agentModel(),
+      'تو مدیر فنی هستی. فقط JSON:\n{"subtasks":[{"title":"کوتاه","task":"شرح دقیق زیر-وظیفه","role":"analyzer|coder|tester|docs|optimizer|reviewer"}]}\n۲ تا ۵ زیر-وظیفه متمم و غیرپوششی؛ هر کدام نقش مناسب از همین شش نقش. فارسی.',
+      'وظیفه: ' + task + (want ? '\nدقیقا ' + want + ' زیر-وظیفه.' : ''), 900, ctl, '🧩 تجزیه ساب‌ایجنت');
+    var r = jparse(dec);
+    var st = ((r && r.subtasks) || []).filter(function (x) { return x && x.task; }).slice(0, 5);
+    if (!st.length) throw new Error('تجزیه ناموفق بود — دوباره بزن');
+    return st.map(function (x, i) {
+      var role = ROLES[x.role] ? x.role : ROLE_KEYS[i % ROLE_KEYS.length];
+      return { title: x.title || ('ساب ' + (i + 1)), task: x.task, role: role, status: 'idle', out: '', files: [], ms: 0 };
+    });
+  }
+
+  var SYS_TOOLS = 'You are a focused sub-agent inside a team. Work ONLY on your sub-task.\n' +
+    'Tools (ReAct format, one per reply):\nAction: write_file\nAction Input: {"path":"...","content":"..."}\nAction: read_file\nAction Input: {"path":"..."}\nAction: list_files\nAction Input: {}\n' +
+    'When your sub-task is complete reply with: Final Answer: <short Persian summary + list of files written>\nAlways Persian summaries.';
+
+  async function runSub(s, mainTask, ctxText, ctl, withTools) {
+    var t0 = Date.now();
+    s.status = 'running';
+    var role = ROLES[s.role] || ROLES.coder;
+    try {
+      if (withTools === false) {
+        var acc2 = await aiCall(botModel(), role.sys + '\nفقط متن پاسخ بده (بدون ابزار).', 'وظیفه اصلی: ' + mainTask + '\nزیر-وظیفه تو: ' + s.task + (ctxText ? '\nخلاصه کار قبلی‌ها:\n' + ctxText : ''), 1500, ctl, '🧩 ' + role.fa);
+        if (!acc2 || !acc2.trim()) throw new Error('پاسخ خالی از مدل');
+        s.out = acc2.trim().slice(0, 2200);
+      } else {
+        var files = {};
+        try { files = window.MamalStudio.files() || {}; } catch (e0) {}
+        var messages = [
+          { role: 'system', content: SYS_TOOLS + '\n' + role.sys },
+          { role: 'user', content: 'Main task: ' + mainTask + '\nYour sub-task: ' + s.task + (ctxText ? '\nContext from previous sub-agents:\n' + ctxText : '') + '\nExisting files: ' + Object.keys(files).join(', ') + '\nStart now.' }
+        ];
+        for (var it = 0; it < 6; it++) {
+          if (ctl && ctl.signal.aborted) throw new Error('متوقف شد');
+          var acc = await aiMsgs(agentModel(), messages, 2200, ctl, '🧩 ' + role.fa);
+          if (!acc || !acc.trim()) throw new Error('پاسخ خالی از مدل');
+          messages.push({ role: 'assistant', content: acc });
+          var fa = acc.match(/Final Answer:\s*([\s\S]+)/);
+          if (fa) { s.out = fa[1].trim().slice(0, 2000); break; }
+          var am = acc.match(/Action:\s*(\w+)\s*\n\s*Action Input:\s*([\s\S]+?)(?=\n(?:Thought|Observation|Final|$))/);
+          if (!am) { s.out = acc.slice(0, 1500); break; }
+          var tool = am[1], args = {};
+          try { args = JSON.parse((am[2] || '').trim()); } catch (e1) {}
+          var obs = '';
+          if (tool === 'write_file') {
+            var ok = writeFile(args.path || ('ba-' + Date.now() + '.txt'), args.content || '');
+            if (ok && s.files.indexOf(args.path) === -1) s.files.push(args.path);
+            obs = 'OBSERVATION: file ' + (args.path || '?') + (ok ? ' saved.' : ' failed.');
+            s.out = (s.out || '') + '\n📝 نوشت: ' + (args.path || '?');
+          } else if (tool === 'read_file') {
+            var fc = (window.MamalStudio.files() || {})[args.path];
+            obs = 'OBSERVATION: ' + (fc === undefined ? 'file not found.' : String(fc).slice(0, 3000));
+          } else if (tool === 'list_files') {
+            obs = 'OBSERVATION: ' + Object.keys(window.MamalStudio.files() || {}).join(', ');
+          } else {
+            obs = 'OBSERVATION: unknown tool — use Final Answer.';
+          }
+          messages.push({ role: 'user', content: obs });
+        }
+        if (!s.out) s.out = '(حد پیام‌ها رسید)';
+      }
+      s.status = 'done';
+    } catch (e) {
+      s.status = 'error';
+      s.err = (e && e.message) || 'خطا';
+    }
+    s.ms = Date.now() - t0;
+    return s.status === 'done';
+  }
+
+  function ctxOf(subs) {
+    return subs.filter(function (s) { return s.status === 'done'; }).slice(-3).map(function (s) {
+      return '- [' + (ROLES[s.role] || {}).fa + ' ' + s.title + ']: ' + String(s.out || '').slice(0, 300);
+    }).join('\n');
+  }
+
+  async function executeAll(subs, mode, ctl, withTools, onEvent) {
+    var done = 0;
+    function tick() {
+      done = subs.filter(function (s) { return s.status === 'done'; }).length;
+      if (onEvent) onEvent({ done: done, total: subs.length });
+    }
+    if (mode === 'par') {
+      await Promise.all(subs.map(function (s) {
+        return new Promise(function (res) {
+          setTimeout(function () {
+            runSub(s, lastRun.task, mode === 'par' ? '' : ctxOf(subs), ctl, withTools).then(function () { tick(); res(); }).catch(function () { tick(); res(); });
+          }, 150);
+        });
+      }));
+    } else {
+      for (var i = 0; i < subs.length; i++) {
+        if (ctl && ctl.signal.aborted) { subs.slice(i).forEach(function (s) { s.status = 'idle'; }); break; }
+        await runSub(subs[i], lastRun.task, i ? ctxOf(subs) : '', ctl, withTools);
+        tick();
+      }
+    }
+    return done;
+  }
+
+  function reportMd(task, subs) {
+    var ok = subs.filter(function (s) { return s.status === 'done'; }).length;
+    var md = '# 🧩 گزارش ساب‌ایجنت‌ها\n\n**وظیفه اصلی:** ' + task + '\n\n**نتیجه:** ' + ok + ' از ' + subs.length + ' موفق — ' + new Date().toLocaleString('fa-IR') + '\n\n';
+    subs.forEach(function (s, i) {
+      md += '## ' + (i + 1) + '. ' + (ROLES[s.role] || {}).fa + ' — ' + s.title + (s.ms ? ' (' + (s.ms / 1000).toFixed(1) + ' ثانیه)' : '') + '\n\n';
+      md += '**زیر-وظیفه:** ' + s.task + '\n\n';
+      if (s.files && s.files.length) md += '**فایل‌ها:** ' + s.files.join('، ') + '\n\n';
+      md += (s.status === 'done' ? (s.out || '') : '❌ خطا: ' + (s.err || '')) + '\n\n';
+    });
+    return md;
+  }
+  function pushHist(task, subs, section) {
+    try {
+      var h = LSk(K_H);
+      h.unshift({ task: String(task).slice(0, 120), section: section || '', ok: subs.filter(function (s) { return s.status === 'done'; }).length, total: subs.length, ts: Date.now() });
+      LSs(K_H, h.slice(0, 12));
+    } catch (e) {}
+  }
+  function showHist() {
+    var h = LSk(K_H);
+    if (!h.length) { toast('تاریخچه‌ای نیست'); return; }
+    var o = document.createElement('div');
+    o.style.cssText = 'position:fixed;inset:0;z-index:99750;background:rgba(2,6,18,.72);display:flex;align-items:center;justify-content:center;';
+    o.innerHTML = '<div style="background:#10162a;border:1px solid rgba(139,92,246,.55);border-radius:16px;width:min(480px,94vw);max-height:80vh;overflow:auto;padding:16px;direction:rtl;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#c4b5fd;">🕘 تاریخچه ساب‌ایجنت‌ها</b><button class="ba-cx" style="background:none;border:none;color:#8fa0bd;cursor:pointer;font-size:15px;">✕</button></div>' +
+      h.map(function (x) {
+        return '<div style="background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.3);border-radius:11px;padding:8px 12px;margin-top:8px;"><div style="color:#dbe4f5;font-size:11.5px;">🧩 ' + esc(x.task) + '</div><div style="color:#8fa0bd;font-size:10.5px;margin-top:3px;">' + (x.section || '') + ' — ' + FA(x.ok) + '/' + FA(x.total) + ' موفق — ' + new Date(x.ts).toLocaleString('fa-IR') + '</div></div>';
+      }).join('') + '</div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('ba-cx')) o.remove(); });
+    document.body.appendChild(o);
+  }
+
+  window.MamalSubEngine = {
+    ROLES: ROLES, ROLE_KEYS: ROLE_KEYS,
+    plan: plan, executeAll: executeAll, runSub: runSub, reportMd: reportMd,
+    history: showHist, histList: function () { return LSk(K_H); },
+    cancel: function () { if (lastRun.ctl) { try { lastRun.ctl.abort(); } catch (e) {} } lastRun.running = false; },
+    state: function () { return lastRun; }
+  };
+
+  /* ═══ رندر کارت‌های مشترک ═══ */
+  function renderCards(host, subs, withRetry, withBar, withTools) {
+    if (!host) return;
+    var ok = subs.filter(function (s) { return s.status === 'done'; }).length;
+    var bar = withBar ? '<div style="background:rgba(139,92,246,.15);border-radius:99px;height:9px;overflow:hidden;margin-bottom:9px;"><div style="height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899);border-radius:99px;transition:width .4s;width:' + (subs.length ? Math.round(ok / subs.length * 100) : 0) + '%;"></div></div>' : '';
+    host.innerHTML = bar + subs.map(function (s, i) {
+      var stColor = s.status === 'done' ? '#10b981' : s.status === 'error' ? '#ef4444' : s.status === 'running' ? '#f59e0b' : '#8fa0bd';
+      var stText = { idle: '⏳ در صف', running: '⚙ در حال کار…', done: '✅ ' + FA(s.ms ? (s.ms / 1000).toFixed(1) : '') + 'ث', error: '❌ خطا' }[s.status] || s.status;
+      return '<div data-ba-card="' + i + '" style="background:rgba(10,10,20,.5);border:1px solid ' + stColor + '44;border-radius:11px;padding:8px 10px;">' +
+        '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+        '<span style="width:9px;height:9px;border-radius:99px;background:' + stColor + ';display:inline-block;"></span>' +
+        '<b style="color:#dbe4f5;font-size:11.5px;">' + (ROLES[s.role] || {}).fa + ' — ' + esc(s.title) + '</b>' +
+        '<span style="color:' + stColor + ';font-size:10.5px;">' + stText + '</span>' +
+        (s.files && s.files.length ? '<span style="color:#6ee7b7;font-size:10px;">📝 ' + FA(s.files.length) + ' فایل</span>' : '') +
+        (withRetry && s.status === 'error' ? '<button data-ba-retry="' + i + '" title="تلاش مجدد فقط این ساب‌ایجنت" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;border-radius:8px;padding:2px 9px;cursor:pointer;font-size:10px;font-family:inherit;">↻ تلاش مجدد</button>' : '') +
+        (s.out ? '<button data-ba-show="' + i + '" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:8px;padding:2px 9px;cursor:pointer;font-size:10px;font-family:inherit;">👁 خروجی</button>' : '') +
+        '</div>' +
+        '<div data-ba-out="' + i + '" style="display:none;margin-top:6px;color:#8fa0bd;font-size:10.5px;white-space:pre-wrap;max-height:150px;overflow:auto;line-height:1.9;">' + esc(s.out || s.err || '') + '</div>' +
+        '</div>';
+    }).join('');
+    host.querySelectorAll('[data-ba-show]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var box = host.querySelector('[data-ba-out="' + b.getAttribute('data-ba-show') + '"]');
+        if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      });
+    });
+    host.querySelectorAll('[data-ba-retry]').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        var i = +b.getAttribute('data-ba-retry');
+        var s = subs[i];
+        if (!s) return;
+        b.disabled = true;
+        lastRun.running = true;
+        lastRun.ctl = new AbortController();
+        await runSub(s, lastRun.task, ctxOf(subs), lastRun.ctl, withTools !== false);
+        lastRun.running = false;
+        renderCards(host, subs, withRetry, withBar);
+      });
+    });
+  }
+
+  function makeRunBtnUI(cfg) {
+    /* cfg: {listId, bar:true, withTools, section, after(subs), before(subs)} */
+    return async function () {
+      if (lastRun.running) { toast('یک اجرا در جریان است'); return; }
+      var task = cfg.taskOverride || ($id(cfg.taskId).value || '').trim();
+      if (!task) { toast('وظیفه را بنویس'); return; }
+      var want = cfg.countId ? (+($id(cfg.countId).value || 0)) : 0;
+      lastRun.running = true;
+      lastRun.ctl = new AbortController();
+      lastRun.section = cfg.section;
+      lastRun.task = task;
+      var runBtn = $id(cfg.runId), stopBtn = $id(cfg.stopId);
+      if (runBtn) runBtn.disabled = true;
+      if (stopBtn) stopBtn.style.display = '';
+      var host = $id(cfg.listId);
+      if (host) host.innerHTML = '<div style="color:#8fa0bd;font-size:11.5px;">⏳ در حال تجزیه وظیفه…</div>';
+      try {
+        var subs = await plan(task, want, lastRun.ctl);
+        lastRun.subs = subs;
+        if (cfg.before) cfg.before(subs);
+        renderCards(host, subs, true, cfg.bar, cfg.withTools);
+        var done = await executeAll(subs, cfg.modeId ? ($id(cfg.modeId).value || 'seq') : 'seq', lastRun.ctl, cfg.withTools, function () {
+          renderCards(host, subs, true, cfg.bar, cfg.withTools);
+        });
+        renderCards(host, subs, true, cfg.bar, cfg.withTools);
+        pushHist(task, subs, cfg.section);
+        if (cfg.after) cfg.after(subs, done);
+        if (cfg.outId) {
+          var out = $id(cfg.outId);
+          out.style.display = '';
+          out.innerHTML = '<div style="color:#c4b5fd;font-size:11px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">🧾 گزارش نهایی آماده است (' + FA(done) + '/' + FA(subs.length) + ' موفق)' +
+            '<button id="' + cfg.saveId + '" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:9px;padding:5px 13px;cursor:pointer;font-size:10.5px;font-family:inherit;">💾 ذخیره در فایل</button>' +
+            '<button id="' + cfg.histId + '" style="background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;border-radius:9px;padding:5px 13px;cursor:pointer;font-size:10.5px;font-family:inherit;">🕘 تاریخچه</button></div>' +
+            '<div style="color:#8fa0bd;font-size:10.5px;white-space:pre-wrap;margin-top:7px;max-height:220px;overflow:auto;line-height:1.9;">' + esc(reportMd(task, subs).slice(0, 2500)) + '</div>';
+          var sv = $id(cfg.saveId);
+          if (sv) sv.addEventListener('click', function () {
+            if (writeFile(cfg.fileName || 'subagent-report.md', reportMd(task, subs))) toast('💾 گزارش ذخیره شد: ' + (cfg.fileName || 'subagent-report.md'));
+          });
+          var hh = $id(cfg.histId);
+          if (hh) hh.addEventListener('click', showHist);
+        }
+        toast('🧩 ساب‌ایجنت‌ها تمام شد — ' + FA(done) + '/' + FA(subs.length) + ' موفق');
+      } catch (e) {
+        if (host) host.innerHTML = '<div style="color:#fca5a5;font-size:11.5px;">❌ ' + esc(e.message || e) + '</div>';
+        toast('❌ ' + (e.message || e));
+      }
+      lastRun.running = false;
+      if (runBtn) runBtn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
+    };
+  }
+
+  function stopUI(cfg) {
+    return function () {
+      window.MamalSubEngine.cancel();
+      var b = $id(cfg.stopId);
+      if (b) b.style.display = 'none';
+      var r = $id(cfg.runId);
+      if (r) r.disabled = false;
+      toast('⏹ ساب‌ایجنت‌ها متوقف شدند');
+    };
+  }
+
+  /* ═══ بخش ۲: AGENT — جعبه حرفه‌ای ═══ */
+  function buildAgent() {
+    var panel = $id('panel-agent');
+    if (!panel || $id('ba-agent-box')) return;
+    var anchor = $id('as-box');
+    if (!anchor) return;
+    var box = document.createElement('div');
+    box.id = 'ba-agent-box';
+    box.style.cssText = 'margin:10px 0;border:1px solid rgba(236,72,153,.4);background:rgba(236,72,153,.05);border-radius:14px;padding:12px;';
+    box.innerHTML =
+      '<details>' +
+      '<summary style="cursor:pointer;color:#f9a8d4;font-size:12.5px;font-weight:800;user-select:none;">⚙ ساب‌ایجنت حرفه‌ای — نقش‌های تخصصی، تلاش مجدد هر واحد، پیشرفت درصدی و تاریخچه</summary>' +
+      '<div style="padding-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+      '<textarea id="ba-a-task" rows="2" placeholder="وظیفه اصلی (نقش‌ها خودکار تخصیص می‌یابند: تحلیل‌گر، کدنویس، آزمون‌گر…)" style="width:100%;background:#0a0a0f;border:1px solid rgba(236,72,153,.4);border-radius:10px;color:#f9a8d4;padding:9px 12px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">' +
+      '<select id="ba-a-count" style="background:#0a0a0f;border:1px solid rgba(236,72,153,.4);color:#f9a8d4;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;"><option value="0">تعداد: خودکار</option><option value="2">۲</option><option value="3">۳</option><option value="4">۴</option><option value="5">۵</option></select>' +
+      '<select id="ba-a-mode" style="background:#0a0a0f;border:1px solid rgba(236,72,153,.4);color:#f9a8d4;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;"><option value="seq">ترتیبی</option><option value="par">موازی</option></select>' +
+      '<span style="flex:1;"></span>' +
+      '<button id="ba-a-run" style="background:linear-gradient(135deg,#ec4899,#be185d);border:none;color:#fff;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">🚀 اجرای حرفه‌ای</button>' +
+      '<button id="ba-a-stop" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.5);color:#fca5a5;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;display:none;">⏹ توقف</button></div>' +
+      '<div id="ba-a-list" style="display:flex;flex-direction:column;gap:7px;"></div>' +
+      '<div id="ba-a-out" style="display:none;border-top:1px dashed rgba(236,72,153,.4);padding-top:9px;"></div>' +
+      '</div></details>';
+    anchor.parentNode.insertBefore(box, anchor.nextSibling);
+    var cfg = { taskId: 'ba-a-task', countId: 'ba-a-count', modeId: 'ba-a-mode', runId: 'ba-a-run', stopId: 'ba-a-stop', listId: 'ba-a-list', outId: 'ba-a-out', saveId: 'ba-a-save', histId: 'ba-a-hist', section: 'ایجنت', bar: true, withTools: true, fileName: 'subagent-agent-report.md' };
+    $id('ba-a-run').addEventListener('click', makeRunBtnUI(cfg));
+    $id('ba-a-stop').addEventListener('click', stopUI(cfg));
+    N('ساب‌ایجنت حرفه‌ای: نقش‌های تخصصی شش‌گانه', 'ایجنت');
+    N('ساب‌ایجنت حرفه‌ای: تلاش مجدد هر ساب‌ایجنت جداگانه', 'ایجنت');
+    N('ساب‌ایجنت حرفه‌ای: نوار پیشرفت درصدی + زمان‌سنج', 'ایجنت');
+    N('ساب‌ایجنت حرفه‌ای: تاریخچه ۱۲ اجرای آخر', 'ایجنت');
+    N('ساب‌ایجنت حرفه‌ای: گزارش md + ذخیره فایل', 'ایجنت');
+  }
+
+  /* ═══ بخش ۳: TEAM ═══ */
+  function buildTeam() {
+    var panel = $id('panel-team');
+    if (!panel || $id('ba-team-box')) return;
+    var box = document.createElement('div');
+    box.id = 'ba-team-box';
+    box.style.cssText = 'margin:12px 16px 0;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.05);border-radius:14px;padding:12px;';
+    box.innerHTML =
+      '<details>' +
+      '<summary style="cursor:pointer;color:#93c5fd;font-size:12.5px;font-weight:800;user-select:none;">🧩 ساب‌ایجنت تیمی — ماموریت را بین ساب‌ایجنت‌های نقش‌دار تقسیم کن</summary>' +
+      '<div style="padding-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+      '<textarea id="ba-t-task" rows="2" placeholder="ماموریت تیم (از کادر ماموریت تیم هم پر می‌شود)" style="width:100%;background:#0a0a0f;border:1px solid rgba(59,130,246,.4);border-radius:10px;color:#93c5fd;padding:9px 12px;font-size:12px;box-sizing:border-box;font-family:inherit;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">' +
+      '<button id="ba-t-fill" title="ماموریت فعلی تیم را اینجا می‌آورد" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.4);color:#93c5fd;border-radius:9px;padding:6px 13px;cursor:pointer;font-size:11px;font-family:inherit;">⤵ آوردن ماموریت تیم</button>' +
+      '<select id="ba-t-mode" style="background:#0a0a0f;border:1px solid rgba(59,130,246,.4);color:#93c5fd;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;"><option value="seq">ترتیبی</option><option value="par">موازی</option></select>' +
+      '<span style="flex:1;"></span>' +
+      '<button id="ba-t-run" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:none;color:#fff;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">🚀 اجرای تیمی</button>' +
+      '<button id="ba-t-stop" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.5);color:#fca5a5;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;display:none;">⏹</button></div>' +
+      '<div id="ba-t-list" style="display:flex;flex-direction:column;gap:7px;"></div>' +
+      '<div id="ba-t-out" style="display:none;border-top:1px dashed rgba(59,130,246,.4);padding-top:9px;"></div>' +
+      '</div></details>';
+    panel.appendChild(box);
+    $id('ba-t-fill').addEventListener('click', function () {
+      var g = $id('mms-g');
+      if (g && g.value.trim()) { $id('ba-t-task').value = g.value.trim(); toast('⤵ ماموریت تیم آورده شد'); }
+      else toast('ماموریت تیمی خالی است — دستی بنویس');
+    });
+    var cfg = { taskId: 'ba-t-task', modeId: 'ba-t-mode', runId: 'ba-t-run', stopId: 'ba-t-stop', listId: 'ba-t-list', outId: 'ba-t-out', saveId: 'ba-t-save', histId: 'ba-t-hist', section: 'تیم', bar: true, withTools: true, fileName: 'subagent-team-report.md' };
+    $id('ba-t-run').addEventListener('click', makeRunBtnUI(cfg));
+    $id('ba-t-stop').addEventListener('click', stopUI(cfg));
+    N('ساب‌ایجنت تیمی: تقسیم ماموریت بین نقش‌ها', 'تیم');
+    N('ساب‌ایجنت تیمی: آوردن ماموریت فعلی تیم', 'تیم');
+    N('ساب‌ایجنت تیمی: گزارش و ذخیره فایل تیمی', 'تیم');
+  }
+
+  /* ═══ بخش ۴: IDE/STUDIO — ساب‌ایجنت پروژه ═══ */
+  var PROJ_TYPES = {
+    review: { fa: '🕵️ بررسی کد', hint: 'همه فایل‌های پروژه را دقیق بازبینی کن؛ اشکالات، امنیت و کیفیت را فهرست کن.' },
+    fix: { fa: '🐛 رفع باگ', hint: 'باگ‌های پروژه را پیدا کن و فایل‌ها را با ابزار اصلاح کن.' },
+    optimize: { fa: '⚡ بهینه‌سازی', hint: 'کد پروژه را برای سرعت و خوانایی بهتر کن و فایل‌ها را با ابزار به‌روز کن.' },
+    docs: { fa: '📖 مستندسازی', hint: 'برای پروژه مستندات کامل بنویس (README با بخش‌ها: معرفی، نصب، استفاده، ساختار).' }
+  };
+  function buildStudio() {
+    var panel = $id('panel-code');
+    if (!panel || $id('ba-studio-box')) return;
+    var box = document.createElement('div');
+    box.id = 'ba-studio-box';
+    box.style.cssText = 'margin:10px 16px 0;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.05);border-radius:14px;padding:12px;';
+    box.innerHTML =
+      '<details>' +
+      '<summary style="cursor:pointer;color:#6ee7b7;font-size:12.5px;font-weight:800;user-select:none;">🧩 ساب‌ایجنت پروژه — بررسی/رفع باگ/بهینه‌سازی/مستندسازی روی فایل‌های پروژه</summary>' +
+      '<div style="padding-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+      '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">' +
+      '<select id="ba-s-type" title="نوع کار ساب‌ایجنت‌های پروژه" style="background:#0a0a0f;border:1px solid rgba(16,185,129,.4);color:#6ee7b7;border-radius:8px;padding:6px 10px;font-size:11.5px;font-family:inherit;outline:none;">' +
+      Object.keys(PROJ_TYPES).map(function (k) { return '<option value="' + k + '">' + PROJ_TYPES[k].fa + '</option>'; }).join('') +
+      '</select>' +
+      '<span id="ba-s-files" style="color:#8fa0bd;font-size:10.5px;"></span>' +
+      '<span style="flex:1;"></span>' +
+      '<button id="ba-s-run" style="background:linear-gradient(135deg,#10b981,#047857);border:none;color:#fff;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;">🚀 اجرا روی پروژه</button>' +
+      '<button id="ba-s-stop" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.5);color:#fca5a5;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:800;font-size:12px;font-family:inherit;display:none;">⏹</button></div>' +
+      '<div id="ba-s-list" style="display:flex;flex-direction:column;gap:7px;"></div>' +
+      '<div id="ba-s-out" style="display:none;border-top:1px dashed rgba(16,185,129,.4);padding-top:9px;"></div>' +
+      '</div></details>';
+    panel.insertBefore(box, panel.firstChild);
+    function updFiles() {
+      var f = {};
+      try { f = window.MamalStudio.files() || {}; } catch (e) {}
+      $id('ba-s-files').textContent = 'فایل‌ها: ' + (Object.keys(f).slice(0, 6).join('، ') || '—');
+    }
+    updFiles();
+    setInterval(updFiles, 4000);
+    var cfg = {
+      taskId: 'ba-s-type', modeId: null, runId: 'ba-s-run', stopId: 'ba-s-stop', listId: 'ba-s-list', outId: 'ba-s-out', saveId: 'ba-s-save', histId: 'ba-s-hist', section: 'استودیو', bar: true, withTools: true, fileName: 'subagent-project-report.md',
+      countId: null,
+      modeOverride: 'seq',
+      before: function (subs) { /* نقش‌ها بر اساس نوع کار */ var t = $id('ba-s-type').value; subs.forEach(function (s) { if (t === 'review') s.role = 'reviewer'; else if (t === 'fix') s.role = 'coder'; else if (t === 'optimize') s.role = 'optimizer'; else s.role = 'docs'; }); }
+    };
+    /* برای پروژه: وظیفه از نوع کار + فایل‌ها ساخته می‌شود */
+    $id('ba-s-run').addEventListener('click', async function () {
+      if (lastRun.running) { toast('یک اجرا در جریان است'); return; }
+      var t = $id('ba-s-type').value;
+      var f = {};
+      try { f = window.MamalStudio.files() || {}; } catch (e) {}
+      var names = Object.keys(f).filter(function (n) { return (f[n] || '').trim(); }).slice(0, 6);
+      if (!names.length) { toast('پروژه خالی است — اول چند فایل بساز'); return; }
+      var task = PROJ_TYPES[t].hint + '\nفایل‌های پروژه: ' + names.join('، ');
+      $id('ba-s-type').setAttribute('data-ba-task', task);
+      await makeRunBtnUI(Object.assign({}, cfg, { taskId: 'ba-s-type', taskOverride: task }))();
+    });
+    $id('ba-s-stop').addEventListener('click', stopUI(cfg));
+    N('ساب‌ایجنت پروژه: چهار نوع کار حرفه‌ای', 'استودیو');
+    N('ساب‌ایجنت پروژه: اجرا روی فایل‌های واقعی + اصلاح فایل', 'استودیو');
+    N('ساب‌ایجنت پروژه: گزارش ذخیره‌شده در فایل', 'استودیو');
+  }
+
+  /* ═══ بخش ۵: BOT — پاسخ چندمرحله‌ای ═══ */
+  function buildBot() {
+    var wrap = document.querySelector('#panel-bot .mb-wrap');
+    if (!wrap || $id('ba-bot-btn')) return;
+    var bar = wrap.querySelector('.mb-send');
+    if (!bar || !bar.parentNode) return;
+    var btn = document.createElement('button');
+    btn.id = 'ba-bot-btn';
+    btn.title = 'ساب‌ایجنت: سؤال را به چند مرحله تقسیم و هر مرحله را یک نقش جواب می‌دهد';
+    btn.textContent = '🧩';
+    btn.style.cssText = 'background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.5);color:#c4b5fd;border-radius:12px;width:48px;height:46px;cursor:pointer;font-size:17px;';
+    bar.parentNode.insertBefore(btn, bar);
+    btn.addEventListener('click', async function () {
+      if (lastRun.running) { toast('یک اجرا در جریان است'); return; }
+      var q = ($id('mb-in') && $id('mb-in').value.trim()) || (window.MamalBot && window.MamalBot.lastUser && window.MamalBot.lastUser()) || '';
+      if (!q) { toast('اول سؤال را بنویس'); return; }
+      lastRun.running = true;
+      lastRun.ctl = new AbortController();
+      lastRun.section = 'بات';
+      lastRun.task = q;
+      btn.disabled = true;
+      toast('🧩 ساب‌ایجنت‌ها در حال کار…');
+      try {
+        var subs = await plan(q, 3, lastRun.ctl);
+        subs.forEach(function (s) { s.role = ROLE_KEYS[subs.indexOf(s) % 3]; });
+        lastRun.subs = subs;
+        await executeAll(subs, 'seq', lastRun.ctl, false);
+        pushHist(q, subs, 'بات');
+        var parts = ['🧩 **پاسخ ساب‌ایجنت‌ها به: «' + q.slice(0, 80) + '»**', ''];
+        subs.forEach(function (s, i) {
+          parts.push('**مرحله ' + FA(i + 1) + ' — ' + (ROLES[s.role] || {}).fa + '**: ' + s.title + (s.status === 'done' ? '\n' + String(s.out || '').slice(0, 700) : '\n❌ خطا: ' + (s.err || '')));
+          parts.push('');
+        });
+        var okN = subs.filter(function (s) { return s.status === 'done'; }).length;
+        parts.push('— جمع‌بندی: ' + FA(okN) + ' از ' + FA(subs.length) + ' مرحله کامل شد.');
+        window.MamalBot.appendAssistant(parts.join('\n'));
+        toast('🧩 پاسخ چندمرحله‌ای آماده شد');
+      } catch (e) {
+        toast('❌ ' + (e.message || e));
+      }
+      lastRun.running = false;
+      btn.disabled = false;
+    });
+    N('ساب‌ایجنت بات: پاسخ چندمرحله‌ای نقش‌دار', 'بات');
+    N('ساب‌ایجنت بات: دکمه 🧩 در نوار چت', 'بات');
+    N('اتصال سراسری HUD (hudReg/hudDone) برای همه ماژول‌ها', 'هسته');
+  }
+
+  /* export سراسری HUD تا همه ماژول‌ها کارت وضعیت واقعی داشته باشند */
+  window.hudReg = window.hudReg || function (cfg) {
+    try { if (window.MamalAgents) return window.MamalAgents.register(cfg); } catch (e) {}
+    return { set: function () {}, done: function () {} };
+  };
+  window.hudDone = window.hudDone || function (h, ok) { try { if (h && h.done) h.done(ok); } catch (e) {} };
+
+  function boot() {
+    var tries = 0;
+    (function tick() {
+      var need = [
+        [buildAgent, function () { return $id('panel-agent') && $id('as-box'); }],
+        [buildTeam, function () { return $id('panel-team'); }],
+        [buildStudio, function () { return $id('panel-code'); }],
+        [buildBot, function () { return document.querySelector('#panel-bot .mb-wrap'); }]
+      ];
+      var all = true;
+      need.forEach(function (p) { if (p[1]()) p[0](); else all = false; });
+      if (all) return;
+      if (++tries < 50) setTimeout(tick, 500);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 4200); });
+  else setTimeout(boot, 4200);
+
+  window.MamalStudioBA = { buildAgent: buildAgent, buildTeam: buildTeam, buildStudio: buildStudio, buildBot: buildBot, engine: window.MamalSubEngine };
+})();
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   MAMAL STUDIO — ماژول BB: راهنمای کامل درون‌فایل
+   • دکمه «راهنما» در بالاترین بخش (کنار لوگو در سایدبار)
+   • بخش تمام‌صفحه help-section (همان الگوی studio/bot) با بازگشت
+   • راهنمای جامع همه بخش‌ها/دکمه‌ها/عملکردها + فهرست داینامیک دکمه‌ها با جستجو
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  if (window.__mamalStudioBB) return;
+  window.__mamalStudioBB = true;
+
+  var $id = function (i) { return document.getElementById(i); };
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function FA(x) { return String(x).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; }); }
+  var N = function (n, w) { if (window.MamalFeatures) window.MamalFeatures.add(n, w || 'هسته'); };
+  var lastScroll = 0;
+
+  /* ═══ CSS بخش راهنما ═══ */
+  var CSS = '#help-section { min-height:100vh; background:linear-gradient(180deg,#0a0e1c,#0d1222); direction:rtl; font-family:inherit; }' +
+    '.hp-wrap { max-width:980px; margin:0 auto; padding:20px 16px 80px; }' +
+    '.hp-hero { background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(236,72,153,.12),rgba(139,92,246,.15)); border:1px solid rgba(245,158,11,.4); border-radius:20px; padding:26px 22px; text-align:center; margin-top:14px; }' +
+    '.hp-toc { display:flex; flex-wrap:wrap; gap:7px; margin:16px 0; }' +
+    '.hp-toc a { background:rgba(139,92,246,.1); border:1px solid rgba(139,92,246,.4); color:#c4b5fd; border-radius:99px; padding:5px 13px; font-size:11px; text-decoration:none; cursor:pointer; }' +
+    '.hp-card { background:rgba(13,18,34,.7); border:1px solid rgba(139,92,246,.25); border-radius:16px; padding:18px; margin:14px 0; }' +
+    '.hp-card h2 { color:#fbbf24; font-size:15.5px; font-weight:900; margin:0 0 10px; display:flex; align-items:center; gap:8px; }' +
+    '.hp-card p, .hp-card li { color:#9fb0cc; font-size:12px; line-height:2.1; margin:6px 0; }' +
+    '.hp-card b, .hp-card strong { color:#e2e8f0; }' +
+    '.hp-btns { display:flex; flex-wrap:wrap; gap:6px; margin:9px 0; }' +
+    '.hp-btns span { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.3); color:#cbd5e1; border-radius:9px; padding:3px 10px; font-size:10.5px; }' +
+    '.hp-role { display:flex; gap:8px; align-items:flex-start; background:rgba(236,72,153,.05); border:1px solid rgba(236,72,153,.25); border-radius:11px; padding:8px 11px; margin:6px 0; }' +
+    '.hp-role b { color:#f9a8d4; font-size:11.5px; white-space:nowrap; }' +
+    '.hp-role span { color:#9fb0cc; font-size:11px; line-height:1.9; }' +
+    '.hp-search { width:100%; box-sizing:border-box; background:#0a0a0f; border:1px solid rgba(139,92,246,.45); border-radius:11px; color:#e2e8f0; padding:10px 14px; font-size:12.5px; font-family:inherit; outline:none; margin:10px 0; }' +
+    '.hp-inv-group { border:1px solid rgba(148,163,184,.25); border-radius:13px; padding:11px; margin:9px 0; }' +
+    '.hp-inv-group h3 { color:#93c5fd; font-size:12px; font-weight:900; margin:0 0 8px; }' +
+    '.hp-inv { display:flex; flex-wrap:wrap; gap:5px; }' +
+    '.hp-inv span { background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.3); color:#bfdbfe; border-radius:8px; padding:2px 9px; font-size:10px; }' +
+    '.hp-inv span em { color:#8fa0bd; font-style:normal; opacity:.85; }' +
+    '@media (max-width:640px) { .hp-wrap { padding:12px 10px 60px; } .hp-card { padding:14px; border-radius:13px; } .hp-hero { padding:18px 12px; } }';
+
+  /* ═══ محتوای راهنما ═══ */
+  var AREA_TITLES = {
+    'sidebar-panel': 'سایدبار (نوار کنار)',
+    'chat-area': 'چت اصلی مامال (بخش ۱ — TRACE)',
+    'send-btn': 'چت اصلی مامال',
+    'right-panel': 'پنل راست — نوار تب‌ها',
+    'panel-trace': 'تب TRACE (پنل راست)',
+    'panel-agent': 'بخش ۲ — AGENT',
+    'panel-team': 'بخش ۳ — TEAM',
+    'panel-code': 'بخش ۴ — IDE',
+    'vfs-bar': 'بخش ۴ — IDE (نوار فایل)',
+    'panel-log': 'تب LOG',
+    'studio-section': 'استودیوی تمام‌صفحه',
+    'panel-studio': 'استودیوی تمام‌صفحه',
+    'bot-section': 'بخش ۵ — مامال بات',
+    'panel-bot': 'بخش ۵ — مامال بات',
+    'mb-side': 'بخش ۵ — مامال بات (سایدبار گفت‌وگوها)',
+    'swarm-section': 'داک تیم (سوآرم)',
+    'academy-section': '🎓 آکادمی کدنویسی',
+    'mag-hud': 'HUD ایجنت‌های در حال اجرا',
+    'settings-panel': 'تنظیمات',
+    'msw-aglist': 'داک تیم — فهرست ایجنت‌ها',
+    'msw-board': 'داک تیم — برد وظایف',
+    'add-agent-modal': 'مودال افزودن ایجنت'
+  };
+
+  function card(id, title, body) {
+    return '<div class="hp-card" id="' + id + '"><h2>' + title + '</h2>' + body + '</div>';
+  }
+  function btnRow(arr) {
+    return '<div class="hp-btns">' + arr.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>';
+  }
+
+  function helpHTML() {
+    var feats = '';
+    try { if (window.MamalFeatures) feats = FA(window.MamalFeatures.count()) + ' قابلیت'; } catch (e) {}
+    var H = '';
+    H += '<div class="hp-hero"><div style="font-size:30px;">📖</div>' +
+      '<h1 style="color:#fbbf24;font-size:19px;font-weight:900;margin:8px 0 6px;">راهنمای کامل مامال AI — Multi-Agent Pro</h1>' +
+      '<p style="color:#cbd5e1;font-size:12px;line-height:2;margin:0;">همه بخش‌ها، دکمه‌ها و عملکردهای برنامه در یک راهنمای جامع' + (feats ? ' — ' + feats + ' فعال' : '') + '. در پایین همین راهنما، «فهرست کامل دکمه‌ها» به‌صورت زنده از خود برنامه ساخته می‌شود و با جستجو قابل فیلتر است.</p></div>';
+    H += '<div class="hp-toc">' +
+      [['hp-s1', '🚀 شروع'], ['hp-s2', '🔑 کلید و مدل‌ها'], ['hp-s3', '💬 چت اصلی'], ['hp-s4', '🖥 پنل راست'], ['hp-s5', '🤖 بخش ۲ AGENT'], ['hp-s6', '👥 بخش ۳ TEAM'], ['hp-s7', '💻 بخش ۴ IDE'], ['hp-s8', '🐾 بخش ۵ بات'], ['hp-s9', '🦫 استودیو'], ['hp-s10', '🧲 داک تیم'], ['hp-s11', '🎓 آکادمی'], ['hp-s12', '📊 HUD و وضعیت'], ['hp-s13', '🧩 ساب‌ایجنت‌ها'], ['hp-s14', '⌨️ میان‌برها'], ['hp-s15', '🔍 فهرست دکمه‌ها']].map(function (x) { return '<a data-hp-go="' + x[0] + '">' + x[1] + '</a>'; }).join('') +
+      '</div>';
+    H += card('hp-s1', '🚀 شروع و معماری کلی',
+      '<p>برنامه سه ناحیه دارد که کنار هم کار می‌کنند و چند بخش تمام‌صفحه که با دکمه باز می‌شوند:</p>' +
+      '<p><b>۱) سایدبار راست:</b> جلسات چت، آمار، وضعیت و دکمه راهنما (همین صفحه). <b>۲) وسط — چت اصلی:</b> گفت‌وگوی اصلی با ایجنت TRACE. <b>۳) پنل چپ:</b> پنج تب TRACE / AGENT / TEAM / IDE / LOG.</p>' +
+      '<p>بخش‌های تمام‌صفحه («استودیو»، «مامال بات»، «داک تیم»، «آکادمی»، «راهنما») به‌صورت صفحه جدا داخل همین فایل باز می‌شوند و دکمه «⬆ بازگشت به مامال» بالای هر کدام برمی‌گرداند. همه داده‌ها به‌طور خودکار در حافظه مرورگر ذخیره می‌شود — با بستن برنامه چیزی از دست نمی‌رود.</p>' +
+      btnRow(['💬 چت جدید', '💻 چت با کد', '📤 خروجی جلسات', '↻ بازگذاری مجدد']) +
+      '<p>در موبایل، سایدبار جمع می‌شود و همه بخش‌ها به‌صورت تک‌ستونه مرتب می‌شوند؛ جدول‌ها و کد داخل خودشان اسکرول افقی دارند.</p>');
+    H += card('hp-s2', '🔑 کلید API و مدل‌ها',
+      '<p><b>کلید:</b> برنامه کلید OpenRouter را خودکار از سرویس کلید می‌گیرد و اگر از کار افتاد، مسیر رایگان (بدون کلید) را امتحان می‌کند — نیازی به واردکردن دستی نیست.</p>' +
+      '<p><b>مدل مشترک:</b> منوی «مدل اصلی» در بالای صفحه، مدل پیش‌فرض همه بخش‌هاست. منوی «مدل ایجنت» در بخش AGENT روی «مشترک» بماند تا همان مدل را بگیرد. در بات هم منوی مدلِ خودش را دارد (یا «مشترک»).</p>' +
+      '<p>اگر مدلی شلوغ شود (خطای 429)، برنامه خودش مدل بعدی را امتحان می‌کند و پیام «مدل شلوغ بود — با مدل فلان دوباره…» می‌دهد. دکمه «🔄 مدل‌ها» لیست مدل‌ها را تازه می‌کند.</p>');
+    H += card('hp-s3', '💬 چت اصلی مامال (بخش ۱ — TRACE)',
+      '<p>گفت‌وگوی اصلی با ایجنت TRACE؛ پاسخ‌ها به‌صورت زنده تایپ می‌شوند و مراحل تفکر در پنل TRACE دیده می‌شود.</p>' +
+      btnRow(['➕ گفت‌وگوی جدید', '📤 خروجی گفت‌وگو', '🕐 تاریخچه', '🧹 پاک‌کردن', '⏹ توقف پاسخ', '⌘ پالت دستورها']) +
+      '<p>دکمه «⌘ پالت دستورها» (یا آیکن + بالای چت) میان‌برهای سریع را باز می‌کند: نمایش بخش‌ها، ساخت سریع، تنظیمات و… . حالت «چت با کد» در سایدبار، چت را به استودیو متصل می‌کند تا پاسخ‌ها به فایل‌ها هم بروند.</p>');
+    H += card('hp-s4', '🖥 پنل راست — پنج تب اصلی',
+      '<p><b>TRACE:</b> مراحل تفکر و ابزارهای ایجنت را زنده نشان می‌دهد. <b>AGENT:</b> بخش ۲ (ایجنت تک + ساب‌ایجنت‌ها). <b>TEAM:</b> بخش ۳ (تیم ایجنت‌ها). <b>IDE:</b> بخش ۴ (استودیوی کد در پنل). <b>LOG:</b> گزارش رویدادها و خطاها.</p>' +
+      '<p>بین تب‌ها با کلیک روی نام تب جابه‌جا شوید؛ محتوای هر تب مستقل نگه‌داری می‌شود.</p>');
+    H += card('hp-s5', '🤖 بخش ۲ — AGENT (ایجنت تک و ساب‌ایجنت‌ها)',
+      '<p>وظیفه را در کادر بالا بنویسید، مدل را انتخاب کنید و یکی از ابزارهای تخصصی را بزنید — هر دکمه یک پرامپت آماده تخصصی اجرا می‌کند:</p>' +
+      btnRow(['🛠️ ساخت کد', '👁️ تحلیل عکس', '🔍 جستجوی وب', '📁 ساخت فایل', '🔎 ریویو', '🐞 دیباگ', '🧪 تست', '📖 مستندسازی', '♻️ ریفکتور', '🛡️ امنیت', '⚡ بهینه‌سازی', '🌍 تبدیل']) +
+      '<p>«📷 آپلود عکس» برای تحلیل تصویر (در مدل‌های بینایی‌دار). خروجی‌ها به فایل‌های استودیو هم نوشته می‌شوند.</p>' +
+      '<p><b>ساب‌ایجنت ساده:</b> وظیفه را با مدل به زیر-وظیفه‌ها تجزیه و هر را با یک ساب‌ایجنت اجرا می‌کند — «🚀 تجزیه و اجرا»، انتخاب تعداد (خودکار تا ۵)، حالت ترتیبی (هر ساب از خروجی قبلی) یا موازی، «⏹ توقف» واقعی در میانه کار، «🧹» پاک‌کردن، و کارت وضعیت هر ساب با دکمه «👁 خروجی».</p>' +
+      '<p><b>ساب‌ایجنت حرفه‌ای:</b> همان کار با امکانات بیشتر — نقش‌های تخصصی خودکار (تحلیل‌گر/کدنویس/آزمون‌گر/مستندساز/بهینه‌ساز/بازبین)، «↻ تلاش مجدد» فقط برای سابِ خراب، نوار پیشرفت درصدی + زمان هر ساب، «💾 ذخیره گزارش» به فایل md و «🕘 تاریخچه» ۱۲ اجرای آخر. (راهنمای کامل در بخش «🧩 ساب‌ایجنت‌ها» پایین صفحه.)</p>');
+    H += card('hp-s6', '👥 بخش ۳ — TEAM (تیم ایجنت‌ها)',
+      '<p>پروژه‌های تیمی را مدیریت و اجرا می‌کند. هر پروژه فضای کاری و چند ایجنت دارد.</p>' +
+      btnRow(['➕ پروژه جدید', '⧉ کپی پروژه', '🗑️ حذف پروژه', '📤 خروجی JSON', '➕ فضای کاری', '➕ افزودن ایجنت']) +
+      '<p><b>قالب‌های آماده:</b> «🌐 Web Team»، «⚡ Fullstack»، «🐛 Debug» و… یک تیم کامل با نقش‌ها می‌سازند. ماموریت را در کادر ماموریت بنویسید و «▶ اجرا» بزنید — ایجنت‌ها با پیام‌های هماهنگ‌شده کار می‌کنند و لاگ تیم زنده پر می‌شود.</p>' +
+      '<p><b>ساب‌ایجنت تیمی:</b> در انتهای همین پنل، ماموریت تیم را بین ساب‌ایجنت‌های نقش‌دار تقسیم می‌کند: «⤵ آوردن ماموریت تیم» ماموریت فعلی را می‌آورد، «🚀 اجرای تیمی» تجزیه + اجرا می‌کند و «💾 ذخیره گزارش» نتیجه را در فایل subagent-team-report.md می‌نویسد.</p>');
+    H += card('hp-s7', '💻 بخش ۴ — IDE (استودیوی کد در پنل)',
+      '<p>ادیتور کد با explorer فایل‌ها و نوار ابزار کامل:</p>' +
+      btnRow(['➕ فایل', '📁 پوشه', '📥 آپلود', '✏️ تغییر نام', '{ } فرمت JSON', '⬇ دانلود', '💾 ذخیره (Ctrl+S)', '🗑️ حذف', '🔍 Go to', '⌘ Commands', '▶ Preview', '📱 نمای موبایل']) +
+      '<p>«▶ Preview» فایل HTML را رندر می‌کند؛ «⌘ Commands» فهرست دستورات استودیو را باز می‌کند. پوشه‌ها تو در تو ساخته می‌شوند و آپلود چندتایی پشتیبانی می‌شود.</p>' +
+      '<p><b>ساب‌ایجنت پروژه:</b> بالای پنل، چهار نوع کار حرفه‌ای روی همه فایل‌های پروژه — «🕵️ بررسی کد» (بازبینی امنیت و کیفیت)، «🐛 رفع باگ» (فایل‌ها را واقعا اصلاح می‌کند)، «⚡ بهینه‌سازی» و «📖 مستندسازی» (README کامل). دکمه «🚀 اجرا روی پروژه» فایل‌ها را بین ساب‌ایجنت‌ها تقسیم می‌کند و گزارش در subagent-project-report.md ذخیره می‌شود.</p>');
+    H += card('hp-s8', '🐾 بخش ۵ — مامال بات (چت هوشمند)',
+      '<p>چت کامل با جلسات، پرسونا و ابزارهای حرفه‌ای. از منوی «🤖 مامال بات» در پالت دستورها باز می‌شود.</p>' +
+      '<p><b>سایدبار گفت‌وگوها:</b> جلسه جدید (＋)، جست‌وجو، آمار و خروجی هر جلسه. <b>پرسونا:</b> حالت‌های گفتاری آماده (مشاور، معلم و…) یا پرامپت شخصی.</p>' +
+      '<p><b>ابزارهای پرو:</b> ماشین‌حساب محلی (بدون مصرف توکن)، ترجمه انگلیسی آخرین پاسخ، خلاصه جلسه، سنجاق (pin) پیام‌ها، انشعاب گفت‌وگو (fork)، خروجی کامل، جست‌وجو، حالت تمرکز و زمان‌بندی پیام.</p>' +
+      '<p><b>ربات‌های من:</b> ربات شخصی بساز (نام، پرامپت، مدل) و ذخیره کن. <b>اتوماسیون:</b> جریان کاری چندمرحله‌ای بچین و اجرا کن.</p>' +
+      '<p><b>🧩 ساب‌ایجنت بات:</b> دکمه 🧩 کنار دکمه ارسال — سؤال فعلی را به ۳ مرحله با نقش‌های مختلف (تحلیل، پیاده‌سازی، آزمون) می‌شکند و پاسخ مرحله‌به‌مرحله با جمع‌بندی در همان چت می‌گذارد.</p>');
+    H += card('hp-s9', '🦫 استودیوی تمام‌صفحه',
+      '<p>نسخه بزرگ‌تر استودیو با پنل فایل‌ها، ادیتور و پیش‌نمایش زنده؛ از «🦫 استودیو» در پالت دستورها یا دکمه ورود باز می‌شود و «⬆ بازگشت به مامال» برمی‌گرداند. پروژه‌ها با نام ذخیره می‌شوند و می‌توانید بین چند پروژه جابه‌جا شوید.</p>');
+    H += card('hp-s10', '🧲 داک تیم (سوآرم) — ماموریت‌های چندایجنته',
+      '<p>دک شناور پایین صفحه؛ تیم چندایجنته بسازید و ماموریت بدهید:</p>' +
+      btnRow(['➕ وظیفه جدید', '▶ اجرای تیم', '🔄 استندآپ', '🤖 اتو-پلن', '📋 گزارش', '📤 خروجی', '🧹 تمیزکردن', '🔐 مجوزها', '📥 ایمپورت تیم', '💾 قالب تیم']) +
+      '<p><b>برد وظایف:</b> ستون‌های وضعیت با فیلتر «همه/در انتظار/در حال کار/تمام/خراب»، مرتب‌سازی و پاک‌سازی. <b>مودهای اجرا:</b> ترتیبی، موازی و توافقی. <b>فهرست ایجنت‌ها:</b> افزودن/حذف/ویرایش هر ایجنت با نقش و مدل. «🤖 اتو-پلن» ماموریت را خودکار به وظایف ایجنت‌ها می‌شکند.</p>');
+    H += card('hp-s11', '🎓 آکادمی کدنویسی',
+      '<p>مربی شخصی کدنویسی — درسنامه می‌سازد، تدریس می‌کند، تمرین می‌گیرد و ارزشیابی می‌کند.</p>' +
+      '<p><b>درسنامه:</b> «📚 درسنامه بساز» (مدل سرفصل و درس‌ها را می‌سازد)، «✍️ درسنامه شخصی» (سرفصل خودت + مدل دلخواه)، «✏️ ویرایش درسنامه» (عنوان/هدف/سرفصل‌ها، افزودن و حذف درس). فیلتر سطح: همه / مبتدی / متوسط / پیشرفته.</p>' +
+      '<p><b>هر درس:</b> کلیک روی درس ← محتوا، تمرین و ادیتور کد درهم. ۶ اکشن درس: خلاصه، کوییز، تدریس مجدد، راهنمایی (hint)، ایده پروژه و ارسال به استودیو.</p>' +
+      '<p><b>ابزارهای یادگیری:</b> «📅 برنامه‌ی امروز»، «📊 پیشرفت من»، «🏅 گواهی» (پس از پایان درس‌ها)، «🃏 فلش‌کارت»، «🔁 مرور فاصله‌دار» و «📊 رادار مهارت». یادداشت هر درس با کمک AI نوشته و ذخیره می‌شود؛ آزمون پایانی با نمره و پاسخ‌نامه ساخته می‌شود.</p>');
+    H += card('hp-s12', '📊 HUD ایجنت‌ها و نوار وضعیت',
+      '<p><b>HUD (mag-hud):</b> کارت هر اجرای مدل — نام، درصد، دکمه توقف و «↻ تلاش مجدد». اگر اجرایی وسط کار خطا بخورد از همین‌جا دوباره می‌زنید. <b>LOG:</b> تب آخر پنل راست، همه رویدادها و خطاها با زمان. <b>نوار وضعیت پایین:</b> شمارش قابلیت‌ها، وضعیت کلید و مدل.</p>');
+    H += card('hp-s13', '🧩 ساب‌ایجنت‌ها — راهنمای کامل',
+      '<p>ساب‌ایجنت یعنی اجرای یک وظیفه بزرگ با چند ایجنت کوچکِ هماهنگ؛ در بخش‌های ۲ و ۳ و ۴ و ۵ فعال است. جریان همیشه سه قدم است: <b>تجزیه</b> (مدل وظیفه را به ۲ تا ۵ زیر-وظیفه می‌شکند) ← <b>اجرا</b> (هر ساب با نقش و ابزار واقعی فایل کار می‌کند) ← <b>گزارش</b> (ادغام نتایج + ذخیره فایل).</p>' +
+      '<div class="hp-role"><b>🔍 تحلیل‌گر</b><span>نیازها و نقشه راه — پیش از کدنویسی؛ خروجی تحلیلی است نه کد.</span></div>' +
+      '<div class="hp-role"><b>👨‍💻 کدنویس</b><span>کد کامل و اجرایی می‌نویسد و فایل‌ها را می‌سازد.</span></div>' +
+      '<div class="hp-role"><b>🧪 آزمون‌گر</b><span>نقد، کیس‌های تست و فهرست باگ‌های احتمالی.</span></div>' +
+      '<div class="hp-role"><b>📖 مستندساز</b><span>مستندات ساخت‌یافته و README.</span></div>' +
+      '<div class="hp-role"><b>⚡ بهینه‌ساز</b><span>بهبود سرعت/خوانایی و نوشتن نسخه اصلاح‌شده در فایل.</span></div>' +
+      '<div class="hp-role"><b>🕵️ بازبین</b><span>بازبینی امنیتی، منطقی و کیفیت با پیشنهاد اصلاح.</span></div>' +
+      '<p><b>ترتیبی یا موازی؟</b> ترتیبی: هر ساب خروجی قبلی را می‌بیند — برای کارهای وابسته (طراحی ← کد ← تست). موازی: همزمان و سریع‌تر — برای کارهای مستقل. <b>تلاش مجدد:</b> اگر یک ساب خطا خورد، دکمه «↻ تلاش مجدد» فقط همان را دوباره اجرا می‌کند، نه کل پروژه را. <b>توقف:</b> «⏹» همه ساب‌ها را واقعا در میانه کار متوقف می‌کند. <b>گزارش md:</b> نقش، زمان، فایل‌های نوشته‌شده و خروجی هر ساب — با «💾» در فایل ذخیره و با «🕘 تاریخچه» تا ۱۲ اجرای آخر قابل مرور است.</p>');
+    H += card('hp-s14', '⌨️ میان‌برها و نکات',
+      btnRow(['Ctrl+S ذخیره', '⌘ Commands', 'Ctrl+K جست‌وجوی فایل', 'Zen حالت متمرکز', '📲 ریسپانسیو کامل']) +
+      '<p>همه چیز آفلاین ذخیره می‌شود (localStorage)؛ فایل‌های استودیو و جلسات چت و پیشرفت آکادمی با بازکردن دوباره سر جایشان هستند. «📤 خروجی»ها فایل دانلودی می‌سازند. اگر پاسخی نیامد: مدل عوض کنید یا چند ثانیه بعد دوباره — چرخش مدل خودکار است.</p>');
+    H += '<div class="hp-card" id="hp-s15"><h2>🔍 فهرست کامل دکمه‌های برنامه (زنده)</h2>' +
+      '<input id="hp-q" class="hp-search" placeholder="🔍 جست‌وجو در همه دکمه‌ها (مثلا: ذخیره، ساب‌ایجنت، گزارش…)" />' +
+      '<div id="hp-inv"></div></div>';
+    return H;
+  }
+
+  /* ═══ فهرست داینامیک دکمه‌ها ═══ */
+  function buildInventory() {
+    var host = $id('hp-inv');
+    if (!host) return;
+    var KW = ['if', 'for', 'while', 'switch', 'catch', 'return', 'function', 'typeof', 'new', 'else', 'do', 'try', 'event', 'this', 'Boolean', 'String', 'Number', 'Array', 'Object', 'JSON', 'setTimeout', 'Math', 'Date', 'parseInt', 'parseFloat', 'encodeURIComponent', 'decodeURIComponent', 'getComputedStyle', 'clearTimeout', 'confirm', 'alert', 'prompt', 'stopPropagation', 'preventDefault'];
+    function areaOf(el) {
+      var n = el;
+      while (n && n !== document.body) {
+        if (n.id && AREA_TITLES[n.id]) return n.id;
+        n = n.parentElement;
+      }
+      return '';
+    }
+    var groups = {};
+    document.querySelectorAll('button, .cmd-chip').forEach(function (el) {
+      var area = areaOf(el);
+      if (!area) return;
+      var label = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30);
+      var title = (el.getAttribute('title') || '').trim().slice(0, 90);
+      if (!label && !title) return;
+      if (!groups[area]) groups[area] = [];
+      var txt = label + ' ' + title;
+      if (groups[area].some(function (x) { return x.t === txt; })) return;
+      groups[area].push({ label: label || '…', title: title, t: txt });
+    });
+    var keys = Object.keys(groups).sort(function (a, b) { return (AREA_TITLES[a] || '').localeCompare(AREA_TITLES[b] || ''); });
+    var total = keys.reduce(function (n, k) { return n + groups[k].length; }, 0);
+    var order = ['sidebar-panel', 'chat-area', 'right-panel', 'panel-agent', 'panel-team', 'panel-code', 'panel-log', 'studio-section', 'bot-section', 'swarm-section', 'academy-section', 'mag-hud', 'settings-panel'];
+    keys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
+    function render(filter) {
+      var f = (filter || '').trim().toLowerCase();
+      var html = keys.map(function (k) {
+        var items = groups[k].filter(function (x) {
+          return !f || (x.t.toLowerCase().indexOf(f) !== -1);
+        });
+        if (!items.length) return '';
+        return '<div class="hp-inv-group"><h3>' + esc(AREA_TITLES[k] || k) + ' <span style="color:#64748b;font-weight:400;">(' + FA(items.length) + ')</span></h3><div class="hp-inv">' +
+          items.map(function (x) { return '<span>' + esc(x.label) + (x.title ? ' <em>— ' + esc(x.title) + '</em>' : '') + '</span>'; }).join('') + '</div></div>';
+      }).join('');
+      host.innerHTML = (f ? '' : '<p style="color:#8fa0bd;font-size:11px;">مجموع ' + FA(total) + ' دکمه در ' + FA(keys.length) + ' ناحیه — با تایپ در کادر بالا فیلتر کنید:</p>') +
+        (html || '<p style="color:#fca5a5;">چیزی یافت نشد.</p>');
+    }
+    render('');
+    var q = $id('hp-q');
+    if (q) q.addEventListener('input', function () { render(q.value); });
+    N('راهنما: فهرست زنده همه دکمه‌ها با جستجو', 'هسته');
+  }
+
+  /* ═══ ساخت بخش و دکمه ═══ */
+  function buildSection() {
+    if ($id('help-section')) return true;
+    if (!document.body) return false;
+    var s = document.createElement('style');
+    s.id = 'mamal-help-css';
+    s.textContent = CSS;
+    document.head.appendChild(s);
+    var sec = document.createElement('section');
+    sec.id = 'help-section';
+    sec.innerHTML = '<button class="ps-back-btn" id="hp-back" title="بازگشت به برنامه">⬆ بازگشت به مامال</button>' +
+      '<div class="hp-wrap" id="hp-wrap">' + helpHTML() + '</div>';
+    document.body.appendChild(sec);
+    sec.querySelectorAll('[data-hp-go]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        var t = $id(a.getAttribute('data-hp-go'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    $id('hp-back').addEventListener('click', backToApp);
+    N('دکمه راهنما کنار لوگو', 'هسته');
+    N('راهنمای جامع درون‌فایل (۱۵ فصل)', 'هسته');
+    N('فهرست زنده دکمه‌ها با جستجو', 'هسته');
+    return true;
+  }
+
+  function openHelp() {
+    if (!buildSection()) return;
+    lastScroll = window.scrollY || 0;
+    var sec = $id('help-section');
+    if (buildInventory) { try { buildInventory(); } catch (e) {} }
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    try { toast('📖 راهنمای کامل باز شد'); } catch (e) {}
+  }
+  function backToApp() {
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+  }
+
+  function addBrandBtn() {
+    var brand = document.querySelector('.sidebar .brand');
+    if (!brand || $id('help-btn')) return;
+    var b = document.createElement('button');
+    b.id = 'help-btn';
+    b.textContent = '؟ راهنما';
+    b.title = 'راهنمای کامل برنامه — همه بخش‌ها و دکمه‌ها';
+    b.style.cssText = 'margin-inline-start:auto;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;color:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,.4);';
+    b.addEventListener('click', openHelp);
+    brand.appendChild(b);
+  }
+
+  function addCmd() {
+    try {
+      if (Array.isArray(window.EXTRA_CMDS)) {
+        if (!window.EXTRA_CMDS.some(function (c) { return c.label === 'راهنمای کامل'; })) {
+          window.EXTRA_CMDS.push({ label: 'راهنمای کامل', icon: '📖', action: openHelp });
+        }
+      } else {
+        setTimeout(addCmd, 1200);
+        return;
+      }
+    } catch (e) {}
+  }
+
+  function boot() {
+    var tries = 0;
+    (function tick() {
+      addBrandBtn();
+      if ($id('help-btn') && $id('help-section') === null) buildSection();
+      if (++tries < 40) setTimeout(tick, 600);
+    })();
+    addCmd();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 2500); });
+  else setTimeout(boot, 2500);
+
+  window.MamalHelp = { open: openHelp, back: backToApp, build: buildSection, inventory: buildInventory };
+  try {
+    if (Array.isArray(window.EXTRA_CMDS)) window.EXTRA_CMDS.push({ label: 'راهنمای کامل', icon: '📖', action: openHelp });
+  } catch (e0) {}
 })();
 
 </script>
